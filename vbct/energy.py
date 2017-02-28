@@ -1,19 +1,22 @@
-import inputdata as inp
-import geometry as geom
 from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
+
+from pyfrag.globals import params
 from ChargeState import ChargeState
+from pyfrag.globals import geom
+from pyfrag.globals import MPI
+
 
 def enumerate_states():
     '''Return the list of ChargeStates according to input options'''
 
     charge_states = []
-    geometry = inp.inputdata['geometry']
+    geometry = params.options['geometry']
     
     # Fragmentation of geometry
-    if 'fragmentation' in inp.inputdata:
-        frag_option = inp.inputdata['fragmentation']
+    if 'fragmentation' in params.options:
+        frag_option = params.options['fragmentation']
     else:
         frag_option = 'auto'
     
@@ -24,8 +27,8 @@ def enumerate_states():
         fragments = frag_method(geometry)
 
     # Assign charges to fragments
-    if 'charge_states' in inp.inputdata: 
-        states_option = inp.inputdata['charge_states']
+    if 'charge_states' in params.options: 
+        states_option = params.options['charge_states']
     else:
         states_option = 'single'
 
@@ -45,9 +48,9 @@ def enumerate_states():
 def energy_driver():
     '''SP energy'''
 
-    comm, rank, nproc = inp.MPI_info()
+    comm, rank, nproc = MPI.info()
 
-    if inp.VERBOSE and rank == 0:
+    if params.VERBOSE and rank == 0:
         print "    Cluster Ion Calculation Input"
         print "Energy Driver running %d processors" % comm.size
         print "-----------------------------------"
@@ -55,11 +58,11 @@ def energy_driver():
                   'relax_neutral_dimers', 'corr_neutral_dimers',
                   'coupling', 'embedding', 'fragmentation', 
                   'charge_states', 'task']:
-            print "%22s %20s" % (k, inp.inputdata[k])
+            print "%22s %20s" % (k, params.options[k])
 
         print "\nGeometry / Angstroms"
         print "--------------------"
-        print "\n".join(map(str, inp.inputdata['geometry']))
+        print "\n".join(map(str, params.options['geometry']))
 
     charge_states = enumerate_states()
     
@@ -67,7 +70,7 @@ def energy_driver():
     H = np.zeros((N,N))
     S = np.eye(N)
     
-    if rank == 0 and inp.VERBOSE:
+    if rank == 0 and params.VERBOSE:
         print "\nGenerated %d charge configurations:" % N
         print "\n".join(map(str, charge_states))
         print "\nMonomer SCF & Diagonal Element Calculation"
@@ -106,7 +109,7 @@ def energy_driver():
             H[i,i] = charge_states[i].diagonal(comm)
 
     # log monomer SCF and diagonal elements
-    if rank == 0 and inp.VERBOSE:
+    if rank == 0 and params.VERBOSE:
         for i, state in enumerate(charge_states):
             print state
             for monomer in state.monomers:
@@ -139,7 +142,7 @@ def energy_driver():
 
     # Couplings/overlaps
     pairs = [(i,j) for i in range(N-1) for j in range(i+1,N)]
-    my_pairs = inp.MPI_scatter(comm, pairs, master=0)
+    my_pairs = MPI.scatter(comm, pairs, master=0)
     couplings = [0.0] * len(my_pairs)
     overlaps  = [0.0] * len(my_pairs)
 
@@ -147,14 +150,14 @@ def energy_driver():
 
         couplings[idx], overlaps[idx], info = charge_states[i].coupling(charge_states[j])
 
-        if rank == 0 and nproc == 1 and inp.VERBOSE:
+        if rank == 0 and nproc == 1 and params.VERBOSE:
             print "Coupling"
             for k, v in info.items():
                 print "  %14s" % k, v
             print ""
 
-    couplings = inp.MPI_gather(comm, couplings, master=0)
-    overlaps  = inp.MPI_gather(comm, overlaps,  master=0)
+    couplings = MPI.gather(comm, couplings, master=0)
+    overlaps  = MPI.gather(comm, overlaps,  master=0)
 
     # Solve secular equation, return results
     if rank == 0:
@@ -162,7 +165,7 @@ def energy_driver():
             H[i,j] = H[j,i] = couplings[idx]
             S[i,j] = S[j,i] =  overlaps[idx]
 
-    if inp.VERBOSE and rank == 0:
+    if params.VERBOSE and rank == 0:
         print "Hamiltonian"
         print "-----------"
         print H
@@ -173,12 +176,12 @@ def energy_driver():
             print "--------------"
             print S
             
-    E_nuclear = geom.nuclear_repulsion_energy(inp.inputdata['geometry'])
+    E_nuclear = geom.nuclear_repulsion_energy(params.options['geometry'])
     for i in range(N):
         H[i,i] -= E_nuclear
     eigvals, eigvecs = eigh(H, b=S)
     prob0 = eigvecs[:,0]**2
-    charge_distro = np.zeros((len(inp.inputdata['geometry'])))
+    charge_distro = np.zeros((len(params.options['geometry'])))
     for i, state in enumerate(charge_states):
         charge_vec = np.array([q for m in state.monomers for q in m.esp_charges])
         charge_distro += prob0[i]*charge_vec
@@ -190,7 +193,7 @@ def energy_driver():
                  'E(GS)' : eigvals[0] + E_nuclear,
                  'chgdist(GS)' : charge_distro
               }
-    if inp.VERBOSE and rank == 0:
+    if params.VERBOSE and rank == 0:
         print "Final Energy Calculation Results"
         for k,v in results.items():
             print k, "\n   ", v

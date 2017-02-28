@@ -11,6 +11,7 @@ PyFragment Documentation
    :caption: Table of Contents
 
    background
+   globals
 
 
 Indices and tables

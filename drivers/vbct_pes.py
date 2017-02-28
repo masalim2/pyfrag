@@ -1,9 +1,9 @@
 # This script uses PyFragment as a module to perform
-# a potential energy scan, collecting both fragment 
+# a VBCT energy scan, collecting both fragment 
 # approximations and the exact (non-fragmented) energy
 # Call with mpirun -n <nproc> python pes.py
 # In order to run as parallel job
-import src.__main__ as pyfrag
+import pyfrag.vbct as pyfrag
 import numpy as np
 import sys
 import os

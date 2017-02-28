@@ -1,6 +1,7 @@
-import Fragment
-import inputdata as inp
-import numpy as np
+from pyfrag.backend import Fragment
+from pyfrag.globals import MPI
+from pyfrag.globals import params
+import numpy as np 
 
 class ChargeState:
     '''Base class for VB CT state'''
@@ -8,13 +9,13 @@ class ChargeState:
     def __init__(self, fragments, fragment_charges):
         self.label = zip(fragments, fragment_charges)
         
-        self.correlation = inp.inputdata['correlation']
-        self.embedding   = inp.inputdata['embedding']
-        self.geometry    = inp.inputdata['geometry']
+        self.correlation = params.options['correlation']
+        self.embedding   = params.options['embedding']
+        self.geometry    = params.options['geometry']
 
         # Choose Fragment backend & calculation methods based on input
         for option in ['backend', 'diagonal', 'coupling']:
-            setattr(self, option, inp.inputdata[option])
+            setattr(self, option, params.options[option])
 
         self.Frag = getattr(Fragment, '%sFragment'%self.backend.upper())
         self.diagonal = getattr(self, 'diag_%s'%self.diagonal)
@@ -48,7 +49,7 @@ class ChargeState:
 
         while RMSD > RMSD_TOL and itr < MAXITER:
             charges_old = [chg for m in monomers for chg in m.esp_charges]
-            my_monomers = inp.MPI_scatter(subcomm, monomers, master=0)
+            my_monomers = MPI.scatter(subcomm, monomers, master=0)
 
             for mono in my_monomers:
                 if embedding:
@@ -60,7 +61,7 @@ class ChargeState:
                 in_vecs = None if itr==0 else mono.movecs_path
                 mono.run(calc='esp', save_vecs=True, input_vecs=in_vecs)
 
-            new_monomers = inp.MPI_allgather(subcomm, my_monomers)
+            new_monomers = MPI.allgather(subcomm, my_monomers)
             for i, mono in enumerate(new_monomers):
                 monomers[i] = mono # modify the list passed in originally
 
@@ -88,8 +89,8 @@ class ChargeState:
         else:
             subcomm, rank, nproc = None, 0, 1
 
-        my_monomers = inp.MPI_scatter(subcomm, self.monomers, master=0)
-        my_dimers = inp.MPI_scatter(subcomm, self.dimers, master=0)
+        my_monomers = MPI.scatter(subcomm, self.monomers, master=0)
+        my_dimers = MPI.scatter(subcomm, self.dimers, master=0)
 
         # Monomers
         for mono in my_monomers:
@@ -115,8 +116,8 @@ class ChargeState:
                 charge_local_flag = True
                 calc_type = 'energy_hf'
             else:
-                charge_local_flag = not inp.inputdata['relax_neutral_dimers']
-                if inp.inputdata['corr_neutral_dimers']:
+                charge_local_flag = not params.options['relax_neutral_dimers']
+                if params.options['corr_neutral_dimers']:
                     calc_type = 'energy'
                 else:
                     calc_type = 'energy_hf'
@@ -126,8 +127,8 @@ class ChargeState:
                 self.monomers[idx2].movecs_path))
         
         # Gather evaluated fragments, compute state diagonal element
-        self.monomers = inp.MPI_allgather(subcomm, my_monomers)
-        self.dimers =   inp.MPI_allgather(subcomm,   my_dimers)
+        self.monomers = MPI.allgather(subcomm, my_monomers)
+        self.dimers =   MPI.allgather(subcomm,   my_dimers)
 
         self.E1 = sum([mono.energy['total'] for mono in self.monomers])
         self.E2 = 0.0
@@ -159,11 +160,11 @@ class ChargeState:
             subcomm, rank, nproc = None, 0, 1
         if nproc != 1:
             raise RuntimeError("Testing method, not yet parallel executable")
-        if inp.inputdata['coupling'] != 'mono_ip':
-            raise RuntimeError("Incompatible with coupling %s" % inp.inputdata['coupling'])
+        if params.options['coupling'] != 'mono_ip':
+            raise RuntimeError("Incompatible with coupling %s" % params.options['coupling'])
 
-        my_monomers = inp.MPI_scatter(subcomm, self.monomers, master=0)
-        my_dimers = inp.MPI_scatter(subcomm, self.dimers, master=0)
+        my_monomers = MPI.scatter(subcomm, self.monomers, master=0)
+        my_dimers = MPI.scatter(subcomm, self.dimers, master=0)
 
         # Monomers
         for mono in my_monomers:
@@ -189,8 +190,8 @@ class ChargeState:
             dimer.run(calc='energy')
         
         # Gather evaluated fragments, compute state diagonal element
-        self.monomers = inp.MPI_allgather(subcomm, my_monomers)
-        self.dimers =   inp.MPI_allgather(subcomm,   my_dimers)
+        self.monomers = MPI.allgather(subcomm, my_monomers)
+        self.dimers =   MPI.allgather(subcomm,   my_dimers)
 
         # sum of neutral monomers
         self.E1 = sum([mono.energy['total'] for mono in self.monomers])
@@ -291,8 +292,8 @@ class ChargeState:
         import copy
         if self.embedding:
             raise RuntimeError('Embedding incompatible with monoIP method')
-        if inp.inputdata['diagonal'] != 'mono_ip':
-            raise RuntimeError('monoIP coupling incompatible with %s' % inp.inputdata['diagonal'])
+        if params.options['diagonal'] != 'mono_ip':
+            raise RuntimeError('monoIP coupling incompatible with %s' % params.options['diagonal'])
 
         info = {}
         reactants = []

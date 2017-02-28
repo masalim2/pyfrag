@@ -1,12 +1,13 @@
 import numpy as np
-import geometry as geom
 import sys
 import subprocess
 import tempfile
-import inputdata as inp
 import os
 import textwrap
 from shutil import copy2
+
+from pyfrag.globals import geom
+from pyfrag.globals import params # inp
 
 
 class Fragment:
@@ -119,7 +120,7 @@ class Fragment:
                 self.input_vecs = self.get_best_guess()
                 if self.calc == 'hf_energy':
                     return
-                if self.calc == 'energy' and not inp.inputdata['correlation']:
+                if self.calc == 'energy' and not params.options['correlation']:
                     return
         
         self.write_input_file(**kwargs)
@@ -130,8 +131,8 @@ class Fragment:
                     stderr=subprocess.STDOUT).split('\n')
             if self.save_vecs:
                 fname = os.path.basename(self.input_file.name) + '.movecs'
-                self.movecs_path = os.path.join(inp.inputdata['share_dir'], fname)
-                src = os.path.join(inp.inputdata['scrdir'], fname)
+                self.movecs_path = os.path.join(params.options['share_dir'], fname)
+                src = os.path.join(params.options['scrdir'], fname)
                 copy2(src, self.movecs_path)
             self.parse_results(self.calc_output)
         except subprocess.CalledProcessError as error:
@@ -226,19 +227,19 @@ class NWFragment(Fragment):
         return best_calc.movecs_path
 
     def write_input_file(self, **kwargs):
-        os.chdir(inp.inputdata['scrdir'])
+        os.chdir(params.options['scrdir'])
         if isinstance(self.index, tuple):
             fprefix = ''.join(map(str, self.index))
         else:
             fprefix = str(self.index)
         if self.charge != 0:
             fprefix += "%+d" % self.charge
-        self.input_file = tempfile.NamedTemporaryFile(dir=inp.inputdata['scrdir'],
+        self.input_file = tempfile.NamedTemporaryFile(dir=params.options['scrdir'],
                 prefix=fprefix, delete=False)
 
         f = self.input_file
-        f.write('scratch_dir %s\n' % inp.inputdata['scrdir'])
-        f.write('permanent_dir %s\n' % inp.inputdata['scrdir'])
+        f.write('scratch_dir %s\n' % params.options['scrdir'])
+        f.write('permanent_dir %s\n' % params.options['scrdir'])
         f.write('start\n\n')
 
         f.write('charge %s\n' % str(self.charge))
@@ -247,10 +248,10 @@ class NWFragment(Fragment):
         f.write('\nend\n\n')
         
         f.write('basis spherical noprint\n')
-        f.write('  * library %s\n' % inp.inputdata['basis'])
+        f.write('  * library %s\n' % params.options['basis'])
         f.write('end\n\n')
-        if 'ecp' in inp.inputdata['basis']:
-            f.write('ecp\n * library %s\nend\n\n' % inp.inputdata['basis'])
+        if 'ecp' in params.options['basis']:
+            f.write('ecp\n * library %s\nend\n\n' % params.options['basis'])
 
         if self.embedding_field:
             f.write('bq units angstroms\n')
@@ -260,7 +261,7 @@ class NWFragment(Fragment):
 
         f.write('scf\n')
         f.write('sym off; adapt off\n')
-        f.write('%s\n' % inp.inputdata['hftype'])
+        f.write('%s\n' % params.options['hftype'])
         f.write('nopen %d\n' % self.spinz())
 
         vec_string = 'vectors input '
@@ -274,7 +275,7 @@ class NWFragment(Fragment):
         else:
             vec_string += 'atomic'
 
-        vec_string += ' output %s' % os.path.join(inp.inputdata['scrdir'], 
+        vec_string += ' output %s' % os.path.join(params.options['scrdir'], 
                                             os.path.basename(self.input_file.name) 
                                             + '.movecs')
 
@@ -291,8 +292,8 @@ class NWFragment(Fragment):
 
         if self.calc == 'energy':
             f.write('task scf energy\n\n')
-            if inp.inputdata['correlation']:
-                theory = inp.inputdata['correlation']
+            if params.options['correlation']:
+                theory = params.options['correlation']
                 if theory != 'mp2':
                     raise RuntimeError('theory %s is not yet handled' % theory)
                 f.write('tce\n scf\n mp2\n freeze atomic\nend\n')
@@ -349,11 +350,11 @@ class G09Fragment(Fragment):
 if __name__ == "__main__":
     '''Test of Fragment class'''
     atoms = geom.load_geometry('test.xyz')
-    inp.inputdata['scrdir'] = os.path.join(os.getcwd(), 'scrdir')
-    inp.inputdata['basis'] = '4-31g'
-    inp.inputdata['hftype'] = 'rohf'
-    inp.inputdata['correlation'] = 'mp2'
-    inp.inputdata['share_dir'] = os.path.join(os.getcwd(), 'shared_data')
+    params.options['scrdir'] = os.path.join(os.getcwd(), 'scrdir')
+    params.options['basis'] = '4-31g'
+    params.options['hftype'] = 'rohf'
+    params.options['correlation'] = 'mp2'
+    params.options['share_dir'] = os.path.join(os.getcwd(), 'shared_data')
     print "Loaded geometry:"
     print '\n'.join(map(str, atoms))
     frag = NWFragment(atoms, 1)

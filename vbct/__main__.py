@@ -1,9 +1,9 @@
 import sys
-import geometry as geom
+from pyfrag.globals import geom
+from pyfrag.globals import params
 import tempfile
 import drivers as drv
 from shutil import rmtree
-import inputdata as inp
 import os
 
 # Establish MPI communicator
