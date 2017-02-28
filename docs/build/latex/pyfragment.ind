@@ -1,0 +1,19 @@
+\begin{sphinxtheindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter C
+  \item ChargeState (class in ChargeState), \hyperpage{1}
+  \item ChargeState (module), \hyperpage{1}
+  \item coupling\_dimer\_gs() (ChargeState.ChargeState method), \hyperpage{1}
+  \item coupling\_dimer\_gs\_no\_embed() (ChargeState.ChargeState method), \hyperpage{1}
+  \item coupling\_dimer\_gs\_overlapHOMO() (ChargeState.ChargeState method), \hyperpage{1}
+
+  \indexspace
+  \bigletter D
+  \item diag\_chargelocal\_dimers() (ChargeState.ChargeState method), \hyperpage{2}
+
+  \indexspace
+  \bigletter E
+  \item energy\_driver() (in module drivers), \hyperpage{1}
+
+\end{sphinxtheindex}
