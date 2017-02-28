@@ -45,10 +45,25 @@ def enumerate_states():
 
     return charge_states
 
-def energy_driver():
+def energy():
     '''SP energy'''
 
     comm, rank, nproc = MPI.info()
+    needed_options = '''geometry
+                     basis
+                     hftype
+                     correlation
+                     embedding
+                     diagonal
+                     relax_neutral_dimers
+                     corr_neutral_dimers
+                     coupling
+                     backend
+                     task'''.split('\n')
+    for opt in needed_options:
+        if opt not in params.options:
+            raise RuntimeError("Please specify %s" % opt)
+                   
 
     if params.VERBOSE and rank == 0:
         print "    Cluster Ion Calculation Input"

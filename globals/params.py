@@ -5,18 +5,6 @@ VERBOSE = False
 def parse(inFile):
     '''Crude input file parser. 
     Returns dictionary of calculation attributes'''
-    defaults     = { 'geometry'             : [],
-                     'basis'                : 'sto-3g',
-                     'hftype'               : 'rohf',
-                     'correlation'          : '',
-                     'embedding'            : True,
-                     'diagonal'             : 'chargelocal_dimers',
-                     'relax_neutral_dimers' : True,
-                     'corr_neutral_dimers'  : True,
-                     'coupling'             : 'dimer_gs',
-                     'backend'              : 'nw',
-                     'task'                 : 'energy'
-                   }
 
     inputLines = inFile.readlines()
     nlines = len(inputLines)

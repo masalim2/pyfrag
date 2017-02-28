@@ -30,6 +30,26 @@ frag_cutoffs = {
                  ('h','o'): 1.3,
                }
 
+# Module-level data: shared with others
+# geometry: the list of Atoms
+# fragments: the list of frags, each of which is
+#   a list of atom indices 
+geometry = []
+fragments = [] 
+LatticeTuple = namedtuple('Lattice', 
+        'a b c alpha beta gamma axis'])
+lattice = LatticeTuple(0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0.0)
+lat_vecs = np.zeros((3,3))
+
+
+def update_lat_vecs():
+    RADIAN = 57.29577951308232087721
+    a_dim = abs(lattice.a) > 0.1
+    b_dim = abs(lattice.b) > 0.1
+    c_dim = abs(lattice.c) > 0.1
+
+    ab = 
+
 class Atom:
     '''Convenience class for loading and storing geometry data'''
     pattern = re.compile(r'''
@@ -67,7 +87,7 @@ class Atom:
 
      
 def load_geometry(data, units='angstrom'):
-    '''Builds geometry from input text, lists, or filename.
+    '''Loads geometry from input text, lists, or filename.
     
     Tries to be flexible with the form of input 'data' argument. 
     Uses regex to extract atomic coordinates from text.
@@ -77,34 +97,37 @@ def load_geometry(data, units='angstrom'):
             containing the xyz coordinate data
         units (default Angstrom): "bohr" or "angstrom"
     Returns:
-       geometry: a list of Atom objects
+       None: the geometry is saved as a module-level variable
    '''
-    geometry = []
+   geometry[:] = [] # syntax essential to refer to the global geometry!
 
+    # Convert input data to a list of strings
     if isinstance(data, str): 
         data = data.split('\n')
-
+    
     if isinstance(data[0], str) and os.path.exists(data[0]):
         fname = data[0]
         data[:] = []
         with open(fname) as fp:
             for line in fp:
                 data.append(line)
-    
-    for atom in data:
-        if isinstance(atom, list):
-            atomstr = ' '.join(map(str, atom))
-        else:
-            atomstr = atom
 
+    for i in range(len(data)):
+        if isinstance(data[i], list):
+            data[i] = ' '.join(map(str, data[i]))
+
+    # Now try to make an Atom out of each string
+    for atomstr in data:
         try: 
             geometry.append(Atom(atomstr))
         except AttributeError: 
+            dat = atomstr.split()
+            if len(dat) >= 7:
+                try:
+                    a, b, c, alpha, beta, gamma, axis = map(float, dat[:7])
             pass # just skip non-atom lines
 
-    return geometry
-
-def makefrag_full_system(geometry):
+def set_frag_full_system(geometry):
     '''No fragmentation: all atoms in system belong to one fragment.
 
     Use this to perform one big reference QM calculation
@@ -112,10 +135,11 @@ def makefrag_full_system(geometry):
     Args:
         geometry: list of Atom objects
     Returns:
-        fragments: a list of fragment atomic indices
+        None (module-level fragments list is set)
     '''
-    fragment = range(len(geometry))
-    return [ fragment ]
+    full_sys = range(len(geometry))
+    fragments[:] = [] # refer to module-level fragments, not local
+    fragments.append(full_sys)
 
 def makefrag_auto(geometry):
     '''Auto-generate list of fragments based on bond-length frag_cutoffs.
@@ -125,8 +149,9 @@ def makefrag_auto(geometry):
     Args:
         geometry: list of Atom objects
     Returns:
-        fragments: a list of fragment atomic indices
+        None (module-level fragments list is set)
     '''
+    fragments[:] = []
     from itertools import combinations
     
     def cutoff(at1, at2):
@@ -146,7 +171,6 @@ def makefrag_auto(geometry):
     # assign atoms to fragments via breadth-first graph search
     freeAtoms = range(natm)
     queue = []
-    fragmentsList = []
     while freeAtoms:
         queue.append(freeAtoms.pop(0))
         frag = []
@@ -157,9 +181,10 @@ def makefrag_auto(geometry):
                 if atom2 in freeAtoms:
                     queue.append(atom2)
                     freeAtoms.remove(atom2)
-        fragmentsList.append(sorted(frag))
-    assert sorted([idx for frag in fragmentsList for idx in frag]) == range(natm)
-    return fragmentsList
+        fragments.append(sorted(frag))
+
+    # sanity check: each atom must be counted once and only once
+    assert sorted([idx for frag in fragments for idx in frag]) == range(natm)
 
 def nuclear_repulsion_energy(geometry):
     '''Nuclear repulsion energy, hartrees'''
