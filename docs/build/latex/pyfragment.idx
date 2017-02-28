@@ -1,7 +1,6 @@
-\indexentry{energy\_driver() (in module drivers)|hyperpage}{1}
-\indexentry{ChargeState (module)|hyperpage}{1}
-\indexentry{ChargeState (class in ChargeState)|hyperpage}{1}
-\indexentry{coupling\_dimer\_gs() (ChargeState.ChargeState method)|hyperpage}{1}
-\indexentry{coupling\_dimer\_gs\_no\_embed() (ChargeState.ChargeState method)|hyperpage}{1}
-\indexentry{coupling\_dimer\_gs\_overlapHOMO() (ChargeState.ChargeState method)|hyperpage}{1}
-\indexentry{diag\_chargelocal\_dimers() (ChargeState.ChargeState method)|hyperpage}{2}
+\indexentry{globals.geom (module)|hyperpage}{3}
+\indexentry{Atom (class in globals.geom)|hyperpage}{3}
+\indexentry{load\_geometry() (in module globals.geom)|hyperpage}{3}
+\indexentry{makefrag\_auto() (in module globals.geom)|hyperpage}{3}
+\indexentry{makefrag\_full\_system() (in module globals.geom)|hyperpage}{3}
+\indexentry{nuclear\_repulsion\_energy() (in module globals.geom)|hyperpage}{3}
