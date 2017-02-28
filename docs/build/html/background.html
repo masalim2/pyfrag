@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Background &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="PyFragment Documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyFragment Documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="background">
+<h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
+<p>PyFragment is a collection of Python modules that facilitate the setup and
+parallel execution of <em>embedded-fragment</em> calculations on molecular clusters,
+liquids, and solids.</p>
+<div class="section" id="theory">
+<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
+<p>The <em>embedded-fragment</em> methods are rooted in the many body expansion (MBE),
+which expresses the total energy of a molecular system as</p>
+<div class="math">
+<p><img src="_images/math/b5c8b4ba69a82bcf024ed31e27f057f306295ca8.png" alt="E = \sum_{i} E_{i}"/></p>
+</div><dl class="function">
+<dt id="drivers.energy_driver">
+<code class="descclassname">drivers.</code><code class="descname">energy_driver</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.energy_driver" title="Permalink to this definition">¶</a></dt>
+<dd><p>SP energy</p>
+</dd></dl>
+
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>A series of modules are available. Please check:</p>
+<div class="section" id="module-ChargeState">
+<span id="codes"></span><h3>Codes<a class="headerlink" href="#module-ChargeState" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="ChargeState.ChargeState">
+<em class="property">class </em><code class="descclassname">ChargeState.</code><code class="descname">ChargeState</code><span class="sig-paren">(</span><em>fragments</em>, <em>fragment_charges</em><span class="sig-paren">)</span><a class="headerlink" href="#ChargeState.ChargeState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for VB CT state</p>
+<dl class="method">
+<dt id="ChargeState.ChargeState.coupling_dimer_gs">
+<code class="descname">coupling_dimer_gs</code><span class="sig-paren">(</span><em>state2</em>, <em>embed_flag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ChargeState.ChargeState.coupling_dimer_gs" title="Permalink to this definition">¶</a></dt>
+<dd><p>-sqrt( [E_(AB)+ - E_(A+B)]*[E_(AB)+ - E_(AB+)])
+E_(AB)+ == the relaxed, correlated charged dimer
+E_(A+B) == non-stationary HF energy of the charge-local dimer</p>
+<blockquote>
+<div>plus monomer correlation energies of E_A+ and E_B</div></blockquote>
+<p>For a dimer system, this method reproduces the exact E by construction</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ChargeState.ChargeState.coupling_dimer_gs_no_embed">
+<code class="descname">coupling_dimer_gs_no_embed</code><span class="sig-paren">(</span><em>state2</em><span class="sig-paren">)</span><a class="headerlink" href="#ChargeState.ChargeState.coupling_dimer_gs_no_embed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps the above dimer_gs coupling, but the two monomers do not
+polarize each other in monomerSCF. Hence, it does not exactly
+reproduce the dimer GS energy by construction</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ChargeState.ChargeState.coupling_dimer_gs_overlapHOMO">
+<code class="descname">coupling_dimer_gs_overlapHOMO</code><span class="sig-paren">(</span><em>state2</em><span class="sig-paren">)</span><a class="headerlink" href="#ChargeState.ChargeState.coupling_dimer_gs_overlapHOMO" title="Permalink to this definition">¶</a></dt>
+<dd><p>S*E_(AB)+ - sqrt( [E_(AB)+ - E_(A+B)]*[E_(AB)+ - E_(AB+)])
+Second term is same as coupling_dimer_gs
+First term is overlap of monomer HOMO&#8217;s times relaxed dimer energy
+This method also reproduces energy of a dimer by construction; it
+just makes the overlap matrix non-identity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ChargeState.ChargeState.diag_chargelocal_dimers">
+<code class="descname">diag_chargelocal_dimers</code><span class="sig-paren">(</span><em>subcomm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ChargeState.ChargeState.diag_chargelocal_dimers" title="Permalink to this definition">¶</a></dt>
+<dd><p>return E1 + E2, the BIM energy of this charge-transfer configuration
+E1: sum of monomer correlated energies
+E2: sum of dimer interaction energies (E_AB - E_A - E_B)</p>
+<blockquote>
+<div>interaction INCLUDES correlation for relaxed dimers (when A&amp;B have same charge)
+but it&#8217;s just the non-stationary HF energy for charge-local dimers</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Background</a><ul>
+<li><a class="reference internal" href="#theory">Theory</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a><ul>
+<li><a class="reference internal" href="#module-ChargeState">Codes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PyFragment Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/background.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyFragment Documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, So Hirata Group, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>
