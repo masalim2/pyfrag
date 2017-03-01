@@ -1,9 +1,45 @@
 import lattice as lat
 import geom
+from itertools import combinations
 
-def qm_accumulate_fxn(cell):
+# globally shared neighbor lists
+dimer_lists = []
+bq_lists = [ [] for i in range(len(geom.fragments)) ]
+
+def pairlist_accumulator(cell, com):
     '''count up dimers'''
-    pass
+    a, b, c = cell
+    lat_vecs = lat.lat_vecs
+    shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
+    num_pairs = 0
+    num_fragments = len(geom.fragments)
+    rQM2 = params.options['r_qm']**2
+    rBQ2 = params.options['r_bq']**2
+
+    # add i to bqlist[j] && j to bqlist[i]
+    # only count QM pair if i<j OR i==j and cell>0
+    for i in range(num_fragments):
+        ri = com[i]
+        for j in range(num_fragments):
+            rj = com[j] + shift
+            
+            if cell == (0,0,0) and i == j:
+                continue
+
+            rij = rj - ri
+            rij2 = np.dot(rij, rij)
+
+            if rij2 < rQM2:
+                num_pairs += 1
+                bq_lists[i].append( (j,a,b,c) )
+                if i < j:
+                    dimer_lists.append( (i,j,a,b,c) )
+                elif i == j and cell > (0,0,0):
+                    dimer_lists.append( (i,j,a,b,c) )
+            elif rij2 < rBQ2:
+                num_pairs += 1
+                bq_lists[i].append( (j,a,b,c) )
+    return num_pairs
 
 def BFS_lattice_traversal(pair_accumulate_fxn, **args):
     '''Generic floodfill algorithm to visit cells & build neighbor lists.
@@ -47,12 +83,12 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
                         visited.append(newcell)
 
 def build_dimer_lists():
+    global dimer_lists, bq_lists
     mass_centers = [geom.com(frag) for frag in geom.fragments]
-    for 
-    pass
 
-def build_bq_lists():
-    pass
+    # clear out neighbor lists
+    dimer_lists[:] = []
+    bq_lists[:] = [ [] for i in range(len(geom.fragments)) ]
 
-def eval_lr():
-    pass
+    # build pair lists
+    BFS_lattice_traversal(pairlist_accumulator, mass_centers)

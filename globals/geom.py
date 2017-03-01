@@ -4,6 +4,7 @@ import os
 
 # Physical constants
 BOHR2ANG = 0.529177249
+ANG2BOHR = 1.0/BOHR2ANG
 mass_map = { 
    'h'  : 1.0,
    'd'  : 2.0,
