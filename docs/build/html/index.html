@@ -36,9 +36,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pyfragment 0.1 documentation</a> &#187;</li> 
@@ -56,16 +53,21 @@
 parallel execution of <em>embedded-fragment</em> calculations on molecular clusters,
 liquids, and solids. It interfaces with the quantum chemistry software
 packages <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>.</p>
-<dl class="docutils">
-<dt>The <strong>binary interaction method (BIM)</strong> modules support</dt>
-<dd><ul class="first last simple">
+<p>The <strong>binary interaction method (BIM)</strong> modules perform a variety of
+calculations:</p>
+<blockquote>
+<div><ul class="simple">
 <li>Molecular clusters or systems with 1, 2, or 3-dimensional periodic
 boundary conditions</li>
-<li>Total energy (or unit cell energy) evaluation (HF, MP2, and beyond)</li>
-<li>Nuclear gradients and hessians of the total energy</li>
+<li>Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)</li>
+<li>Nuclear gradients and stress tensor, even for nonorthogonal lattice
+vectors</li>
+<li>Total system dipole moment, and nuclear dipole/polarizability derivatives
+for IR/Raman spectral intensity</li>
+<li>Nuclear hessian and vibrational analysis tools</li>
+<li>Parallel execution using MPI (through the mpi4py bindings)</li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 <p>The experimental <strong>valence bond charge-transfer (VBCT)</strong> module is a research
 branch of the software. The intent is to extend molecular fragment
 calculations to systems with significant charge-resonance, where integer
@@ -95,7 +97,13 @@ included:</p>
 <h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#gellmann-or-personal-computer-setup">Gellmann or personal computer setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#blue-waters-setup">Blue Waters setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#running-as-executable">Running as executable</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="background.html">Background</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="background.html#theory">Theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="background.html#implementation">Implementation</a></li>
@@ -160,9 +168,6 @@ included:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              >next</a> |</li>

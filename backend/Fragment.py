@@ -7,7 +7,7 @@ import textwrap
 from shutil import copy2
 
 from pyfrag.globals import geom
-from pyfrag.globals import params # inp
+from pyfrag.globals import params
 
 
 class Fragment:
@@ -36,11 +36,6 @@ class Fragment:
         return sum([geom.z_map[at.sym] for at in self.atoms]) - self.charge
 
     def spinz(self): return self.nelec() % 2
-
-    def centerofmass(self):
-        totalmass = sum([at.mass for at in self.atoms])
-        return sum([geom.mass_map[at.sym]*at.pos 
-                    for at in self.atoms])/totalmass
 
     def centerofcharge(self):
         totalchg = sum([geom.z_map[at.sym] for at in self.atoms])

@@ -36,19 +36,6 @@ frag_cutoffs = {
 #   a list of atom indices 
 geometry = []
 fragments = [] 
-LatticeTuple = namedtuple('Lattice', 
-        'a b c alpha beta gamma axis'])
-lattice = LatticeTuple(0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0.0)
-lat_vecs = np.zeros((3,3))
-
-
-def update_lat_vecs():
-    RADIAN = 57.29577951308232087721
-    a_dim = abs(lattice.a) > 0.1
-    b_dim = abs(lattice.b) > 0.1
-    c_dim = abs(lattice.c) > 0.1
-
-    ab = 
 
 class Atom:
     '''Convenience class for loading and storing geometry data'''
@@ -99,6 +86,7 @@ def load_geometry(data, units='angstrom'):
     Returns:
        None: the geometry is saved as a module-level variable
    '''
+   global geometry
    geometry[:] = [] # syntax essential to refer to the global geometry!
 
     # Convert input data to a list of strings
@@ -137,6 +125,7 @@ def set_frag_full_system(geometry):
     Returns:
         None (module-level fragments list is set)
     '''
+    global fragments
     full_sys = range(len(geometry))
     fragments[:] = [] # refer to module-level fragments, not local
     fragments.append(full_sys)
@@ -151,6 +140,7 @@ def makefrag_auto(geometry):
     Returns:
         None (module-level fragments list is set)
     '''
+    global fragments
     fragments[:] = []
     from itertools import combinations
     
@@ -186,15 +176,26 @@ def makefrag_auto(geometry):
     # sanity check: each atom must be counted once and only once
     assert sorted([idx for frag in fragments for idx in frag]) == range(natm)
 
-def nuclear_repulsion_energy(geometry):
-    '''Nuclear repulsion energy, hartrees'''
+def com(frag):
+    '''Get center of mass of a fragment.
+    
+    Args
+        frag: the list of atom indices
+    Returns
+        com: numpy array pointing at COM'''
+    atoms = [geometry[i] for i in frag]
+    totalmass = sum([mass_map[at.sym] for at in atoms])
+    return sum([mass_map[at.sym]*at.pos 
+                for at in atoms])/totalmass
+
+def nuclear_repulsion_energy():
+    '''Return nuclear repulsion energy / a.u.'''
     from itertools import combinations
     return sum([
                 z_map[at1.sym]*z_map[at2.sym]/
                 (np.linalg.norm(at1.pos-at2.pos)/BOHR2ANG)
                 for at1, at2 in combinations(geometry, 2)
                ])
-
 
 if __name__ == "__main__":
     geom = load_geometry('test.xyz')

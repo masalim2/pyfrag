@@ -37,9 +37,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="background.html" title="Background"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -56,6 +53,8 @@
             
   <div class="section" id="setup-instructions">
 <h1>Setup Instructions<a class="headerlink" href="#setup-instructions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>PyFragment requires <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These
 modules should be readily importable, i.e.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
@@ -63,7 +62,44 @@ modules should be readily importable, i.e.:</p>
 <span class="kn">import</span> <span class="nn">mpi4py</span>
 </pre></div>
 </div>
-<p>Should execute without errors in your Python interpreter.</p>
+<p>should execute without any errors in your Python interpreter.</p>
+<p>Your PYTHONPATH environment variable should include the directory containing
+&#8216;pyfrag&#8217;.  This will allow you to import the PyFrag modules from anywhere.</p>
+</div>
+<div class="section" id="gellmann-or-personal-computer-setup">
+<h2>Gellmann or personal computer setup<a class="headerlink" href="#gellmann-or-personal-computer-setup" title="Permalink to this headline">¶</a></h2>
+<p>One of the most convenient ways to manage your environment is with the
+<a class="reference external" href="https://www.continuum.io/downloads">anaconda</a> platform.  It serves as a
+package manager and virtual environment manager, with which you can configure
+an environment with libaries stored in your home directory.</p>
+<p>Once conda is installed, download the modern versions of prerequisite
+packages</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">numpy</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">scipy</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">mpi4py</span>
+</pre></div>
+</div>
+<p>and make sure that your PATH is correctly set to run the conda-managed python
+interpreter.</p>
+</div>
+<div class="section" id="blue-waters-setup">
+<h2>Blue Waters setup<a class="headerlink" href="#blue-waters-setup" title="Permalink to this headline">¶</a></h2>
+<p>Blue Waters comes equipped with high-performance builds of the necessary
+python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/python">modules</a>.  Your job submission scripts can set up the environment with the two lines</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
+<span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span><span class="o">-</span><span class="n">mpi</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-as-executable">
+<h2>Running as executable<a class="headerlink" href="#running-as-executable" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>To run as an executable on 16 cores, invoke ::</dt>
+<dd>mpirun -n 16 python /directory/to/pyfrag &lt;input-file&gt;</dd>
+</dl>
+<p>from the command line. This causes Python to run the __main__.py module
+located in pyfrag directory.</p>
+</div>
 </div>
 
 
@@ -72,6 +108,17 @@ modules should be readily importable, i.e.:</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setup Instructions</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#gellmann-or-personal-computer-setup">Gellmann or personal computer setup</a></li>
+<li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a></li>
+<li><a class="reference internal" href="#running-as-executable">Running as executable</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
                         title="previous chapter">PyFragment Documentation</a></p>
@@ -105,9 +152,6 @@ modules should be readily importable, i.e.:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="background.html" title="Background"
              >next</a> |</li>

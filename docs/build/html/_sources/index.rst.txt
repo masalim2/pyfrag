@@ -12,11 +12,17 @@ packages `Psi4
 <http://www.psicode.org>`_, `NWChem
 <http://www.nwchem-sw.org>`_, and `Gaussian09 <http://www.gaussian.com>`_. 
 
-The **binary interaction method (BIM)** modules support 
+The **binary interaction method (BIM)** modules perform a variety of
+calculations:
     * Molecular clusters or systems with 1, 2, or 3-dimensional periodic
       boundary conditions
-    * Total energy (or unit cell energy) evaluation (HF, MP2, and beyond)
-    * Nuclear gradients and hessians of the total energy
+    * Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)
+    * Nuclear gradients and stress tensor, even for nonorthogonal lattice
+      vectors
+    * Total system dipole moment, and nuclear dipole/polarizability derivatives 
+      for IR/Raman spectral intensity
+    * Nuclear hessian and vibrational analysis tools
+    * Parallel execution using MPI (through the mpi4py bindings)
 
 The experimental **valence bond charge-transfer (VBCT)** module is a research
 branch of the software. The intent is to extend molecular fragment

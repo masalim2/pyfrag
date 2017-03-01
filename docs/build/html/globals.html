@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Setup Instructions" href="setup.html" /> 
+    <link rel="prev" title="Background" href="background.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,10 +36,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="setup.html" title="Setup Instructions"
+          <a href="background.html" title="Background"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
@@ -59,63 +56,6 @@ for <em>all</em> types of fragment calculations.</p>
 <p>Defines the fundamental Atom class to conveniently load and print geometry
 information.  Contains functions for loading geometry and performing
 <em>fragmentation</em>, that is, assigning which atoms belong to which fragments.</p>
-<span class="target" id="module-globals.geom"></span><dl class="class">
-<dt id="globals.geom.Atom">
-<em class="property">class </em><code class="descclassname">globals.geom.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>atomstr</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#globals.geom.Atom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience class for loading and storing geometry data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="globals.geom.load_geometry">
-<code class="descclassname">globals.geom.</code><code class="descname">load_geometry</code><span class="sig-paren">(</span><em>data</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#globals.geom.load_geometry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds geometry from input text, lists, or filename.</p>
-<p>Tries to be flexible with the form of input &#8216;data&#8217; argument. 
-Uses regex to extract atomic coordinates from text.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first docutils">
-<dt>data: string, list of strings, list of lists, or filename</dt>
-<dd>containing the xyz coordinate data</dd>
-</dl>
-<p class="last">units (default Angstrom): &#8220;bohr&#8221; or &#8220;angstrom&#8221;</p>
-</dd>
-<dt>Returns:</dt>
-<dd>geometry: a list of Atom objects</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="globals.geom.makefrag_auto">
-<code class="descclassname">globals.geom.</code><code class="descname">makefrag_auto</code><span class="sig-paren">(</span><em>geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#globals.geom.makefrag_auto" title="Permalink to this definition">¶</a></dt>
-<dd><p>Auto-generate list of fragments based on bond-length frag_cutoffs.</p>
-<p>Use this if you don&#8217;t wish to manually assign atoms to fragments.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>geometry: list of Atom objects</dd>
-<dt>Returns:</dt>
-<dd>fragments: a list of fragment atomic indices</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="globals.geom.makefrag_full_system">
-<code class="descclassname">globals.geom.</code><code class="descname">makefrag_full_system</code><span class="sig-paren">(</span><em>geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#globals.geom.makefrag_full_system" title="Permalink to this definition">¶</a></dt>
-<dd><p>No fragmentation: all atoms in system belong to one fragment.</p>
-<p>Use this to perform one big reference QM calculation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>geometry: list of Atom objects</dd>
-<dt>Returns:</dt>
-<dd>fragments: a list of fragment atomic indices</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="globals.geom.nuclear_repulsion_energy">
-<code class="descclassname">globals.geom.</code><code class="descname">nuclear_repulsion_energy</code><span class="sig-paren">(</span><em>geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#globals.geom.nuclear_repulsion_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nuclear repulsion energy, hartrees</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -134,8 +74,8 @@ Uses regex to extract atomic coordinates from text.</p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="setup.html"
-                        title="previous chapter">Setup Instructions</a></p>
+  <p class="topless"><a href="background.html"
+                        title="previous chapter">Background</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -164,10 +104,7 @@ Uses regex to extract atomic coordinates from text.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="setup.html" title="Setup Instructions"
+          <a href="background.html" title="Background"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
