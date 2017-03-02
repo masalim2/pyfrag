@@ -1,1 +1,1 @@
-from pyfrag.backend import Fragment
+from pyfrag.backend import nw

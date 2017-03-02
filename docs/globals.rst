@@ -10,5 +10,4 @@ Defines the fundamental Atom class to conveniently load and print geometry
 information.  Contains functions for loading geometry and performing
 *fragmentation*, that is, assigning which atoms belong to which fragments.
 
-.. automodule:: globals.geom
-    :members:
+.. automodule:: globals

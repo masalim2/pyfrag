@@ -1,8 +1,9 @@
 import numpy as np
+from collections import namedtuple
 
 # Module-level data to be shared
 LatticeTuple = namedtuple('Lattice', 
-        'a b c alpha beta gamma axis'])
+        'a b c alpha beta gamma axis')
 lattice = LatticeTuple(0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0)
 lat_vecs = np.zeros((3,3))
 lat_vecs_inv = np.zeros((3,3))

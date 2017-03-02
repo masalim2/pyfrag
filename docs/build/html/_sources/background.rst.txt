@@ -12,7 +12,7 @@ which expresses the total energy of a molecular system as (under
 construction...)
 
 .. math :: E = \sum_{i} E_{i}
-.. autofunction :: drivers.energy_driver
+.. autofunction :: vbct.energy.energy
 
 Implementation
 --------------
@@ -21,6 +21,3 @@ Under construction...
 Codes
 +++++
 Under construction
-
-.. automodule:: ChargeState
-    :members:

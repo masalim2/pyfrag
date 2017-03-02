@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import os
+import copy
 
 # Physical constants
 BOHR2ANG = 0.529177249
@@ -73,6 +74,12 @@ class Atom:
             return False
         return True
 
+    def shift(self, vec):
+        at2 = copy.deepcopy(self)
+        at2.pos = self.pos + vec
+        return at2
+
+
      
 def load_geometry(data, units='angstrom'):
     '''Loads geometry from input text, lists, or filename.
@@ -87,8 +94,8 @@ def load_geometry(data, units='angstrom'):
     Returns:
        None: the geometry is saved as a module-level variable
    '''
-   global geometry
-   geometry[:] = [] # syntax essential to refer to the global geometry!
+    global geometry
+    geometry[:] = [] # syntax essential to refer to the global geometry!
 
     # Convert input data to a list of strings
     if isinstance(data, str): 
@@ -114,30 +121,31 @@ def load_geometry(data, units='angstrom'):
             if len(dat) >= 7:
                 try:
                     a, b, c, alpha, beta, gamma, axis = map(float, dat[:7])
-            pass # just skip non-atom lines
+                except ValueError:
+                    pass # just skip non-atom lines
 
-def set_frag_full_system(geometry):
+def set_frag_full_system():
     '''No fragmentation: all atoms in system belong to one fragment.
 
     Use this to perform one big reference QM calculation
     
     Args:
-        geometry: list of Atom objects
+        None (module-level geometry is used)
     Returns:
         None (module-level fragments list is set)
     '''
-    global fragments
+    global geometry, fragments
     full_sys = range(len(geometry))
     fragments[:] = [] # refer to module-level fragments, not local
     fragments.append(full_sys)
 
-def makefrag_auto(geometry):
+def set_frag_auto():
     '''Auto-generate list of fragments based on bond-length frag_cutoffs.
 
     Use this if you don't wish to manually assign atoms to fragments.
     
     Args:
-        geometry: list of Atom objects
+        None (module-level geometry is used)
     Returns:
         None (module-level fragments list is set)
     '''

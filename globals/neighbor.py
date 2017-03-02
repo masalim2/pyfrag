@@ -33,9 +33,9 @@ def pairlist_accumulator(cell, com):
                 num_pairs += 1
                 bq_lists[i].append( (j,a,b,c) )
                 if i < j:
-                    dimer_lists.append( (i,j,a,b,c) )
+                    dimer_lists.append( [(i,0,0,0),(j,a,b,c)] )
                 elif i == j and cell > (0,0,0):
-                    dimer_lists.append( (i,j,a,b,c) )
+                    dimer_lists.append( [(i,0,0,0),(j,a,b,c)] )
             elif rij2 < rBQ2:
                 num_pairs += 1
                 bq_lists[i].append( (j,a,b,c) )

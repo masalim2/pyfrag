@@ -14,15 +14,13 @@ packages `Psi4
 
 The **binary interaction method (BIM)** modules perform a variety of
 calculations:
-    * Molecular clusters or systems with 1, 2, or 3-dimensional periodic
-      boundary conditions
-    * Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)
-    * Nuclear gradients and stress tensor, even for nonorthogonal lattice
-      vectors
-    * Total system dipole moment, and nuclear dipole/polarizability derivatives 
-      for IR/Raman spectral intensity
-    * Nuclear hessian and vibrational analysis tools
-    * Parallel execution using MPI (through the mpi4py bindings)
+
+* Molecular clusters or systems with 1, 2, or 3-dimensional periodic boundary conditions
+* Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)
+* Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors
+* Total system dipole moment, and nuclear dipole/polarizability derivatives for IR intensity
+* Nuclear hessian and vibrational analysis tools
+* Parallel execution using MPI (through the mpi4py bindings)
 
 The experimental **valence bond charge-transfer (VBCT)** module is a research
 branch of the software. The intent is to extend molecular fragment
@@ -33,15 +31,16 @@ Where applicable, modules can be run as standalone executables with a
 input file supplied on the command line. They may also be imported into
 user-written Python programs to create new functionality or automate some
 tedious task. Several **driver** scripts are already included, which use the
-**BIM** and **VBCT** modules to:
-    * Perform a PES scan along any user-defined coordinate
-    * Find a local minimum in the PES using L-BFGS optimization
-    * Integrate a molecular dynamics trajectory
+**BIM** and **VBCT** modules to: 
+
+* Perform a PES scan along any user-defined coordinate
+* Find a local minimum in the PES using L-BFGS optimization
+* Integrate a molecular dynamics trajectory
 
 Several tools to process the output of the above calculations are
 included:
-    * Phonon dispersion calculation from solid Hessian data
-    * *to be continued...*
+* Phonon dispersion calculation from solid Hessian data
+* *to be continued...*
 
 Contents
 ========
@@ -50,6 +49,7 @@ Contents
 
    setup
    background
+   inputfile
    globals
    samples
 

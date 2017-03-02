@@ -36,6 +36,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pyfragment 0.1 documentation</a> &#187;</li> 
@@ -55,19 +58,14 @@ liquids, and solids. It interfaces with the quantum chemistry software
 packages <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>.</p>
 <p>The <strong>binary interaction method (BIM)</strong> modules perform a variety of
 calculations:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Molecular clusters or systems with 1, 2, or 3-dimensional periodic
-boundary conditions</li>
+<ul class="simple">
+<li>Molecular clusters or systems with 1, 2, or 3-dimensional periodic boundary conditions</li>
 <li>Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)</li>
-<li>Nuclear gradients and stress tensor, even for nonorthogonal lattice
-vectors</li>
-<li>Total system dipole moment, and nuclear dipole/polarizability derivatives
-for IR/Raman spectral intensity</li>
+<li>Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors</li>
+<li>Total system dipole moment, and nuclear dipole/polarizability derivatives for IR intensity</li>
 <li>Nuclear hessian and vibrational analysis tools</li>
 <li>Parallel execution using MPI (through the mpi4py bindings)</li>
 </ul>
-</div></blockquote>
 <p>The experimental <strong>valence bond charge-transfer (VBCT)</strong> module is a research
 branch of the software. The intent is to extend molecular fragment
 calculations to systems with significant charge-resonance, where integer
@@ -77,21 +75,15 @@ input file supplied on the command line. They may also be imported into
 user-written Python programs to create new functionality or automate some
 tedious task. Several <strong>driver</strong> scripts are already included, which use the
 <strong>BIM</strong> and <strong>VBCT</strong> modules to:</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li>Perform a PES scan along any user-defined coordinate</li>
 <li>Find a local minimum in the PES using L-BFGS optimization</li>
 <li>Integrate a molecular dynamics trajectory</li>
 </ul>
-</div></blockquote>
 <p>Several tools to process the output of the above calculations are
-included:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Phonon dispersion calculation from solid Hessian data</li>
-<li><em>to be continued...</em></li>
-</ul>
-</div></blockquote>
+included:
+* Phonon dispersion calculation from solid Hessian data
+* <em>to be continued...</em></p>
 </div>
 <div class="section" id="contents">
 <h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
@@ -109,10 +101,16 @@ included:</p>
 <li class="toctree-l2"><a class="reference internal" href="background.html#implementation">Implementation</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="inputfile.html">Input to PyFragment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#modular-usage">Modular Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#standalone-execution">Standalone Execution</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="globals.html">The <strong>globals</strong> Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="globals.html#globals-geom">globals.geom</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="samples.html">Sample Calculations</a></li>
 </ul>
 </div>
 </div>
@@ -168,6 +166,9 @@ included:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              >next</a> |</li>
