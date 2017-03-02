@@ -1,10 +1,17 @@
-comm_world = None
+try:
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+except ImportError:
+    print "# Could not import mpi4py. Running serial."
+    MPI = None
+    comm = None
+    rank = 0
 
-world_rank = 0
-
-def info():
-    '''return communicator, rank, and nproc'''
-    return (comm_world, world_rank, comm_world.size) if comm_world else (None,0,1)
+def bcast(data, master=0):
+    if comm is None:
+        return data
+    return comm.bcast(data, root=master)
 
 def scatter(comm, data, master=0):
     '''default scatter fxn is dumb; can only handle one item per rank.  This

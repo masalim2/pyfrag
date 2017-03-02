@@ -15,6 +15,13 @@ should execute without any errors in your Python interpreter.
 Your PYTHONPATH environment variable should include the directory containing
 'pyfrag'.  This will allow you to import the PyFrag modules from anywhere. 
 
+PyFragment requires at least quantum chemistry backend to perform the fragment
+calculations. Currently supported packages are `Psi4
+<http://www.psicode.org>`_, `NWChem
+<http://www.nwchem-sw.org>`_, and `Gaussian09 <http://www.gaussian.com>`_. As
+such, at least one of the executables **psi4**, **nwchem**, or **g09** must be
+in the PATH.
+
 Gellmann or personal computer setup
 -----------------------------------
 One of the most convenient ways to manage your environment is with the

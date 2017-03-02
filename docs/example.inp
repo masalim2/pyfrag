@@ -12,6 +12,7 @@
 # ---------------
 scrdir = /home/misha/scratch    # optional: scratch directory
 backend = pyscf                   # Quantum chemistry backend: NW, G09, pyscf, psi4
+mem_mb = 3800                   # memory-per-process for QC backend
 
 basis = aug-cc-pvdz               # all of these options have default values and need not be specified
 hftype = rohf                      # uhf or rohf

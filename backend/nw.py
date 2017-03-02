@@ -1,34 +1,35 @@
-from pyfrag.globals.geom import geometry, fragments
-from pyfrag.globals.lattice import lat_vecs
+import tempfile
+import textwrap
+import subprocess
+from shutil import copyfile
+from ..globals import params
+import numpy as np
+import sys
 
-def build_atoms(frags, bq_list, bq_charges):
+def calculate(inp, calc, save):
+    '''Run nwchem on input, return raw output'''
+    args = ['nwchem.x', inp.name]
+    try:
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print "-------------------------"
+        print "INPUT FILE OF FAILED CALC"
+        print "-------------------------"
+        print open(inp).read()
+        print "--------------------------"
+        print "OUTPUT FILE OF FAILED CALC"
+        print "--------------------------"
+        print e.output
+        sys.exit(1)
+    if save and params.scrdir != params.share_dir:
+        outvec = os.path.basename(inp.name)+".movecs"
+        source = os.path.join(params.scrdir, outvec)
+        destin = os.path.join(params.share_dir, outvec)
+        copyfile(source, destin)
+    return output.split('\n')
 
-    atoms = []
-    for (i,a,b,c) in frags:
-        vec = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
-        atoms.extend(geometry[at].shift(vec) for at in fragments[i])
-
-    bq_field = []
-    for (i,a,b,c) in bq_list:
-        vec = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
-        for at in fragments[i]:
-            bq_pos = geometry[at].shift(vec).pos
-            bq_field.extend(np.append(bq_pos, bq_charges[at]))
-
-    return atoms, bq_field
-
-def run(calc, frags, charge, bq_list, bq_charges, 
-        noscf=False, guess=None, save=False):
-    assert calc in 'esp energy gradient hessian'.split()
-    assert isinstance(frags, tuple)
-    assert all(isinstance(n, int) for n in frags)
-    
-    atoms, bq_field = build_atoms(frags, bq_list, bq_charges)
-    if noscf and guess is None:
-        raise RuntimeError("No SCF useless without input guess")
-    inp = nw_inp(calc, atoms, bq_field, charge, noscf, guess, save)
-
-def nw_invecs(guess):
+def invecs(guess):
+    '''Create initial guess string for NWchem scf input'''
     if guess is None:
         return 'atomic'
     elif isinstance(guess, str):
@@ -38,12 +39,14 @@ def nw_invecs(guess):
     else:
         raise RuntimeError("unknown guess type")
 
-def nw_inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
+def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
+    '''Write NWchem input file to temp file. Return filename.'''
     f = tempfile.NamedTemporaryFile(dir=params.scrdir, prefix=fprefix,
             delete=False)
 
     f.write('scratch_dir %s\n' % params.scrdir)
     f.write('permanent_dir %s\n' % params.scrdir)
+    f.write('memory total %d mb\n' % params.mem_mb)
     f.write('start\n\n')
 
     f.write('charge %s\n' % str(charge))
@@ -96,8 +99,67 @@ def nw_inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     elif calc == 'gradient':
         f.write('task %s gradient\n\n' % theory)
     elif calc == 'hessian':
-        f.write('task %s hessian\n\n' % theory)
+        f.write('task %s hessian numerical\n\n' % theory)
     else:
         raise RuntimeError('Please write wrapper for %s' % calc)
     f.close()
     return f.name
+
+def parse(data, calc, inp, atoms, bqs, save):
+    '''Parse raw NWchem output.'''
+    results = {}
+    for n, line in enumerate(data):
+
+        if "Total SCF energy" in line:
+            results['E_hf'] = float(line.split()[-1])
+            continue
+
+        if "Total MP2" in line or "Total CCSD" in line:
+            results['E_tot'] = float(line.split()[-1])
+            results['E_corr'] = results['E_tot'] - results['E_hf']
+            continue
+
+        if 'ESP' in line:
+            esp_charges = []
+            for idx in range(n+3, n+3+len(atoms)):
+                esp_charges.append(float(data[idx].split()[-1]))
+            results['esp_charges'] = esp_charges
+            continue
+
+        if 'Nuclear repulsion energy' in line:
+            results['E_nuc'] = float(line.split()[-1])
+            continue
+
+        if 'Mulliken analysis of the total density' in line:
+            mulliken_charges = []
+            for idx in range(n+5, n+5+len(atoms)):
+                mulliken_charges.append(float(data[idx].split()[3]))
+            results['mulliken_charges'] = mulliken_charges
+            continue
+
+        if 'ENERGY GRADIENTS' in line:
+            gradients = []
+            for idx in range(n+4:n+4+len(atoms)):
+                grad = map(float, data[idx].split()[-3:])
+                gradients.append(grad)
+            results['gradient'] = gradients
+            if bqs:
+                bq_gradients = []
+                bqforce_name, ext = os.path.splitext(inp.name)
+                bqforce_name += '.bqforce.dat'
+                results['bq_gradient'] = np.loadtxt(bqforce_name)
+            continue
+
+    if calc == 'hessian':
+        basename, ext = os.path.splitext(inp.name)
+        hess_name    = basename + ".hess"
+        ddipole_name = basename + ".fd_ddipole"
+        hess_tri = np.loadtxt(hess_name)
+        ddipole = np.loadtxt(ddipole_name)
+        natm = len(atoms)
+        assert len(hess_tri) == 3*natm + 3*natm*(3*natm-1)/2
+        assert len(ddipole) == 9*natm
+        results['hess_tri'] = hess_tri
+        results['ddipole'] = ddipole
+                
+    return results

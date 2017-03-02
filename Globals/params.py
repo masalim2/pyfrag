@@ -10,7 +10,23 @@ But module attributes are more convenient to type:
 import sys
 
 options = {}
-VERBOSE = False
+verbose = False
+qm_logfile = None
+
+def update_from_options():
+    global options
+    thismodule = sys.modules[__name__]
+    for option, value in options.items():
+        if type(value) == str:
+            if value == 'false' or value == 'no' or value == 'off':
+                options[option] = False
+            elif value == 'yes' or value == 'on' or value == 'true':
+                options[option] = True
+            elif len(value.split()) == 1:
+                options[option] = tryFloat(value)
+            else:
+                options[option] = map(tryFloat, value.split())
+        setattr(thismodule, option, value)
 
 def tryFloat(s):
     '''Try to cast to float, no big deal'''
@@ -65,16 +81,3 @@ def parse(inFile):
                     if closer:
                         break
         n = n2
-    
-    thismodule = sys.modules[__name__]
-    for option, value in options.items():
-        if type(value) == str:
-            if value == 'false' or value == 'no' or value == 'off':
-                options[option] = False
-            elif value == 'yes' or value == 'on' or value == 'true':
-                options[option] = True
-            elif len(value.split()) == 1:
-                options[option] = tryFloat(value)
-            else:
-                options[option] = map(tryFloat, value.split())
-        setattr(thismodule, option, value)
