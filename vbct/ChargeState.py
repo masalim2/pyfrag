@@ -1,6 +1,6 @@
-from pyfrag.backend import Fragment
-from pyfrag.globals import MPI
-from pyfrag.globals import params
+from pyfrag.backend import backend
+from pyfrag.Globals import MPI
+from pyfrag.Globals import params
 import numpy as np 
 
 class ChargeState:

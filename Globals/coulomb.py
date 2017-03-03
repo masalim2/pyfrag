@@ -1,7 +1,9 @@
+import numpy as np
+
 import geom
-from neighbor import BFS_lattice_traversal
-import lattice as lat
 import espfield
+import lattice as lat
+from neighbor import BFS_lattice_traversal
 
 energy_coulomb = 0.0
 gradient_coulomb = np.zeros((len(geom.geometry), 3))

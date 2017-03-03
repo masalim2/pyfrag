@@ -1,6 +1,6 @@
-from pyfrag.globals.geom import geometry, fragments
-from pyfrag.globals import logger
-from pyfrag.globals.lattice import lat_vecs
+from pyfrag.Globals.geom import geometry, fragments
+from pyfrag.Globals import logger
+from pyfrag.Globals.lattice import lat_vecs
 from pyfrag.backend import nw
 import sys
 

@@ -1,10 +1,20 @@
-import lattice as lat
-import geom
+from pyfrag.Globals import lattice as lat
+from pyfrag.Globals import geom
+from pyfrag.Globals import params
 from itertools import combinations
+import numpy as np
 
 # globally shared neighbor lists
 dimer_lists = []
 bq_lists = [ [] for i in range(len(geom.fragments)) ]
+
+def pair_dist(pair_tup):
+    i,j,a,b,c = pair_tup
+    lat_vecs = lat.lat_vecs
+    shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
+    ri = geom.com(geom.fragments[i])
+    rj = geom.com(geom.fragments[j]) + shift
+    return np.linalg.norm(ri - rj)
 
 def pairlist_accumulator(cell, com):
     '''count up dimers'''
@@ -82,7 +92,7 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
                         cells.append(newcell)
                         visited.append(newcell)
 
-def build_dimer_lists():
+def build_lists():
     global dimer_lists, bq_lists
     mass_centers = [geom.com(frag) for frag in geom.fragments]
 
@@ -91,4 +101,4 @@ def build_dimer_lists():
     bq_lists[:] = [ [] for i in range(len(geom.fragments)) ]
 
     # build pair lists
-    BFS_lattice_traversal(pairlist_accumulator, mass_centers)
+    BFS_lattice_traversal(pairlist_accumulator, com=mass_centers)

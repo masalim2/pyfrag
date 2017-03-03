@@ -6,8 +6,12 @@ LatticeTuple = namedtuple('Lattice',
         'a b c alpha beta gamma axis')
 lattice = LatticeTuple(0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0)
 lat_vecs = np.zeros((3,3))
-lat_vecs_inv = np.zeros((3,3))
+lat_vecs_inv = np.eye(3)
 PBC_flag = (False, False, False)
+
+def set_lattice(a, b, c, alpha, beta, gamma, axis):
+    global lattice
+    lattice = LatticeTuple(a, b, c, alpha, beta, gamma, axis)
 
 def update_lat_vecs():
     '''Update lattice vectors matrix (3x3, angstrom) from "lattice".
@@ -28,10 +32,16 @@ def update_lat_vecs():
     lat_vecs[:,1] = lattice.b * np.array([np.cos(ab), np.sin(ab), 0.0])
     cx = np.cos(ac)
     cy = ( np.cos(bc) - np.cos(ac)*np.cos(ab) ) / np.sin(ab)
-    cz = np.sqrt(1.0 - cy**2 - cz**2)
+    cz = np.sqrt(1.0 - cx**2 - cy**2)
     lat_vecs[:,2] = lattice.c * np.array([cx, cy, cz])
-
-    lat_vecs_inv = np.linalg.inv(lat_vecs)
+    
+    lat_vecs_inv = np.eye(3)
+    if all(PBC_flag):
+        lat_vecs_inv = np.linalg.inv(lat_vecs)
+    elif PBC_flag[0] and PBC_flag[1]:
+            lat_vecs_inv[0:2, 0:2] = np.linalg.inv(lat_vecs[0:2, 0:2])
+    elif PBC_flag[0]:
+        lat_vecs_inv[0,0] = 1.0/lat_vecs[0,0]
 
 def update_lat_params():
     '''Update lattice parameters NamedTuple from "lat_vecs"

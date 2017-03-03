@@ -2,10 +2,10 @@ from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
 
-from pyfrag.globals import params
+from pyfrag.Globals import params
 from ChargeState import ChargeState
-from pyfrag.globals import geom
-from pyfrag.globals import MPI
+from pyfrag.Globals import geom
+from pyfrag.Globals import MPI
 
 
 def enumerate_states():
@@ -45,7 +45,7 @@ def enumerate_states():
 
     return charge_states
 
-def energy():
+def kernel():
     '''SP energy'''
 
     comm, rank, nproc = MPI.info()

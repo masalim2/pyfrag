@@ -2,7 +2,7 @@ import tempfile
 import textwrap
 import subprocess
 from shutil import copyfile
-from ..globals import params
+from pyfrag.Globals import params
 import numpy as np
 import sys
 
@@ -90,7 +90,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
 
     if calc == 'energy_hf':
         f.write('task scf energy\n\n')
-    elif calc == 'energy' 
+    elif calc == 'energy':
         f.write('task %s energy\n\n' % theory)
     elif calc == 'esp':
         f.write('task scf energy\n\n')
@@ -139,7 +139,7 @@ def parse(data, calc, inp, atoms, bqs, save):
 
         if 'ENERGY GRADIENTS' in line:
             gradients = []
-            for idx in range(n+4:n+4+len(atoms)):
+            for idx in range(n+4,n+4+len(atoms)):
                 grad = map(float, data[idx].split()[-3:])
                 gradients.append(grad)
             results['gradient'] = gradients

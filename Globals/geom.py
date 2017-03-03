@@ -2,6 +2,8 @@ import numpy as np
 import re
 import os
 import copy
+from pyfrag.Globals import lattice
+from pyfrag.Globals import params
 
 # Physical constants
 BOHR2ANG = 0.529177249
@@ -37,7 +39,7 @@ frag_cutoffs = {
 # fragments: the list of frags, each of which is
 #   a list of atom indices 
 geometry = []
-fragments = [] 
+fragments = []
 
 class Atom:
     '''Convenience class for loading and storing geometry data'''
@@ -121,6 +123,8 @@ def load_geometry(data, units='angstrom'):
             if len(dat) >= 7:
                 try:
                     a, b, c, alpha, beta, gamma, axis = map(float, dat[:7])
+                    lattice.set_lattice(a,b,c,alpha,beta,gamma,axis)
+                    lattice.update_lat_vecs()
                 except ValueError:
                     pass # just skip non-atom lines
 
@@ -138,6 +142,23 @@ def set_frag_full_system():
     full_sys = range(len(geometry))
     fragments[:] = [] # refer to module-level fragments, not local
     fragments.append(full_sys)
+
+def set_frag_manual():
+    '''Read list of fragments from input file.
+
+    Fragmentation is manually specified in the input file.
+    
+    Args:
+        None (module-level geometry is used)
+    Returns:
+        None (module-level fragments list is set)
+    '''
+    global fragments
+    fragments = [map(int, s.split()) for s in params.fragmentation]
+    # sanity check: each atom must be counted once and only once
+    natm = len(geometry)
+    assert sorted([idx for frag in fragments for idx in frag]) == range(natm)
+
 
 def set_frag_auto():
     '''Auto-generate list of fragments based on bond-length frag_cutoffs.
@@ -194,17 +215,20 @@ def com(frag):
         com: numpy array pointing at COM'''
     atoms = [geometry[i] for i in frag]
     totalmass = sum([mass_map[at.sym] for at in atoms])
-    return sum([mass_map[at.sym]*at.pos 
-                for at in atoms])/totalmass
+    return sum(mass_map[at.sym]*at.pos 
+                for at in atoms)/totalmass
+
+def charge(frag):
+    return sum(geometry[at].formal_chg for at in frag)
 
 def nuclear_repulsion_energy():
     '''Return nuclear repulsion energy / a.u.'''
     from itertools import combinations
-    return sum([
+    return sum(
                 z_map[at1.sym]*z_map[at2.sym]/
                 (np.linalg.norm(at1.pos-at2.pos)/BOHR2ANG)
                 for at1, at2 in combinations(geometry, 2)
-               ])
+              )
 
 if __name__ == "__main__":
     geom = load_geometry('test.xyz')

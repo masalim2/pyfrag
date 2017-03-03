@@ -15,11 +15,62 @@
 
   log_calcs: each calc input and output is appended to a big log file
 '''
+from pyfrag.Globals import geom, lattice, neighbor
+import numpy as np
+import contextlib
+
+@contextlib.contextmanager
+def printoptions(*args, **kwargs):
+    original = np.get_printoptions()
+    np.set_printoptions(*args, **kwargs)
+    yield
+    np.set_printoptions(**original)
+
 def log_input(inp):
     pass
 
 def log_output(output):
     pass
+
+def prettyprint_atoms(atoms):
+    for at in atoms:
+        print "%2s %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
+                at.pos[0], at.pos[1], at.pos[2])
+
+def print_geometry():
+    print "        Input Geometry / Angstroms"
+    print "        --------------------------"
+    prettyprint_atoms(geom.geometry)
+    print ""
+    ndim = sum(lattice.PBC_flag)
+    if ndim == 0:
+        print "PBC OFF"
+    else:
+        print "%dD PBC Lattice Vectors" % ndim
+        print "----------------------"
+        with printoptions(precision=3, suppress=True):
+            print lattice.lat_vecs
+
+def print_fragment():
+    print "System split into %d Fragments" % len(geom.fragments)
+    for n, frag in enumerate(geom.fragments):
+        print "(Fragment %d Charge %+d)" %  (n, geom.charge(frag))
+        prettyprint_atoms([geom.geometry[i] for i in frag])
+        print "---------------------------------"
+    print ""
+
+def print_neighbors():
+    print "%d unique dimers" % len(neighbor.dimer_lists)
+    for d in neighbor.dimer_lists:
+        (i,n0,n1,n2), (j,a,b,c) = d
+        pair_str = ("%d--%d(%d,%d,%d)" % (i,j,a,b,c)).ljust(15)
+        dist_str = ("  [%.2f Angstrom]" % 
+                neighbor.pair_dist((i,j,a,b,c))).rjust(12)
+        print "   ", pair_str + dist_str
+    print "Embedding fields"
+    for i, bqlist in enumerate(neighbor.bq_lists):
+        print "   Fragment %d: %d molecules in bq field" % (i, len(bqlist))
+                
 
 def print_bim_e_results(results):
     print "E", results['energy']
