@@ -1,16 +1,14 @@
 import numpy as np
-
-import geom
-import espfield
-import lattice as lat
-from neighbor import BFS_lattice_traversal
+from pyfrag.Globals import geom
+from pyfrag.Globals import lattice as lat
+from pyfrag.Globals.neighbor import BFS_lattice_traversal
 
 energy_coulomb = 0.0
 gradient_coulomb = np.zeros((len(geom.geometry), 3))
 virial_coulomb = np.zeros((3,3))
 com = []
 
-def accumulate_pair(idx1, idx2, cell, scale):
+def accumulate_pair(idx1, idx2, cell, scale, charges):
     global energy_coulomb, gradient_coulomb, virial_coulomb
     lat_vecs = lat.lat_vecs
     a,b,c = cell
@@ -23,10 +21,10 @@ def accumulate_pair(idx1, idx2, cell, scale):
     
     for i in frag1:
         ri = geom.geometry[i]
-        qi = espfield.charges[i]
+        qi = charges[i]
         for j in frag2:
             rj = geom.geometry[j] + shift
-            qj = espfield.charges[j]
+            qj = charges[j]
             rij = (rj - ri) * geom.ANG2BOHR #points i to j
             rij_norm = np.linalg.norm(rij)
             energy_coulomb += scale*qi*qj / rij_norm
@@ -41,7 +39,7 @@ def accumulate_pair(idx1, idx2, cell, scale):
                     virial_coulomb[p,q] -= com1[q]*geom.ang2bohr*d_ri[p]
                     virial_coulomb[p,q] += com2[q]*geom.ang2bohr*d_ri[p]
 
-def coulomb_accumulator(cell):
+def coulomb_accumulator(cell, charges):
     '''count up dimers'''
     a, b, c = cell
     lat_vecs = lat.lat_vecs
@@ -70,14 +68,14 @@ def coulomb_accumulator(cell):
             elif rij2 < rBQ2:
                 # correct overcount
                 num_pairs += 1
-                accumulate_pair(i, j, cell, -0.5) # BUG different from qcbim
+                accumulate_pair(i, j, cell, -0.5, charges) # BUG different from qcbim
             elif rij2 < rLR2:
                 # add LR interaction
                 num_pairs += 1
-                accumulate_pair(i, j, cell, 0.5)
+                accumulate_pair(i, j, cell, 0.5, charges)
     return num_pairs
 
-def evaluate_coulomb():
+def evaluate_coulomb(espfield):
     global energy_coulomb, gradient_coulomb, virial_coulomb
     global com
     energy_coulomb = 0.0
@@ -85,4 +83,4 @@ def evaluate_coulomb():
     virial_coulomb = np.zeros((3,3))
     com = [geom.com(frag) for frag in geom.fragments]
 
-    BFS_lattice_traversal(coulomb_accumulator)
+    BFS_lattice_traversal(coulomb_accumulator, charges=espfield)

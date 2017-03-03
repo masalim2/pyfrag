@@ -17,7 +17,6 @@ def kernel():
 
     # Get neighbor lists
     neighbor.build_lists()
-    if VERB and MPI.rank == 0:
-        logger.print_neighbors()
+    if VERB and MPI.rank == 0: logger.print_neighbors()
 
     return {'energy' : 0.0}

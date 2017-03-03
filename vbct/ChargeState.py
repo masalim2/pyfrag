@@ -28,53 +28,6 @@ class ChargeState:
                 range(len(self.monomers)-1) for j in range(i+1, len(self.monomers))]
 
 
-    def monomerSCF(self, monomers, embedding=None, subcomm=None):
-        RMSD_TOL = 0.001
-        MAXITER  = 10 
-
-        if embedding is None:
-            embedding = self.embedding
-
-        if subcomm:
-            rank = subcomm.Get_rank()
-            nproc = subcomm.size
-        else:
-            subcomm, rank, nproc = None, 0, 1
-
-        for monomer in monomers:
-            monomer.esp_charges = np.zeros((len(monomer),))
-
-        RMSD = RMSD_TOL + 1
-        itr = 0
-
-        while RMSD > RMSD_TOL and itr < MAXITER:
-            charges_old = [chg for m in monomers for chg in m.esp_charges]
-            my_monomers = MPI.scatter(subcomm, monomers, master=0)
-
-            for mono in my_monomers:
-                if embedding:
-                    mono.embedding_field = [(at, chg) for m in monomers 
-                                            if (m != mono) 
-                                            for (at, chg) in zip(m.atoms, m.esp_charges)]
-                else:
-                    mono.embedding_field = []
-                in_vecs = None if itr==0 else mono.movecs_path
-                mono.run(calc='esp', save_vecs=True, input_vecs=in_vecs)
-
-            new_monomers = MPI.allgather(subcomm, my_monomers)
-            for i, mono in enumerate(new_monomers):
-                monomers[i] = mono # modify the list passed in originally
-
-            charges_new = [chg for m in monomers for chg in m.esp_charges]
-
-            residual = np.array(charges_new) - np.array(charges_old)
-            RMSD = np.linalg.norm(residual)
-            itr += 1
-            if not embedding:
-                return
-        if embedding and RMSD > RMSD_TOL:
-            raise RuntimeError("Monomer SCF did not converge")
-
     def diag_chargelocal_dimers(self, subcomm=None):
         '''return E1 + E2, the BIM energy of this charge-transfer configuration
            E1: sum of monomer correlated energies
