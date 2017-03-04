@@ -4,6 +4,7 @@
 # Call with mpirun -n <nproc> python pes.py
 # In order to run as parallel job
 import pyfrag.vbct as pyfrag
+import pyfrag.Globals.params
 import numpy as np
 import sys
 import os
@@ -288,6 +289,7 @@ def main(datapath=None):
     pyfrag.inp.VERBOSE = True
     GLOBALS = pyfrag.inp.inputdata
     GLOBALS['task'] = 'energy'
+    options = params.options
     
     # Store the PES data in a dictionary of dictionaries
     results = {}

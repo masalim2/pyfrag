@@ -246,7 +246,8 @@ class ChargeState:
         if self.embedding:
             raise RuntimeError('Embedding incompatible with monoIP method')
         if params.options['diagonal'] != 'mono_ip':
-            raise RuntimeError('monoIP coupling incompatible with %s' % params.options['diagonal'])
+            raise RuntimeError('monoIP coupling incompatible with %s' %
+                    params.options['diagonal'])
 
         info = {}
         reactants = []

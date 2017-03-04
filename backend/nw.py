@@ -2,13 +2,16 @@ import tempfile
 import textwrap
 import subprocess
 from shutil import copyfile
-from pyfrag.Globals import params
 import numpy as np
 import sys
+import os
+
+from pyfrag.Globals import params
 
 def calculate(inp, calc, save):
     '''Run nwchem on input, return raw output'''
-    args = ['nwchem.x', inp.name]
+    options = params.options
+    args = ['nwchem.x', inp]
     try:
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
@@ -21,10 +24,10 @@ def calculate(inp, calc, save):
         print "--------------------------"
         print e.output
         sys.exit(1)
-    if save and params.scrdir != params.share_dir:
+    if save and options['scrdir'] != options['share_dir']:
         outvec = os.path.basename(inp.name)+".movecs"
-        source = os.path.join(params.scrdir, outvec)
-        destin = os.path.join(params.share_dir, outvec)
+        source = os.path.join(options['scrdir'], outvec)
+        destin = os.path.join(options['share_dir'], outvec)
         copyfile(source, destin)
     return output.split('\n')
 
@@ -41,12 +44,12 @@ def invecs(guess):
 
 def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     '''Write NWchem input file to temp file. Return filename.'''
-    f = tempfile.NamedTemporaryFile(dir=params.scrdir, prefix=fprefix,
-            delete=False)
+    options = params.options
+    f = tempfile.NamedTemporaryFile(dir=options['scrdir'], delete=False)
 
-    f.write('scratch_dir %s\n' % params.scrdir)
-    f.write('permanent_dir %s\n' % params.scrdir)
-    f.write('memory total %d mb\n' % params.mem_mb)
+    f.write('scratch_dir %s\n' % options['scrdir'])
+    f.write('permanent_dir %s\n' % options['scrdir'])
+    f.write('memory total %d mb\n' % options['mem_mb'])
     f.write('start\n\n')
 
     f.write('charge %s\n' % str(charge))
@@ -55,30 +58,29 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('\nend\n\n')
     
     f.write('basis spherical noprint\n')
-    f.write('  * library %s\n' % params.basis)
+    f.write('  * library %s\n' % options['basis'])
     f.write('end\n\n')
 
     f.write('bq units angstroms\n')
     if 'grad' in calc: f.write(' force\n')
-    f.write('\n'.join(4*'%18.8f' % (bq[0], bq[1], bq[2], bq[3]) 
-            for bq in bqs))
+    f.write('\n'.join(((4*'%18.8f') % (bq[0], bq[1], bq[2], bq[3])) for bq in bqs))
     f.write('\nend\n\n')
     
     f.write('scf\n')
     f.write('sym off; adapt off\n')
-    f.write('%s\n' % params.hftype)
+    f.write('%s\n' % options['hftype'])
     f.write('nopen %d\n' % (charge%2))
-    if self.noscf: f.write('noscf\n')
+    if noscf: f.write('noscf\n')
     
-    invec = nw_invecs(guess)
-    outvec = os.path.join(params.scrdir, os.path.basename(f.name))+".movecs"
+    invec = invecs(guess)
+    outvec = os.path.join(options['scrdir'], os.path.basename(f.name))+".movecs"
     vec_string = 'vectors input %s output %s' % (invec, outvec)
     f.write('%s\n' % ' \\\n'.join(textwrap.wrap(vec_string, width=90,
         break_long_words=False)))
     f.write('end\n\n')
 
-    if params.correlation:
-        theory = params.correlation
+    if options['correlation']:
+        theory = options['correlation']
         if theory == 'mp2':
             f.write('mp2\n freeze atomic\nend\ntask mp2 energy\n\n')
         elif theory == 'ccsd':

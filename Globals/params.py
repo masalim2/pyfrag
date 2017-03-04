@@ -13,9 +13,8 @@ options = {}
 verbose = False
 qm_logfile = None
 
-def update_from_options():
+def convert_params():
     global options
-    thismodule = sys.modules[__name__]
     for option, value in options.items():
         if type(value) == str:
             if value == 'false' or value == 'no' or value == 'off':
@@ -23,10 +22,9 @@ def update_from_options():
             elif value == 'yes' or value == 'on' or value == 'true':
                 options[option] = True
             elif len(value.split()) == 1:
-                options[option] = tryFloat(value)
+                options[option] = tryFloat(value.split()[0])
             else:
                 options[option] = map(tryFloat, value.split())
-        setattr(thismodule, option, value)
 
 def tryFloat(s):
     '''Try to cast to float, no big deal'''
@@ -81,3 +79,4 @@ def parse(inFile):
                     if closer:
                         break
         n = n2
+    convert_params()

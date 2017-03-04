@@ -15,7 +15,7 @@
 
   log_calcs: each calc input and output is appended to a big log file
 '''
-from pyfrag.Globals import geom, lattice, neighbor
+from pyfrag.Globals import geom, lattice, neighbor, params
 import numpy as np
 import contextlib
 
@@ -32,14 +32,19 @@ def log_input(inp):
 def log_output(output):
     pass
 
-def prettyprint_atoms(atoms):
-    for at in atoms:
-        print "%2s %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
-                at.pos[0], at.pos[1], at.pos[2])
+def prettyprint_atoms(atoms, chgs=None):
+    if chgs is None:
+        for at in atoms:
+            print "%2s %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
+                    at.pos[0], at.pos[1], at.pos[2])
+    else:
+        for at,chg in zip(atoms, chgs):
+            print "%2s %10.2f %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
+                    at.pos[0], at.pos[1], at.pos[2], chg)
 
 def print_geometry():
-    print "        Input Geometry / Angstroms"
-    print "        --------------------------"
+    print "Input Geometry / Angstroms"
+    print "--------------------------"
     prettyprint_atoms(geom.geometry)
     print ""
     ndim = sum(lattice.PBC_flag)
@@ -50,12 +55,26 @@ def print_geometry():
         print "----------------------"
         with printoptions(precision=3, suppress=True):
             print lattice.lat_vecs
+    print ""
 
-def print_fragment():
-    print "System split into %d Fragments" % len(geom.fragments)
-    for n, frag in enumerate(geom.fragments):
-        print "(Fragment %d Charge %+d)" %  (n, geom.charge(frag))
-        prettyprint_atoms([geom.geometry[i] for i in frag])
+def print_fragment(fragments=None, net_charges=None, esp_charges=None, charges_only=False):
+
+    if fragments is None:
+        fragments = geom.fragments
+    if net_charges is None:
+        net_charges = [geom.charge(frag) for frag in fragments]
+    chgs = None
+    
+    for n, frag in enumerate(fragments):
+        atoms = [geom.geometry[i] for i in frag]
+        if esp_charges: chgs = [esp_charges[i] for i in frag]
+        
+        print "(Fragment %d Charge %+d)" %  (n, net_charges[n])
+        if charges_only:
+            for at, chg in zip(atoms, chgs):
+                print "%2s  %6.2f" % (at.sym.capitalize(), chg)
+        else:
+            prettyprint_atoms(atoms, chgs)
         print "---------------------------------"
     print ""
 
@@ -70,7 +89,39 @@ def print_neighbors():
     print "Embedding fields"
     for i, bqlist in enumerate(neighbor.bq_lists):
         print "   Fragment %d: %d molecules in bq field" % (i, len(bqlist))
+    print ""
                 
+def print_parameters():
+    options = params.options
+    display = '''scrdir backend mem_mb basis hftype
+              correlation embedding r_qm r_bq r_lr
+              task'''.split()
+
+    if 'vbct' in options['task']:
+        display.extend('''diagonal relax_neutral_dimers
+        corr_neutral_dimers coupling charge_states'''.split())
+
+    if 'opt' in options['task'] or 'md' in options['task']:
+        display.extend('''pressure freeze_cell atom_gmax lat_gmax
+        opt_maxiter'''.split())
+
+    if 'md' in options['task']:
+        display.extend('''md_restart_file num_steps save_intval d_time
+        temperature'''.split())
+
+    if 'hess' in options['task']:
+        display.append('interaction_cells')
+
+    print "Input Parameters"
+    print "----------------"
+    width = max(len(s) for s in display)
+    for k in display:
+        if k in options:
+            v = options[k]
+        else:
+            v = "None"
+        print k.rjust(width), "    ", str(v)
+    print ""
 
 def print_bim_e_results(results):
     print "E", results['energy']

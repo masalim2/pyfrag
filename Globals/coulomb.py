@@ -1,5 +1,5 @@
 import numpy as np
-from pyfrag.Globals import geom
+from pyfrag.Globals import geom, params
 from pyfrag.Globals import lattice as lat
 from pyfrag.Globals.neighbor import BFS_lattice_traversal
 
@@ -10,6 +10,7 @@ com = []
 
 def accumulate_pair(idx1, idx2, cell, scale, charges):
     global energy_coulomb, gradient_coulomb, virial_coulomb
+    options = params.options
     lat_vecs = lat.lat_vecs
     a,b,c = cell
     shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
@@ -41,14 +42,15 @@ def accumulate_pair(idx1, idx2, cell, scale, charges):
 
 def coulomb_accumulator(cell, charges):
     '''count up dimers'''
+    options = params.options
     a, b, c = cell
     lat_vecs = lat.lat_vecs
     shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
     num_pairs = 0
     num_fragments = len(geom.fragments)
-    rQM2 = params.options['r_qm']**2
-    rBQ2 = params.options['r_bq']**2
-    rLR2 = params.options['r_lr']**2
+    rQM2 = options['r_qm']**2
+    rBQ2 = options['r_bq']**2
+    rLR2 = options['r_lr']**2
 
     # add i to bqlist[j] && j to bqlist[i]
     # only count QM pair if i<j OR i==j and cell>0

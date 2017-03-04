@@ -1,8 +1,10 @@
-from pyfrag.Globals.geom import geometry, fragments
-from pyfrag.Globals import logger
+import numpy as np
+import sys
+
+from pyfrag.Globals import geom
+from pyfrag.Globals import logger, params
 from pyfrag.Globals.lattice import lat_vecs
 from pyfrag.backend import nw
-import sys
 
 def build_atoms(frags, bq_list, bq_charges):
     '''Make the input geometry/embedding for a QM calculation.
@@ -21,14 +23,14 @@ def build_atoms(frags, bq_list, bq_charges):
     atoms = []
     for (i,a,b,c) in frags:
         vec = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
-        atoms.extend(geometry[at].shift(vec) for at in fragments[i])
+        atoms.extend(geom.geometry[at].shift(vec) for at in geom.fragments[i])
 
     bq_field = []
     for (i,a,b,c) in bq_list:
         vec = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
-        for at in fragments[i]:
-            bq_pos = geometry[at].shift(vec).pos
-            bq_field.extend(np.append(bq_pos, bq_charges[at]))
+        for at in geom.fragments[i]:
+            bq_pos = geom.geometry[at].shift(vec).pos
+            bq_field.append(np.append(bq_pos, bq_charges[at]))
 
     return atoms, bq_field
 
@@ -38,7 +40,7 @@ def run(calc, frags, charge, bq_list, bq_charges,
 
     Currently, for ESP calculation the NWChem package is always dispatched
     for its higher performance.  Otherwise, the backend is determined by the
-    params.backend attribute.
+    params backend option.
 
     Args
         calc: one of esp, energy, gradient, hessian
@@ -59,10 +61,12 @@ def run(calc, frags, charge, bq_list, bq_charges,
         contents of 'dictionary' depend on the type of calculation invoked and
         other arguments.
     '''
+    options = params.options
     calc = calc.lower().strip()
     assert calc in 'esp energy gradient hessian'.split()
-    assert isinstance(frags, tuple)
-    assert all(isinstance(n, int) for n in frags)
+    assert isinstance(frags, list)
+    assert all(isinstance(frag, tuple) and 
+               len(frag)==4 for frag in frags)
     
     atoms, bq_field = build_atoms(frags, bq_list, bq_charges)
     if noscf and guess is None:
@@ -71,11 +75,11 @@ def run(calc, frags, charge, bq_list, bq_charges,
     if 'calc' == 'esp':
         backend = nw
     else:
-        backend = getattr(sys.modules[__name__], params.backend)
+        backend = getattr(sys.modules[__name__], options['backend'])
 
     inp = backend.inp(calc, atoms, bq_field, charge, noscf, guess, save)
     output = backend.calculate(inp, calc, save)
-    if params.superlog:
+    if params.qm_logfile:
         logger.log_input(inp)
         logger.log_output(output)
     return backend.parse(output, calc, inp, atoms, bq_field, save)

@@ -154,7 +154,7 @@ def set_frag_manual():
         None (module-level fragments list is set)
     '''
     global fragments
-    fragments = [map(int, s.split()) for s in params.fragmentation]
+    fragments = [map(int, s.split()) for s in params.options['fragmentation']]
     # sanity check: each atom must be counted once and only once
     natm = len(geometry)
     assert sorted([idx for frag in fragments for idx in frag]) == range(natm)
@@ -219,7 +219,10 @@ def com(frag):
                 for at in atoms)/totalmass
 
 def charge(frag):
-    return sum(geometry[at].formal_chg for at in frag)
+    if isinstance(frag, list):
+        return sum(geometry[at].formal_chg for at in frag)
+    else:
+        return sum(geometry[at].formal_chg for at in fragments[frag])
 
 def nuclear_repulsion_energy():
     '''Return nuclear repulsion energy / a.u.'''
