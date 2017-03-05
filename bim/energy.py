@@ -1,10 +1,46 @@
 from pyfrag.Globals import logger, MPI, params
 from pyfrag.Globals import geom, lattice
 from pyfrag.Globals import neighbor, coulomb
+from pyfrag.backend import backend
 from pyfrag.bim.monomerscf import monomerSCF
+from master_worker import execute
 
-def run_calc(specifier):
-    return -3.0
+def run_energy(specifier, espcharges):
+
+    assert len(specifier) in [1, 5, 6]
+    if len(specifier) == 1:
+        i, = specifier
+        fragment = [(i,0,0,0)]
+        net_chg = geom.charge(i)
+        bqlist = neighbor.bq_lists[i]
+    elif len(specifier) == 5:
+        i,j,a,b,c = specifier
+        fragment = [(i,0,0,0), (j,a,b,c)]
+        net_chg = geom.charge(i) + geom.charge(j)
+    else:
+        i,j,a,b,c,bqij = specifier
+
+    if len(specifier) == 5 or len(specifier) == 6:
+        bqi, bqj = neighbor.bq_lists[i], neighbor.bq_lists[j]
+        bqj = [(bq[0], bq[1]+a, bq[2]+b, bq[3]+c) for bq in bqj]
+        bqlist = list(set(bqi).union(set(bqj)))
+
+    if len(specifier) == 5:
+        bqlist.remove( (i,0,0,0) )
+        bqlist.remove( (j,a,b,c) )
+
+    if len(specifier) == 6:
+        assert bqij in ['QMi_BQj', 'QMj_BQi']
+        if bqij == 'QMi_BQj':
+            fragment = [(i,0,0,0)]
+            net_chg = geom.charge(i)
+            bqlist.remove( (i,0,0,0) )
+        else:
+            fragment = [(j,a,b,c)]
+            net_chg = geom.charge(j)
+            bqlist.remove( (j,a,b,c) )
+    result = backend.run('energy', fragment, net_chg, bqlist, espcharges)
+    return result
 
 def kernel(comm=None):
     options = params.options
@@ -42,42 +78,14 @@ def kernel(comm=None):
         print "Converged ESP charges"
         logger.print_fragment(esp_charges=espcharges, charges_only=True)
 
-    # build one big list of fragment calcs; do them all in master-slave
-    # load-balanced fashion
+    # build one big list of fragment calcs; execute all in parallel
     specifiers = [(i,) for i in range(len(geom.fragments))]
     for (i,n0,n1,n2), (j,a,b,c) in neighbor.dimer_lists:
         specifiers.append((i,j,a,b,c))
-        specifiers.append((i,j,a,b,c,'bqj'))
-        specifiers.append((i,j,a,b,c,'bqi'))
+        specifiers.append((i,j,a,b,c,'QMi_BQj'))
+        specifiers.append((i,j,a,b,c,'QMj_BQi'))
+    calcs = execute(specifiers, run_energy, comm, espcharges)
 
-    calcs = {}
-    stat = MPI.MPI.Status()
-    if nproc == 1:
-        for calc in specifiers:
-            calcs[calc] = run_calc(calc)
-    elif rank == 0:
-        for idx in range(nproc-1, len(specifiers)):
-            (calc,result) = comm.recv(source=MPI.MPI.ANY_SOURCE, status=stat)
-            calcs[calc] = result
-            comm.send(idx, dest=stat.Get_source())
-        for idx in range(1, nproc):
-            (calc,result) = comm.recv(source=MPI.MPI.ANY_SOURCE, status=stat)
-            calcs[calc] = result
-            comm.send('DONE', dest=stat.Get_source())
-    else:
-        idx = rank-1
-        if idx < len(specifiers):
-            calc = specifiers[idx]
-            result = run_calc(calc)
-        else:
-            calc, result = 'dummy', 'dummy'
-        comm.send((calc,result), dest=0)
-        idx = comm.recv(source=0)
-        while idx != 'DONE':
-            calc = specifiers[idx]
-            result = run_calc(calc)
-            comm.send((calc,result), dest=0)
-            idx = comm.recv(source=0)
     if VERB and rank == 0:
         print "Fragment calculations received."
         for calc in specifiers:
