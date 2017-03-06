@@ -114,6 +114,7 @@ def parse(data, calc, inp, atoms, bqs, save):
 
         if "Total SCF energy" in line:
             results['E_hf'] = float(line.split()[-1])
+            results['E_tot'] = results['E_hf']
             continue
 
         if "Total MP2" in line or "Total CCSD" in line:

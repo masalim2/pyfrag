@@ -62,8 +62,9 @@ def kernel(comm=None):
         geom.set_frag_full_system()
     else:
         geom.set_frag_manual()
+    nfrag = len(geom.fragments)
     if not QUIET and MPI.rank == 0: 
-        print "Generated %d Fragments" % len(geom.fragments)
+        print "Generated %d Fragments" % nfrag
         logger.print_fragment()
 
     # Get neighbor lists
@@ -79,7 +80,7 @@ def kernel(comm=None):
         logger.print_fragment(esp_charges=espcharges, charges_only=True)
 
     # build one big list of fragment calcs; execute all in parallel
-    specifiers = [(i,) for i in range(len(geom.fragments))]
+    specifiers = [(i,) for i in range(nfrag)]
     for (i,n0,n1,n2), (j,a,b,c) in neighbor.dimer_lists:
         specifiers.append((i,j,a,b,c))
         specifiers.append((i,j,a,b,c,'QMi_BQj'))
@@ -88,6 +89,18 @@ def kernel(comm=None):
 
     if VERB and rank == 0:
         print "Fragment calculations received."
-        for calc in specifiers:
-            print calc, calcs[calc]
-    return {'energy' : 0.0}
+        print '\n'.join(["%s %s" % (k, v) for k,v in calcs.items()])
+
+    E1 = 0.0
+    E2 = 0.0
+    if rank == 0:
+        for m in specifiers[0:nfrag]:
+            E1 += calcs[m]['E_tot']
+        for i in range(nfrag, len(specifiers), 3):
+            cij, ci, cj = specifiers[i:i+3]
+            E2 += calcs[cij]['E_tot'] - calcs[ci]['E_tot'] - calcs[cj]['E_tot']
+        if not QUIET:
+            print "One body sum %.6f" % E1
+            print "Two body sum %.6f" % E2
+
+    return {'energy' : E1+E2}
