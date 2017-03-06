@@ -5,21 +5,25 @@ from pyfrag.backend import backend
 from pyfrag.bim.monomerscf import monomerSCF
 from master_worker import execute
 
-def run_energy(specifier, espcharges):
+def run_frag(specifier, calc, espcharges):
 
     assert len(specifier) in [1, 5, 6]
+    #monomer
     if len(specifier) == 1:
         i, = specifier
         fragment = [(i,0,0,0)]
         net_chg = geom.charge(i)
         bqlist = neighbor.bq_lists[i]
+    # dimer
     elif len(specifier) == 5:
         i,j,a,b,c = specifier
         fragment = [(i,0,0,0), (j,a,b,c)]
         net_chg = geom.charge(i) + geom.charge(j)
+    # monomer in dimer field
     else:
         i,j,a,b,c,bqij = specifier
 
+    # build dimer field
     if len(specifier) == 5 or len(specifier) == 6:
         bqi, bqj = neighbor.bq_lists[i], neighbor.bq_lists[j]
         bqj = [(bq[0], bq[1]+a, bq[2]+b, bq[3]+c) for bq in bqj]
@@ -39,10 +43,10 @@ def run_energy(specifier, espcharges):
             fragment = [(j,a,b,c)]
             net_chg = geom.charge(j)
             bqlist.remove( (j,a,b,c) )
-    result = backend.run('energy', fragment, net_chg, bqlist, espcharges)
+    result = backend.run(calc, fragment, net_chg, bqlist, espcharges)
     return result
 
-def kernel(comm=None):
+def kernel(calc, comm=None):
     options = params.options
     if comm:
         rank, nproc = comm.Get_rank(), comm.size
@@ -85,7 +89,7 @@ def kernel(comm=None):
         specifiers.append((i,j,a,b,c))
         specifiers.append((i,j,a,b,c,'QMi_BQj'))
         specifiers.append((i,j,a,b,c,'QMj_BQi'))
-    calcs = execute(specifiers, run_energy, comm, espcharges)
+    calcs = execute(specifiers, run_frag, comm, calc, espcharges)
 
     if VERB and rank == 0:
         print "Fragment calculations received."
