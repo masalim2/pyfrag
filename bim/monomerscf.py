@@ -31,6 +31,7 @@ def monomerSCF(comm=None):
 
     espcharges = [0.0 for at in geom.geometry]
     if not options['embedding']: return espcharges
+    natm = float(len(geom.geometry))
 
     while RMSD > RMSD_TOL and itr < MAXITER:
 
@@ -48,7 +49,7 @@ def monomerSCF(comm=None):
         espcharges = MPI.allgather(comm, mycharges)
         espcharges = [chg for m in espcharges for chg in m]
         residual = np.array(espcharges) - np.array(espcharges0)
-        RMSD = np.linalg.norm(residual)
+        RMSD = np.linalg.norm(residual) / natm**0.5
         itr += 1
 
     if RMSD > RMSD_TOL:

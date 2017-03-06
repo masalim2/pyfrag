@@ -1,2 +1,0 @@
-def kernel():
-    return {}

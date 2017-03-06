@@ -82,4 +82,7 @@ def run(calc, frags, charge, bq_list, bq_charges,
     if params.qm_logfile:
         logger.log_input(inp)
         logger.log_output(output)
-    return backend.parse(output, calc, inp, atoms, bq_field, save)
+    results = backend.parse(output, calc, inp, atoms, bq_field, save)
+    if 'bq_gradient' in results:
+        results['bq_list'] = bq_list
+    return results

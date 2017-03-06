@@ -69,13 +69,13 @@ def print_fragment(fragments=None, net_charges=None, esp_charges=None, charges_o
         atoms = [geom.geometry[i] for i in frag]
         if esp_charges: chgs = [esp_charges[i] for i in frag]
         
-        print "(Fragment %d Charge %+d)" %  (n, net_charges[n])
+        print "(Frag %d Chg %+d)" %  (n, net_charges[n])
         if charges_only:
             for at, chg in zip(atoms, chgs):
                 print "%2s  %6.2f" % (at.sym.capitalize(), chg)
         else:
             prettyprint_atoms(atoms, chgs)
-        print "---------------------------------"
+        print "----------------------------------------"
     print ""
 
 def print_neighbors():
@@ -124,7 +124,29 @@ def print_parameters():
     print ""
 
 def print_bim_e_results(results):
-    print "E", results['energy']
+    print "%12s %16.8f" % ('E(monomer)', results['E1'])
+    print "%12s %16.8f" % ('E(dimer)', results['E2'])
+    print "%12s %16.8f" % ('E(coulomb)', results['Ec'])
+    print "-----------------------------" 
+    print "%12s %16.8f" % ('E(total)',   results['E'])
+    print "%12s %16.8f" % ('E(total)/N', results['E']/len(geom.fragments))
+
+def print_bim_grad_results(results):
+    print_bim_e_results(results)
+    print ""
+    print "BIM ENERGY GRADIENTS / a.u."
+    print "--------------------"
+    with printoptions(precision=3, suppress=True):
+        print results['gradient']
+    print ""
+    print "VIRIAL STRESS TENSOR / bar"
+    print "--------------------------"
+    with printoptions(precision=3, suppress=True):
+        stress = results['virial'] / (lattice.volume()*geom.ANG2BOHR**3)
+        print stress*geom.AU2BAR
+    print ""
+    print "DIMER VIRIAL"
+    print results['vir2']
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"

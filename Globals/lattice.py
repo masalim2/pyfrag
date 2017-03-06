@@ -62,8 +62,18 @@ def update_lat_params():
 def volume():
     '''Return volume in Angstrom**3 
     
-    Simply the determinant of lat_vecs matrix'''
-    return np.linalg.det(lat_vecs)
+    3D case: return the determinant of lat_vecs matrix
+    For 2D,1D,0D systems: return cell area, length, unity,
+    respectively.
+    '''
+    if all(PBC_flag):
+        return np.linalg.det(lat_vecs)
+    elif PBC_flag[0] and PBC_flag[1]:
+        return np.linalg.det(lat_vecs[0:2,0:2])
+    elif PBC_flag[0]:
+        return lat_vecs[0,0]
+    else:
+        return 1.0
 
 def lat_angle_differential():
     '''Compute partial derivatives of lat_vecs with respect to change in

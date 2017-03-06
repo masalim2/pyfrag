@@ -1,12 +1,28 @@
+import sys
+import numpy as np
+
 from pyfrag.Globals import logger, MPI, params
 from pyfrag.Globals import geom, lattice
 from pyfrag.Globals import neighbor, coulomb
 from pyfrag.backend import backend
+from pyfrag.Globals import utility as util
 from pyfrag.bim.monomerscf import monomerSCF
-from master_worker import execute
+from pyfrag.bim import sums
+#from pyfrag.utility import mw_execute
 
-def run_frag(specifier, calc, espcharges):
+def task_str():
+    task = { 'bim_e'   : 'energy',
+            'bim_grad' : 'gradient',
+            'bim_hess' : 'hessian'
+           }.get(params.options['task'])
+    return task
 
+def get_summation_fxn():
+    task = task_str()
+    sum_fxn = getattr(sums, '%s_sum' % task)
+    return sum_fxn
+
+def run_frags(specifier, espcharges):
     assert len(specifier) in [1, 5, 6]
     #monomer
     if len(specifier) == 1:
@@ -43,10 +59,10 @@ def run_frag(specifier, calc, espcharges):
             fragment = [(j,a,b,c)]
             net_chg = geom.charge(j)
             bqlist.remove( (j,a,b,c) )
-    result = backend.run(calc, fragment, net_chg, bqlist, espcharges)
+    result = backend.run(task_str(), fragment, net_chg, bqlist, espcharges)
     return result
 
-def kernel(calc, comm=None):
+def kernel(comm=None):
     options = params.options
     if comm:
         rank, nproc = comm.Get_rank(), comm.size
@@ -76,12 +92,17 @@ def kernel(calc, comm=None):
     if VERB and MPI.rank == 0: 
         logger.print_neighbors()
 
+
     # Monomer SCF
-    if not QUIET and MPI.rank == 0: print "Monomer SCF"
+    if not QUIET and MPI.rank == 0: print "Running monomer SCF..."
     espcharges = monomerSCF(comm)
     if VERB and MPI.rank == 0:
         print "Converged ESP charges"
         logger.print_fragment(esp_charges=espcharges, charges_only=True)
+    
+    # Evaluate coulomb corrections
+    if not QUIET and MPI.rank == 0: print "Evaluating classical coulomb interactions..."
+    coulomb.evaluate_coulomb(espcharges)
 
     # build one big list of fragment calcs; execute all in parallel
     specifiers = [(i,) for i in range(nfrag)]
@@ -89,22 +110,19 @@ def kernel(calc, comm=None):
         specifiers.append((i,j,a,b,c))
         specifiers.append((i,j,a,b,c,'QMi_BQj'))
         specifiers.append((i,j,a,b,c,'QMj_BQi'))
-    calcs = execute(specifiers, run_frag, comm, calc, espcharges)
+    if not QUIET and MPI.rank == 0: 
+        nmono = nfrag
+        ncalc = len(specifiers)
+        ndim  = (ncalc - nmono) / 3
+        print "Running %d monomers, %d dimers..." % (nmono, ndim)
+    calcs = util.mw_execute(specifiers, run_frags, comm, espcharges)
 
     if VERB and rank == 0:
         print "Fragment calculations received."
         print '\n'.join(["%s %s" % (k, v) for k,v in calcs.items()])
-
-    E1 = 0.0
-    E2 = 0.0
     if rank == 0:
-        for m in specifiers[0:nfrag]:
-            E1 += calcs[m]['E_tot']
-        for i in range(nfrag, len(specifiers), 3):
-            cij, ci, cj = specifiers[i:i+3]
-            E2 += calcs[cij]['E_tot'] - calcs[ci]['E_tot'] - calcs[cj]['E_tot']
-        if not QUIET:
-            print "One body sum %.6f" % E1
-            print "Two body sum %.6f" % E2
-
-    return {'energy' : E1+E2}
+        sum_fxn = get_summation_fxn()
+        result  = sum_fxn(specifiers, calcs)
+    else:
+        result = {}
+    return result

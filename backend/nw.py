@@ -25,7 +25,7 @@ def calculate(inp, calc, save):
         print e.output
         sys.exit(1)
     if save and options['scrdir'] != options['share_dir']:
-        outvec = os.path.basename(inp.name)+".movecs"
+        outvec = os.path.basename(inp)+".movecs"
         source = os.path.join(options['scrdir'], outvec)
         destin = os.path.join(options['share_dir'], outvec)
         copyfile(source, destin)
@@ -68,8 +68,9 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     
     f.write('scf\n')
     f.write('sym off; adapt off\n')
-    f.write('%s\n' % options['hftype'])
-    f.write('nopen %d\n' % (charge%2))
+    if charge %2 != 0:
+        f.write('%s\n' % options['hftype'])
+        f.write('nopen %d\n' % (charge%2))
     if noscf: f.write('noscf\n')
     
     invec = invecs(guess)
@@ -96,7 +97,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
         f.write('task %s energy\n\n' % theory)
     elif calc == 'esp':
         f.write('task scf energy\n\n')
-        f.write('esp\n recalculate\nend\n')
+        f.write('esp\n recalculate\nrestrain hfree\nend\n')
         f.write('task esp\n\n')
     elif calc == 'gradient':
         f.write('task %s gradient\n\n' % theory)
@@ -145,16 +146,16 @@ def parse(data, calc, inp, atoms, bqs, save):
             for idx in range(n+4,n+4+len(atoms)):
                 grad = map(float, data[idx].split()[-3:])
                 gradients.append(grad)
-            results['gradient'] = gradients
+            results['gradient'] = np.array(gradients)
             if bqs:
                 bq_gradients = []
-                bqforce_name, ext = os.path.splitext(inp.name)
+                bqforce_name, ext = os.path.splitext(inp)
                 bqforce_name += '.bqforce.dat'
                 results['bq_gradient'] = np.loadtxt(bqforce_name)
             continue
 
     if calc == 'hessian':
-        basename, ext = os.path.splitext(inp.name)
+        basename, ext = os.path.splitext(inp)
         hess_name    = basename + ".hess"
         ddipole_name = basename + ".fd_ddipole"
         hess_tri = np.loadtxt(hess_name)
