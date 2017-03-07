@@ -70,11 +70,15 @@ def coulomb_accumulator(cell, charges):
             elif rij2 < rBQ2:
                 # correct overcount
                 num_pairs += 1
-                accumulate_pair(i, j, cell, -0.5, charges) # BUG different from qcbim
+                accumulate_pair(i, j, cell, -0.5, charges) 
             elif rij2 < rLR2:
                 # add LR interaction
                 num_pairs += 1
                 accumulate_pair(i, j, cell, 0.5, charges)
+            elif num_pairs > 0 and rij2 > rLR2: 
+                # Complete the cell
+                accumulate_pair(i, j, cell, 0.5, charges)
+
     return num_pairs
 
 def evaluate_coulomb(espfield):
