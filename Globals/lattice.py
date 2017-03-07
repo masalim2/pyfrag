@@ -2,16 +2,14 @@ import numpy as np
 from collections import namedtuple
 
 # Module-level data to be shared
-LatticeTuple = namedtuple('Lattice', 
-        'a b c alpha beta gamma axis')
-lattice = LatticeTuple(0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0)
+lattice = [0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0]
 lat_vecs = np.zeros((3,3))
 lat_vecs_inv = np.eye(3)
 PBC_flag = (False, False, False)
 
 def set_lattice(a, b, c, alpha, beta, gamma, axis):
     global lattice
-    lattice = LatticeTuple(a, b, c, alpha, beta, gamma, axis)
+    lattice = [a, b, c, alpha, beta, gamma, axis]
 
 def update_lat_vecs():
     '''Update lattice vectors matrix (3x3, angstrom) from "lattice".
@@ -20,20 +18,20 @@ def update_lat_vecs():
     the lattice vectors. No input arguments or return values.
     '''
     global PBC_flag, lat_vecs, lat_vecs_inv
-    a_dim = abs(lattice.a) > 0.1
-    b_dim = abs(lattice.b) > 0.1
-    c_dim = abs(lattice.c) > 0.1
+    a_dim = abs(lattice[0]) > 0.1
+    b_dim = abs(lattice[1]) > 0.1
+    c_dim = abs(lattice[2]) > 0.1
     PBC_flag = (a_dim, b_dim, c_dim)
 
-    assert lattice.axis == 0, "asssuming a-axis == x-axis && ab is in xy-plane"
-    ab, ac, bc = np.deg2rad([lattice.gamma, lattice.beta, lattice.alpha])
+    assert lattice[6] == 0, "asssuming a-axis == x-axis && ab is in xy-plane"
+    ab, ac, bc = np.deg2rad([lattice[5], lattice[4], lattice[3]])
 
-    lat_vecs[:,0] = np.array([lattice.a, 0.0, 0.0])
-    lat_vecs[:,1] = lattice.b * np.array([np.cos(ab), np.sin(ab), 0.0])
+    lat_vecs[:,0] = np.array([lattice[0], 0.0, 0.0])
+    lat_vecs[:,1] = lattice[1] * np.array([np.cos(ab), np.sin(ab), 0.0])
     cx = np.cos(ac)
     cy = ( np.cos(bc) - np.cos(ac)*np.cos(ab) ) / np.sin(ab)
     cz = np.sqrt(1.0 - cx**2 - cy**2)
-    lat_vecs[:,2] = lattice.c * np.array([cx, cy, cz])
+    lat_vecs[:,2] = lattice[2] * np.array([cx, cy, cz])
     
     lat_vecs_inv = np.eye(3)
     if all(PBC_flag):
@@ -103,12 +101,12 @@ def lat_angle_differential():
 
     # Finite difference: small angle displacement
     DELTA = 1.0e-4
-    dalpha = compute_lat_vecs(lattice.a, lattice.b, lattice.c,
-                          lattice.alpha+DELTA, lattice.beta, lattice.gamma)
-    dbeta = compute_lat_vecs(lattice.a, lattice.b, lattice.c,
-                          lattice.alpha, lattice.beta+DELTA, lattice.gamma)
-    dgamma = compute_lat_vecs(lattice.a, lattice.b, lattice.c,
-                          lattice.alpha, lattice.beta, lattice.gamma+DELTA)
+    dalpha = compute_lat_vecs(lattice[0], lattice[1], lattice[2],
+                          lattice[3]+DELTA, lattice[4], lattice[5])
+    dbeta = compute_lat_vecs(lattice[0], lattice[1], lattice[2],
+                          lattice[3], lattice[4]+DELTA, lattice[5])
+    dgamma = compute_lat_vecs(lattice[0], lattice[1], lattice[2],
+                          lattice[3], lattice[4], lattice[5]+DELTA)
 
     dalpha = (dalpha - lat_vecs) / DELTA
     dbeta  = (dbeta  - lat_vecs) / DELTA

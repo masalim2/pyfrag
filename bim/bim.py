@@ -67,7 +67,7 @@ def kernel(comm=None):
     if comm:
         rank, nproc = comm.Get_rank(), comm.size
     else:
-        comm, rank, nproc = MPI.comm, MPI.rank, MPI.comm.size
+        comm, rank, nproc = MPI.comm, MPI.rank, MPI.nproc
     VERB = params.verbose
     QUIET = params.quiet
 

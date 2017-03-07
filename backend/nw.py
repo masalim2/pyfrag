@@ -80,7 +80,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
         break_long_words=False)))
     f.write('end\n\n')
 
-    if options['correlation']:
+    if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
         if theory == 'mp2':
             f.write('mp2\n freeze atomic\nend\ntask mp2 energy\n\n')

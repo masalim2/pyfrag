@@ -1,9 +1,8 @@
 import numpy as np
 import sys
 
-from pyfrag.Globals import geom
+from pyfrag.Globals import geom, lattice
 from pyfrag.Globals import logger, params
-from pyfrag.Globals.lattice import lat_vecs
 from pyfrag.backend import nw
 
 def build_atoms(frags, bq_list, bq_charges):
@@ -20,6 +19,7 @@ def build_atoms(frags, bq_list, bq_charges):
         bq_field: a list of numpy arrays(length-4) in format (x,y,z,q)
     '''
 
+    lat_vecs = lattice.lat_vecs
     atoms = []
     for (i,a,b,c) in frags:
         vec = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]

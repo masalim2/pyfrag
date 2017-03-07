@@ -2,7 +2,7 @@ import os
 from shutil import rmtree
 import tempfile
 
-from pyfrag.Globals import params, geom, MPI, logger
+from pyfrag.Globals import params, geom, MPI, logger, lattice
 
 def pretty_time(seconds):
     m, s = divmod(seconds, 60)
@@ -38,8 +38,12 @@ def parse_input(input_file):
     if MPI.rank == 0:
         with open(input_file) as fp: params.parse(fp)
         geom.load_geometry(params.options['geometry'])
-    params.options = MPI.bcast(params.options, master=0)
-    geom.geometry  = MPI.bcast(geom.geometry, master=0)
+    params.options  = MPI.bcast(params.options, master=0)
+    geom.geometry   = MPI.bcast(geom.geometry, master=0)
+    lattice.lattice = MPI.bcast(lattice.lattice, master=0)
+    lattice.lat_vecs = MPI.bcast(lattice.lat_vecs, master=0)
+    lattice.lat_vecs_inv = MPI.bcast(lattice.lat_vecs_inv, master=0)
+    lattice.PBC_flag = MPI.bcast(lattice.PBC_flag, master=0)
 
 
 def mw_execute(specifiers, run_calc, comm=None, *args):

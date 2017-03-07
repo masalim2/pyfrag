@@ -52,6 +52,7 @@ Contents
    inputfile
    globals
    samples
+   extending
 
 
 Indices and tables

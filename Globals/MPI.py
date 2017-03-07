@@ -2,11 +2,13 @@ try:
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
+    nproc = comm.size
 except ImportError:
     print "# Could not import mpi4py. Running serial."
     MPI = None
     comm = None
     rank = 0
+    nproc = 1
 
 def bcast(data, master=0):
     if comm is None:
@@ -20,7 +22,6 @@ def scatter(comm, data, master=0):
     if comm is None:
         return data
     rank = comm.Get_rank()
-    nproc = comm.size
     N = len(data)
     N_per_proc = N // nproc
     rem = N % nproc
@@ -45,7 +46,6 @@ def gather(comm, data, master=0):
     if comm is None:
         return data
     rank = comm.Get_rank()
-    nproc = comm.size
 
     my_data = comm.gather(data, root=master)
     if rank == master:
@@ -59,9 +59,13 @@ def allgather(comm, data):
     if comm is None:
         return data
     rank = comm.Get_rank()
-    nproc = comm.size
 
     my_data = comm.allgather(data)
     my_data = [item for sublist in my_data for item in sublist]
 
     return my_data
+
+def allreduce(comm, data):
+    if comm is None:
+        return data
+    return comm.allreduce(data)

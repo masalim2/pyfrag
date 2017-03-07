@@ -145,8 +145,6 @@ def print_bim_grad_results(results):
         stress = results['virial'] / (lattice.volume()*geom.ANG2BOHR**3)
         print stress*geom.AU2BAR
     print ""
-    print "DIMER VIRIAL"
-    print results['vir2']
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"
