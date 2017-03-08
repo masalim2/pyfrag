@@ -1,9 +1,10 @@
 import numpy as np
 import sys
+import os
 
 from pyfrag.Globals import geom, lattice
 from pyfrag.Globals import logger, params
-from pyfrag.backend import nw
+from pyfrag.backend import nw, psi4
 
 def build_atoms(frags, bq_list, bq_charges):
     '''Make the input geometry/embedding for a QM calculation.
@@ -72,11 +73,12 @@ def run(calc, frags, charge, bq_list, bq_charges,
     if noscf and guess is None:
         raise RuntimeError("No SCF useless without input guess")
     
-    if 'calc' == 'esp':
+    if calc == 'esp':
         backend = nw
     else:
         backend = getattr(sys.modules[__name__], options['backend'])
 
+    os.chdir(params.options['scrdir'])
     inp = backend.inp(calc, atoms, bq_field, charge, noscf, guess, save)
     output = backend.calculate(inp, calc, save)
     if params.qm_logfile:

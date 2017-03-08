@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 
-from pyfrag.Globals import params
+from pyfrag.Globals import params, geom
 
 def calculate(inp, calc, save):
     '''Run nwchem on input, return raw output'''
@@ -45,6 +45,7 @@ def invecs(guess):
 def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     '''Write NWchem input file to temp file. Return filename.'''
     options = params.options
+    nelec = sum(geom.z_map[at.sym] for at in atoms) - charge
     f = tempfile.NamedTemporaryFile(dir=options['scrdir'], delete=False)
 
     f.write('scratch_dir %s\n' % options['scrdir'])
@@ -70,7 +71,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('sym off; adapt off\n')
     if charge %2 != 0:
         f.write('%s\n' % options['hftype'])
-        f.write('nopen %d\n' % (charge%2))
+        f.write('nopen %d\n' % (nelec%2))
     if noscf: f.write('noscf\n')
     
     invec = invecs(guess)
