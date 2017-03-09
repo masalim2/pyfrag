@@ -74,6 +74,10 @@ def kernel(comm=None):
     if not QUIET and MPI.rank == 0: 
         logger.print_parameters()
         logger.print_geometry()
+
+    if options['task'] == 'bim_hess':
+        for frag in geom.fragments:
+            assert frag == sorted(frag)
     
     # Perform fragmentation
     if options['fragmentation'] == 'auto':
