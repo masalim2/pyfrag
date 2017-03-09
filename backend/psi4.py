@@ -69,8 +69,16 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
                 grid_fp.write('%16.10f%16.10f%16.10f\n' % (bq[0], bq[1], bq[2]))
         f.write("oeprop(wfn, 'GRID_FIELD')\n")
     elif calc == 'hessian':
-        f.write('hessian("%s")\n' % theory)
-
+        f.write('hess=hessian("%s")\n' % theory)
+        f.write('hessarr=np.array(psi4.p4util.mat2arr(hess))\n')
+        f.write('''M,N=hessarr.shape
+i=0
+with open('hess.dat', 'w') as fp:
+    for row in range(M):
+        for col in range(row+1):
+            fp.write('%24.16E\n' % hessarr[row, col])
+            i += 1
+            ''')
     f.close()
     return f.name
 
@@ -99,6 +107,11 @@ def parse(data, calc, inp, atoms, bqs, save):
                     bqgrad.append(-1.0 * chg[3] * field_vec)
                 results['bq_gradient'] = np.array(bqgrad)
             continue
+    if calc == 'hessian':
+        hess_tri = np.loadtxt('hess.dat')
+        ddipole = np.zeros(9*len(atoms))
+        results['hess_tri'] = hess_tri
+        results['ddipole'] = ddipole
     if 'E_tot' not in results:
         results['E_tot'] = results['E_hf']
     return results

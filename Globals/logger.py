@@ -136,7 +136,7 @@ def print_bim_grad_results(results):
     print ""
     print "BIM ENERGY GRADIENTS / a.u."
     print "--------------------"
-    with printoptions(precision=3, suppress=True):
+    with printoptions(precision=4, suppress=True):
         print results['gradient']
     print ""
     print "VIRIAL STRESS TENSOR / bar"
