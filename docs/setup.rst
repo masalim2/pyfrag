@@ -3,13 +3,14 @@ Setup Instructions
 
 Prerequisites
 -------------
-PyFragment requires `numpy <http://www.numpy.org>`_, `scipy
+PyFragment requires Python 2.7 or later, `numpy <http://www.numpy.org>`_, `scipy
 <http://www.scipy.org>`_, and `MPI4Py <http://www.mpi4py.scipy.org>`_. These
 modules should be readily importable, i.e.::
     
     import numpy
     import scipy
     import mpi4py
+    import argparse
 should execute without any errors in your Python interpreter.
 
 Your PYTHONPATH environment variable should include the directory containing
@@ -19,23 +20,30 @@ PyFragment requires at least quantum chemistry backend to perform the fragment
 calculations. Currently supported packages are `Psi4
 <http://www.psicode.org>`_, `NWChem
 <http://www.nwchem-sw.org>`_, and `Gaussian09 <http://www.gaussian.com>`_. As
-such, at least one of the executables **psi4**, **nwchem**, or **g09** must be
+such, at least one of the executables **psi4**, **nwchem.x**, or **g09** must be
 in the PATH.
 
-Gellmann or personal computer setup
------------------------------------
-One of the most convenient ways to manage your environment is with the
-`anaconda <https://www.continuum.io/downloads>`_ platform.  It serves as a
-package manager and virtual environment manager, with which you can configure
-an environment with libaries stored in your home directory.
-
-Once conda is installed, download the modern versions of prerequisite
-packages ::
-    conda install numpy
-    conda install scipy
-    conda install mpi4py
-and make sure that your PATH is correctly set to run the conda-managed python
-interpreter.
+Gellmann setup
+--------------
+To replace the default system Python 2.6 with Python 2.7, the **opt-python**
+module must be loaded.
+A convenient way to set up the requisite Python environment is with virtualenv 
+and the pip package manager. Virtualenv allows users to manage a Python
+installation and install packages in a loadable environment stored in the home directory. 
+This does not require administrator priveleges and the environment can easily be loaded/unloaded
+as necessary.  In a subdirectory of your home directory, perhaps
+called my-env: run the following commands ::
+        module load opt-python # replace default Python 2.6 with 2.7
+        wget https://pypi.python.org/packages/source/p/pip/pip-1.1.tar.gz --no-check-certificate # download PIP
+        virtualenv --system-site-packages your_environment_name # setup a new environment with PIP 
+        source your_environment_name/bin/activate # load the environment
+Notice that the terminal now indicates your virtual environment is loaded. You
+are now able to install packages to this environment using **pip**. Invoke ::
+        pip install mpi4py
+        pip install scipy
+In future interactive sessions or any job submissions that require Python 2.7,
+mpi4py, or scipy, be sure that **opt-python** is loaded and 
+the **source** line is invoked.
 
 Blue Waters setup
 -----------------

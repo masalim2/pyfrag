@@ -37,9 +37,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="background.html" title="Background"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -58,11 +55,12 @@
 <h1>Setup Instructions<a class="headerlink" href="#setup-instructions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>PyFragment requires <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These
+<p>PyFragment requires Python 2.7 or later, <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These
 modules should be readily importable, i.e.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">import</span> <span class="nn">mpi4py</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
 </pre></div>
 </div>
 <p>should execute without any errors in your Python interpreter.</p>
@@ -70,24 +68,34 @@ modules should be readily importable, i.e.:</p>
 &#8216;pyfrag&#8217;.  This will allow you to import the PyFrag modules from anywhere.</p>
 <p>PyFragment requires at least quantum chemistry backend to perform the fragment
 calculations. Currently supported packages are <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>. As
-such, at least one of the executables <strong>psi4</strong>, <strong>nwchem</strong>, or <strong>g09</strong> must be
+such, at least one of the executables <strong>psi4</strong>, <strong>nwchem.x</strong>, or <strong>g09</strong> must be
 in the PATH.</p>
 </div>
-<div class="section" id="gellmann-or-personal-computer-setup">
-<h2>Gellmann or personal computer setup<a class="headerlink" href="#gellmann-or-personal-computer-setup" title="Permalink to this headline">¶</a></h2>
-<p>One of the most convenient ways to manage your environment is with the
-<a class="reference external" href="https://www.continuum.io/downloads">anaconda</a> platform.  It serves as a
-package manager and virtual environment manager, with which you can configure
-an environment with libaries stored in your home directory.</p>
-<p>Once conda is installed, download the modern versions of prerequisite
-packages</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">numpy</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">scipy</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">mpi4py</span>
+<div class="section" id="gellmann-setup">
+<h2>Gellmann setup<a class="headerlink" href="#gellmann-setup" title="Permalink to this headline">¶</a></h2>
+<p>To replace the default system Python 2.6 with Python 2.7, the <strong>opt-python</strong>
+module must be loaded.
+A convenient way to set up the requisite Python environment is with virtualenv
+and the pip package manager. Virtualenv allows users to manage a Python
+installation and install packages in a loadable environment stored in the home directory.
+This does not require administrator priveleges and the environment can easily be loaded/unloaded
+as necessary.  In a subdirectory of your home directory, perhaps
+called my-env: run the following commands</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">opt</span><span class="o">-</span><span class="n">python</span> <span class="c1"># replace default Python 2.6 with 2.7</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pypi</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">source</span><span class="o">/</span><span class="n">p</span><span class="o">/</span><span class="n">pip</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">check</span><span class="o">-</span><span class="n">certificate</span> <span class="c1"># download PIP</span>
+<span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">your_environment_name</span> <span class="c1"># setup a new environment with PIP</span>
+<span class="n">source</span> <span class="n">your_environment_name</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span> <span class="c1"># load the environment</span>
 </pre></div>
 </div>
-<p>and make sure that your PATH is correctly set to run the conda-managed python
-interpreter.</p>
+<p>Notice that the terminal now indicates your virtual environment is loaded. You
+are now able to install packages to this environment using <strong>pip</strong>. Invoke</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mpi4py</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span>
+</pre></div>
+</div>
+<p>In future interactive sessions or any job submissions that require Python 2.7,
+mpi4py, or scipy, be sure that <strong>opt-python</strong> is loaded and
+the <strong>source</strong> line is invoked.</p>
 </div>
 <div class="section" id="blue-waters-setup">
 <h2>Blue Waters setup<a class="headerlink" href="#blue-waters-setup" title="Permalink to this headline">¶</a></h2>
@@ -119,7 +127,7 @@ located in pyfrag directory.</p>
   <ul>
 <li><a class="reference internal" href="#">Setup Instructions</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#gellmann-or-personal-computer-setup">Gellmann or personal computer setup</a></li>
+<li><a class="reference internal" href="#gellmann-setup">Gellmann setup</a></li>
 <li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a></li>
 <li><a class="reference internal" href="#running-as-executable">Running as executable</a></li>
 </ul>
@@ -159,9 +167,6 @@ located in pyfrag directory.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="background.html" title="Background"
              >next</a> |</li>

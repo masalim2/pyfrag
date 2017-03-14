@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 
-from pyfrag.Globals import params
+from pyfrag.Globals import params, geom
 
 def calculate(inp, calc, save):
     '''Run nwchem on input, return raw output'''
@@ -25,7 +25,7 @@ def calculate(inp, calc, save):
         print e.output
         sys.exit(1)
     if save and options['scrdir'] != options['share_dir']:
-        outvec = os.path.basename(inp.name)+".movecs"
+        outvec = os.path.basename(inp)+".movecs"
         source = os.path.join(options['scrdir'], outvec)
         destin = os.path.join(options['share_dir'], outvec)
         copyfile(source, destin)
@@ -45,6 +45,7 @@ def invecs(guess):
 def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     '''Write NWchem input file to temp file. Return filename.'''
     options = params.options
+    nelec = sum(geom.z_map[at.sym] for at in atoms) - charge
     f = tempfile.NamedTemporaryFile(dir=options['scrdir'], delete=False)
 
     f.write('scratch_dir %s\n' % options['scrdir'])
@@ -68,8 +69,9 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     
     f.write('scf\n')
     f.write('sym off; adapt off\n')
-    f.write('%s\n' % options['hftype'])
-    f.write('nopen %d\n' % (charge%2))
+    if charge %2 != 0:
+        f.write('%s\n' % options['hftype'])
+        f.write('nopen %d\n' % (nelec%2))
     if noscf: f.write('noscf\n')
     
     invec = invecs(guess)
@@ -79,7 +81,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
         break_long_words=False)))
     f.write('end\n\n')
 
-    if options['correlation']:
+    if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
         if theory == 'mp2':
             f.write('mp2\n freeze atomic\nend\ntask mp2 energy\n\n')
@@ -96,7 +98,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
         f.write('task %s energy\n\n' % theory)
     elif calc == 'esp':
         f.write('task scf energy\n\n')
-        f.write('esp\n recalculate\nend\n')
+        f.write('esp\n recalculate\nrestrain hfree\nend\n')
         f.write('task esp\n\n')
     elif calc == 'gradient':
         f.write('task %s gradient\n\n' % theory)
@@ -110,6 +112,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
 def parse(data, calc, inp, atoms, bqs, save):
     '''Parse raw NWchem output.'''
     results = {}
+    options = params.options
     for n, line in enumerate(data):
 
         if "Total SCF energy" in line:
@@ -145,20 +148,23 @@ def parse(data, calc, inp, atoms, bqs, save):
             for idx in range(n+4,n+4+len(atoms)):
                 grad = map(float, data[idx].split()[-3:])
                 gradients.append(grad)
-            results['gradient'] = gradients
-            if bqs:
+            results['gradient'] = np.array(gradients)
+            if bqs and 'grad' in options['task']:
                 bq_gradients = []
-                bqforce_name, ext = os.path.splitext(inp.name)
+                bqforce_name, ext = os.path.splitext(inp)
                 bqforce_name += '.bqforce.dat'
                 results['bq_gradient'] = np.loadtxt(bqforce_name)
             continue
 
     if calc == 'hessian':
-        basename, ext = os.path.splitext(inp.name)
+        basename, ext = os.path.splitext(inp)
         hess_name    = basename + ".hess"
         ddipole_name = basename + ".fd_ddipole"
-        hess_tri = np.loadtxt(hess_name)
-        ddipole = np.loadtxt(ddipole_name)
+        hess_txt = open(hess_name).read().replace('D', 'E')
+        hess_tri = np.fromstring(hess_txt, sep='\n')
+
+        ddipole_txt = open(ddipole_name).read().replace('D','E')
+        ddipole = np.fromstring(ddipole_txt, sep='\n')
         natm = len(atoms)
         assert len(hess_tri) == 3*natm + 3*natm*(3*natm-1)/2
         assert len(ddipole) == 9*natm

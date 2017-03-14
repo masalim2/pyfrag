@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Background &#8212; pyfragment 0.1 documentation</title>
+    <title>Extending PyFragment &#8212; pyfragment 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,8 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Input to PyFragment" href="inputfile.html" />
-    <link rel="prev" title="Setup Instructions" href="setup.html" /> 
+    <link rel="prev" title="Sample Calculations" href="samples.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,10 +36,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="inputfile.html" title="Input to PyFragment"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="setup.html" title="Setup Instructions"
+          <a href="samples.html" title="Sample Calculations"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
@@ -51,26 +47,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="background">
-<h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
-<p>PyFragment is a collection of Python modules that facilitate the setup and
-parallel execution of <em>embedded-fragment</em> calculations on molecular clusters,
-liquids, and solids.</p>
-<div class="section" id="theory">
-<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
-<p>The <em>embedded-fragment</em> methods are rooted in the many body expansion (MBE),
-which expresses the total energy of a molecular system as (under
-construction...)</p>
-<div class="math">
-<p><img src="_images/math/b5c8b4ba69a82bcf024ed31e27f057f306295ca8.png" alt="E = \sum_{i} E_{i}"/></p>
-</div></div>
-<div class="section" id="implementation">
-<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
-<p>Under construction...</p>
-<div class="section" id="codes">
-<h3>Codes<a class="headerlink" href="#codes" title="Permalink to this headline">¶</a></h3>
-<p>Under construction</p>
+  <div class="section" id="extending-pyfragment">
+<h1>Extending PyFragment<a class="headerlink" href="#extending-pyfragment" title="Permalink to this headline">¶</a></h1>
+<p>When importing modules, all imports should be in the form of</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyfrag.Globals</span> <span class="k">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">params</span>
+<span class="kn">from</span> <span class="nn">pyfrag.backend</span> <span class="k">import</span> <span class="n">nw</span>
+</pre></div>
 </div>
+<p>And then module attributes should be accessed with the notation:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">verbose</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Importing data directly from modules will yield variables that do not
+correctly update when the corresponding module-level variable is updated.
+This can result in very difficult bugs to track. NEVER import variables
+from modules if they may change during program execution!</p>
 </div>
 </div>
 
@@ -80,28 +73,13 @@ construction...)</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Background</a><ul>
-<li><a class="reference internal" href="#theory">Theory</a></li>
-<li><a class="reference internal" href="#implementation">Implementation</a><ul>
-<li><a class="reference internal" href="#codes">Codes</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
   <h4>Previous topic</h4>
-  <p class="topless"><a href="setup.html"
-                        title="previous chapter">Setup Instructions</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="inputfile.html"
-                        title="next chapter">Input to PyFragment</a></p>
+  <p class="topless"><a href="samples.html"
+                        title="previous chapter">Sample Calculations</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/background.rst.txt"
+      <li><a href="_sources/extending.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -126,10 +104,7 @@ construction...)</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="inputfile.html" title="Input to PyFragment"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="setup.html" title="Setup Instructions"
+          <a href="samples.html" title="Sample Calculations"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>

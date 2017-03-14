@@ -17,6 +17,7 @@
 '''
 from pyfrag.Globals import geom, lattice, neighbor, params
 import numpy as np
+import os
 import contextlib
 
 @contextlib.contextmanager
@@ -27,11 +28,24 @@ def printoptions(*args, **kwargs):
     np.set_printoptions(**original)
 
 def log_input(inp):
-    pass
+    homedir = params.options['home_dir']
+    with open(os.path.join(homedir, params.qm_logfile), 'a') as fp:
+        fp.write(open(inp).read()+'\n')
 
 def log_output(output):
     pass
 
+def pretty_matrix(mat):
+    rows, cols = mat.shape
+    s_max = "%.2f" % mat.max()
+    s_min = "%.2f" % mat.min()
+    width = max(len(s_max), len(s_min)) + 1
+    format = "%" + str(width) + ".2f"
+    for r in range(rows):
+        for c in range(cols):
+            print format % mat[r,c],
+        print ""
+    print ""
 def prettyprint_atoms(atoms, chgs=None):
     if chgs is None:
         for at in atoms:
@@ -69,13 +83,13 @@ def print_fragment(fragments=None, net_charges=None, esp_charges=None, charges_o
         atoms = [geom.geometry[i] for i in frag]
         if esp_charges: chgs = [esp_charges[i] for i in frag]
         
-        print "(Fragment %d Charge %+d)" %  (n, net_charges[n])
+        print "(Frag %d Chg %+d)" %  (n, net_charges[n])
         if charges_only:
             for at, chg in zip(atoms, chgs):
                 print "%2s  %6.2f" % (at.sym.capitalize(), chg)
         else:
             prettyprint_atoms(atoms, chgs)
-        print "---------------------------------"
+        print "----------------------------------------"
     print ""
 
 def print_neighbors():
@@ -124,7 +138,40 @@ def print_parameters():
     print ""
 
 def print_bim_e_results(results):
-    print "E", results['energy']
+    print "%12s %16.8f" % ('E(monomer)', results['E1'])
+    print "%12s %16.8f" % ('E(dimer)', results['E2'])
+    print "%12s %16.8f" % ('E(coulomb)', results['Ec'])
+    print "-----------------------------" 
+    print "%12s %16.8f" % ('E(total)',   results['E'])
+    print "%12s %16.8f" % ('E(total)/N', results['E']/len(geom.fragments))
+
+def print_bim_grad_results(results):
+    print_bim_e_results(results)
+    print ""
+    print "BIM ENERGY GRADIENTS / a.u."
+    print "--------------------"
+    with printoptions(precision=4, suppress=True):
+        print results['gradient']
+    print ""
+    print "VIRIAL STRESS TENSOR / bar"
+    print "--------------------------"
+    with printoptions(precision=3, suppress=True):
+        stress = results['virial'] / (lattice.volume()*geom.ANG2BOHR**3)
+        print stress*geom.AU2BAR
+    print ""
+
+def print_bim_hess_results(results):
+    fname = params.args.input_file
+    head, tail = os.path.split(fname)
+    base, ext = os.path.splitext(tail)
+    fname = os.path.join(opts['home_dir'], base+'.hess')
+    n = 0
+    while os.path.exists(fname):
+        fname = '%s%d.hess' % (base, n)
+        fname = os.path.join(opts['home_dir'], fname)
+        n += 1
+    print "Writing hessian data out to %s" % fname
+    np.save(results, fname)
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"
