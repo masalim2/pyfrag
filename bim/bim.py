@@ -125,6 +125,7 @@ def kernel(comm=None):
         print "Fragment calculations received."
         print '\n'.join(["%s %s" % (k, v) for k,v in calcs.items()])
     if rank == 0:
+        print "Computing Fragment sums"
         sum_fxn = get_summation_fxn()
         result  = sum_fxn(specifiers, calcs)
     else:

@@ -46,6 +46,7 @@ util.parse_input(args.input_file)
 params.verbose = args.verbose
 params.quiet = args.quiet
 params.qm_logfile = args.qm_logfile
+params.args = args
 
 # MAKE SCRATCH DIRS
 # -----------------

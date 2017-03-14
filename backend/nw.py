@@ -112,6 +112,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
 def parse(data, calc, inp, atoms, bqs, save):
     '''Parse raw NWchem output.'''
     results = {}
+    options = params.options
     for n, line in enumerate(data):
 
         if "Total SCF energy" in line:
@@ -148,7 +149,7 @@ def parse(data, calc, inp, atoms, bqs, save):
                 grad = map(float, data[idx].split()[-3:])
                 gradients.append(grad)
             results['gradient'] = np.array(gradients)
-            if bqs:
+            if bqs and 'grad' in options['task']:
                 bq_gradients = []
                 bqforce_name, ext = os.path.splitext(inp)
                 bqforce_name += '.bqforce.dat'
@@ -159,8 +160,11 @@ def parse(data, calc, inp, atoms, bqs, save):
         basename, ext = os.path.splitext(inp)
         hess_name    = basename + ".hess"
         ddipole_name = basename + ".fd_ddipole"
-        hess_tri = np.loadtxt(hess_name)
-        ddipole = np.loadtxt(ddipole_name)
+        hess_txt = open(hess_name).read().replace('D', 'E')
+        hess_tri = np.fromstring(hess_txt, sep='\n')
+
+        ddipole_txt = open(ddipole_name).read().replace('D','E')
+        ddipole = np.fromstring(ddipole_txt, sep='\n')
         natm = len(atoms)
         assert len(hess_tri) == 3*natm + 3*natm*(3*natm-1)/2
         assert len(ddipole) == 9*natm

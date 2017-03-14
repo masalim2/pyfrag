@@ -17,6 +17,7 @@
 '''
 from pyfrag.Globals import geom, lattice, neighbor, params
 import numpy as np
+import os
 import contextlib
 
 @contextlib.contextmanager
@@ -27,11 +28,24 @@ def printoptions(*args, **kwargs):
     np.set_printoptions(**original)
 
 def log_input(inp):
-    pass
+    homedir = params.options['home_dir']
+    with open(os.path.join(homedir, params.qm_logfile), 'a') as fp:
+        fp.write(open(inp).read()+'\n')
 
 def log_output(output):
     pass
 
+def pretty_matrix(mat):
+    rows, cols = mat.shape
+    s_max = "%.2f" % mat.max()
+    s_min = "%.2f" % mat.min()
+    width = max(len(s_max), len(s_min)) + 1
+    format = "%" + str(width) + ".2f"
+    for r in range(rows):
+        for c in range(cols):
+            print format % mat[r,c],
+        print ""
+    print ""
 def prettyprint_atoms(atoms, chgs=None):
     if chgs is None:
         for at in atoms:
@@ -145,6 +159,19 @@ def print_bim_grad_results(results):
         stress = results['virial'] / (lattice.volume()*geom.ANG2BOHR**3)
         print stress*geom.AU2BAR
     print ""
+
+def print_bim_hess_results(results):
+    fname = params.args.input_file
+    head, tail = os.path.split(fname)
+    base, ext = os.path.splitext(tail)
+    fname = os.path.join(opts['home_dir'], base+'.hess')
+    n = 0
+    while os.path.exists(fname):
+        fname = '%s%d.hess' % (base, n)
+        fname = os.path.join(opts['home_dir'], fname)
+        n += 1
+    print "Writing hessian data out to %s" % fname
+    np.save(results, fname)
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"

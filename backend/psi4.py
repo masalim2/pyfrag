@@ -69,14 +69,14 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
                 grid_fp.write('%16.10f%16.10f%16.10f\n' % (bq[0], bq[1], bq[2]))
         f.write("oeprop(wfn, 'GRID_FIELD')\n")
     elif calc == 'hessian':
-        f.write('hess=hessian("%s")\n' % theory)
+        f.write('hess=hessian("%s", dertype="gradient")\n' % theory)
         f.write('hessarr=np.array(psi4.p4util.mat2arr(hess))\n')
         f.write('''M,N=hessarr.shape
 i=0
 with open('hess.dat', 'w') as fp:
     for row in range(M):
         for col in range(row+1):
-            fp.write('%24.16E\n' % hessarr[row, col])
+            fp.write('%24.16E\\n' % hessarr[row, col])
             i += 1
             ''')
     f.close()
@@ -99,7 +99,7 @@ def parse(data, calc, inp, atoms, bqs, save):
                 grad = map(float, data[idx].split()[1:])
                 gradients.append(grad)
             results['gradient'] = np.array(gradients)
-            if bqs:
+            if bqs and 'grad' in calc:
                 bq_field = np.loadtxt('grid_field.dat')
                 assert bq_field.shape == (len(bqs), 3)
                 bqgrad = []

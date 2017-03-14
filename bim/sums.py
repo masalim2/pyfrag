@@ -156,13 +156,26 @@ def gradient_sum(specifiers, calcs):
     return g_result
 
 def hessian_sum(specifiers, calcs):
-    ncells = params.options['interaction_cells']
-    na,nb,nc = map(int, ncells.split())
-    hess_result = {}
+    from itertools import product
+    cell_ranges = params.options['interaction_cells']
+    cell_ranges = map(int, cell_ranges)
+    for i, pbc_flag in enumerate(lattice.PBC_flag):
+        if not pbc_flag:
+            cell_ranges[i] = 0
+    Na,Nb,Nc = cell_ranges
+
+    ncells = (2*Na+1)*(2*Nb+1)*(2*Nc+1)
+    cells = list(enumerate(product(range(-Na,Na+1), range(-Nb,Nb+1),
+        range(-Nc,Nc+1))))
+    assert len(cells) == ncells
+    cellmap = {(a,b,c) : i for (i, (a,b,c)) in cells}
+    
     natm  = len(geom.geometry)
     nfrag = len(geom.fragments)
+    
     hess1 = np.zeros((3*natm,3*natm))
-    hess2 = np.zeros((2*na+1,2*nb+1,2*nc+1,3*natm,3*natm))
+    hess2 = np.zeros((ncells,3*natm,3*natm))
+    hess_result = {}
     # monomer sums
     for mon in specifiers[0:nfrag]:
         i, = mon
@@ -174,10 +187,13 @@ def hessian_sum(specifiers, calcs):
         for row in range(row0, row0+3*natomi):
             for col in range(row0, row+1):
                 hess1[row,col] += hess0[n]
-                if col < row:
+                print row, col, hess0[n], i
+                if col != row:
                     hess1[col,row] += hess0[n]
+                    print col, row, hess0[n], i
                 n += 1
     
+
     for idim in range(nfrag, len(specifiers), 3):
         cij, ci, cj = specifiers[idim:idim+3]
         i,j,a,b,c   = cij
@@ -195,35 +211,46 @@ def hessian_sum(specifiers, calcs):
                 if row00 < 3*natm_i:
                     row0 = 3*atm_i[0]
                     col0 = row0
-                    n0 = [0,0,0] # i(0)i(0)
+                    n0 = (0,0,0) # i(0)i(0)
                 else:
+                    assert natm_i == 3
                     row0 = 3*atm_j[0] - 3*natm_i
                     if col00 < 3*natm_i:
-                        col0 = atm_i[0]
-                        n0 = [-a,-b,-c] # j(0)i(-n)
+                        col0 = 3*atm_i[0]
+                        n0 = (-a,-b,-c) # j(0)i(-n)
                     else:
                         col0 = row0
-                        n0 = [0,0,0] # j(0)j(0)
+                        n0 = (0,0,0) # j(0)j(0)
                 
                 row = row0 + row00
                 col = col0 + col00
 
-                if abs(n0[0]) > na or abs(n0[1]) > nb or abs(n0[2]) > nc:
+                if abs(n0[0]) > Na or abs(n0[1]) > Nb or abs(n0[2]) > Nc:
                     n += 1
                     continue
-                hess2[n0[0], n0[1], n0[2], row, col] += hess0[n]
-                if row != col or n0 != [0,0,0]:
-                    hess2[-n0[0], -n0[1], -n0[2], col, row] += hess0[n]
+
+                icell = cellmap[n0]
+                hess2[icell, row, col] += hess0[n]
+                print row, col, hess0[n], i, j
+                
+                if row != col or n0 != (0,0,0):
+                    icell = cellmap[(-n0[0], -n0[1], -n0[2])]
+                    hess2[icell, col, row] += hess0[n]
+                    print col, row, hess0[n], i, j
+                
                 n += 1
         
+        icell0 = cellmap[(0,0,0)]
         hess0 = calcs[ci]['hess_tri']
         n = 0
         row0 = 3*atm_i[0]
         for row in range(row0, row0+3*natm_i):
             for col in range(row0, row+1):
-                hess2[0,0,0,row,col] -= hess0[n]
+                hess2[icell0,row,col] -= hess0[n]
+                print row, col, -hess0[n], i
                 if col != row:
-                    hess2[0,0,0,col,row] -= hess0[n]
+                    hess2[icell0,col,row] -= hess0[n]
+                    print col, row, -hess0[n], i
                 n += 1
         
         hess0 = calcs[cj]['hess_tri']
@@ -231,12 +258,15 @@ def hessian_sum(specifiers, calcs):
         row0 = 3*atm_j[0]
         for row in range(row0, row0+3*natm_j):
             for col in range(row0, row+1):
-                hess2[0,0,0,row,col] -= hess0[n]
+                hess2[icell0,row,col] -= hess0[n]
+                print row, col, -hess0[n], j
                 if col != row:
-                    hess2[0,0,0,col,row] -= hess0[n]
+                    hess2[icell0,col,row] -= hess0[n]
+                    print col, row, -hess0[n], j
                 n += 1
 
     hess_total = hess2.copy()
-    hess_total[0,0,0,:,:] += hess1
+    hess_total[icell0,:,:] += hess1
     hess_result = {'hess1' : hess1, 'hess2' : hess2, 'hess' : hess_total}
+    hess_result['cellmap'] = cellmap
     return hess_result
