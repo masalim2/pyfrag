@@ -171,7 +171,7 @@ def print_bim_hess_results(results):
         fname = os.path.join(opts['home_dir'], fname)
         n += 1
     print "Writing hessian data out to %s" % fname
-    np.save(results, fname)
+    np.savez(fname, hess=results['hess'])
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"

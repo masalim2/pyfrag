@@ -8,12 +8,16 @@ def energy_sum(specifiers, calcs):
     E1 = 0.0
     E2 = 0.0
     nfrag = len(geom.fragments)
+    
     for m in specifiers[0:nfrag]:
         E1 += calcs[m]['E_tot']
+    
     for i in range(nfrag, len(specifiers), 3):
         cij, ci, cj = specifiers[i:i+3]
         E2 += calcs[cij]['E_tot'] - calcs[ci]['E_tot'] - calcs[cj]['E_tot']
+    
     E_coulomb = coulomb.energy_coulomb
+    
     return {'E':E1+E2+E_coulomb, 'E1': E1, 'E2' : E2, 'Ec' : E_coulomb}
 
 def gradient_sum(specifiers, calcs):
@@ -176,6 +180,7 @@ def hessian_sum(specifiers, calcs):
     hess1 = np.zeros((3*natm,3*natm))
     hess2 = np.zeros((ncells,3*natm,3*natm))
     hess_result = {}
+    
     # monomer sums
     for mon in specifiers[0:nfrag]:
         i, = mon
