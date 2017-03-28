@@ -52,6 +52,32 @@ python `modules <https://bluewaters.ncsa.illinois.edu/python>`_.  Your job submi
     module load bwpy
     module load bwpy-mpi
 
+Installing Psi4
+***************
+::
+    git clone https://github.com/psi4/psi4.git
+    module load bwpy
+    export CRAYPE_LINK_TYPE=dynamic
+    export CRAY_ADD_RPATH=yes
+    mkdir ~/libsci
+Now, query the currently (default) loaded Cray LibSci module to find the
+directory containg the LibSci libaries.  Make symlinks in ~/libsci 
+to all the necessary versions, naming the links corresponding to libsci.* 
+as liblapack.*. This is necessary for CMake to recognize the math libraries.
+Finally, export the MATH_ROOT environment variable::
+    export MATH_ROOT=~/libsci
+
+You will need a newer version of cmake than is provided on Blue Waters. A
+convenient way to quickly get the binary is with Miniconda (conda install
+cmake). This binary will work fine for the build process.  ::
+    cd psi4
+    cmake -H. -Bobjdir
+    cd objdir
+    nohup make >& make.log &
+The compilation is rather lengthy; using nohup will allow you to launch the
+build and then log off without interrupting the process.
+    
+
 Running as executable
 ---------------------
 To run as an executable on 16 cores, invoke :: 
