@@ -124,8 +124,9 @@ def kernel(comm=None):
     if VERB and rank == 0:
         print "Fragment calculations received."
         print '\n'.join(["%s %s" % (k, v) for k,v in calcs.items()])
+
     if rank == 0:
-        print "Computing Fragment sums"
+        if not QUIET: print "Computing Fragment sums"
         sum_fxn = get_summation_fxn()
         result  = sum_fxn(specifiers, calcs)
     else:
