@@ -105,6 +105,36 @@ python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/
 <span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span><span class="o">-</span><span class="n">mpi</span>
 </pre></div>
 </div>
+<div class="section" id="installing-psi4">
+<h3>Installing Psi4<a class="headerlink" href="#installing-psi4" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>::</dt>
+<dd>git clone <a class="reference external" href="https://github.com/psi4/psi4.git">https://github.com/psi4/psi4.git</a>
+module load bwpy
+export CRAYPE_LINK_TYPE=dynamic
+export CRAY_ADD_RPATH=yes
+mkdir ~/libsci</dd>
+</dl>
+<p>Now, query the currently (default) loaded Cray LibSci module to find the
+directory containg the LibSci libaries.  Make symlinks in ~/libsci
+to all the necessary versions, naming the links corresponding to libsci.*
+as liblapack.*. This is necessary for CMake to recognize the math libraries.
+Finally, export the MATH_ROOT environment variable:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">MATH_ROOT</span><span class="o">=~/</span><span class="n">libsci</span>
+</pre></div>
+</div>
+<p>You will need a newer version of cmake than is provided on Blue Waters. A
+convenient way to quickly get the binary is with Miniconda (conda install
+cmake). This binary will work fine for the build process.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">psi4</span>
+<span class="n">cmake</span> <span class="o">-</span><span class="n">H</span><span class="o">.</span> <span class="o">-</span><span class="n">Bobjdir</span>
+<span class="n">cd</span> <span class="n">objdir</span>
+<span class="n">nohup</span> <span class="n">make</span> <span class="o">&gt;&amp;</span> <span class="n">make</span><span class="o">.</span><span class="n">log</span> <span class="o">&amp;</span>
+</pre></div>
+</div>
+<p>The compilation is rather lengthy; using nohup will allow you to launch the
+build and then log off without interrupting the process.</p>
+</div>
 </div>
 <div class="section" id="running-as-executable">
 <h2>Running as executable<a class="headerlink" href="#running-as-executable" title="Permalink to this headline">¶</a></h2>
@@ -128,7 +158,10 @@ located in pyfrag directory.</p>
 <li><a class="reference internal" href="#">Setup Instructions</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#gellmann-setup">Gellmann setup</a></li>
-<li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a></li>
+<li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a><ul>
+<li><a class="reference internal" href="#installing-psi4">Installing Psi4</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#running-as-executable">Running as executable</a></li>
 </ul>
 </li>
@@ -177,8 +210,8 @@ located in pyfrag directory.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, So Hirata Group, University of Illinois.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The globals Module &#8212; pyfragment 0.1 documentation</title>
+    <title>The Globals Module &#8212; pyfragment 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -52,14 +52,33 @@
           <div class="body" role="main">
             
   <div class="section" id="the-globals-module">
-<h1>The <strong>globals</strong> Module<a class="headerlink" href="#the-globals-module" title="Permalink to this headline">¶</a></h1>
-<p>The <strong>globals</strong> module contains essential shared data and functionality
+<h1>The <strong>Globals</strong> Module<a class="headerlink" href="#the-globals-module" title="Permalink to this headline">¶</a></h1>
+<p>The <strong>Globals</strong> module contains essential shared data and functionality
 for <em>all</em> types of fragment calculations.</p>
 <div class="section" id="globals-geom">
-<h2>globals.geom<a class="headerlink" href="#globals-geom" title="Permalink to this headline">¶</a></h2>
+<h2>Globals.geom<a class="headerlink" href="#globals-geom" title="Permalink to this headline">¶</a></h2>
 <p>Defines the fundamental Atom class to conveniently load and print geometry
 information.  Contains functions for loading geometry and performing
 <em>fragmentation</em>, that is, assigning which atoms belong to which fragments.</p>
+<dl class="function">
+<dt id="Globals.geom.load_geometry">
+<code class="descclassname">Globals.geom.</code><code class="descname">load_geometry</code><span class="sig-paren">(</span><em>data</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads geometry from input text, lists, or filename.</p>
+<p>Tries to be flexible with the form of input &#8216;data&#8217; argument. 
+Uses regex to extract atomic coordinates from text.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>data: string, list of strings, list of lists, or filename</dt>
+<dd>containing the xyz coordinate data</dd>
+</dl>
+<p class="last">units (default Angstrom): &#8220;bohr&#8221; or &#8220;angstrom&#8221;</p>
+</dd>
+<dt>Returns:</dt>
+<dd>None: the geometry is saved as a module-level variable</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 
@@ -71,8 +90,8 @@ information.  Contains functions for loading geometry and performing
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">The <strong>globals</strong> Module</a><ul>
-<li><a class="reference internal" href="#globals-geom">globals.geom</a></li>
+<li><a class="reference internal" href="#">The <strong>Globals</strong> Module</a><ul>
+<li><a class="reference internal" href="#globals-geom">Globals.geom</a></li>
 </ul>
 </li>
 </ul>
@@ -120,8 +139,8 @@ information.  Contains functions for loading geometry and performing
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, So Hirata Group, University of Illinois.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>
