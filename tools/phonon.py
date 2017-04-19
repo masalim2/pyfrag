@@ -57,10 +57,15 @@ def make_brillouin_zone3D():
     return grid[inside_bz]
 
 def read_force_consts_np(fname):
-    hess = None
     data = np.load(fname)
     hess = data['hess']
-    return hess
+    cell_list = data['cell_list']
+
+    F = {}
+
+    for (i, (a,b,c)) in enumerate(cell_list):
+        F[(a,b,c)] = hess[i, :, :]
+    return F
 
 def read_force_consts_txt(fname):
     F = {}

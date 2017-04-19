@@ -173,6 +173,7 @@ def hessian_sum(specifiers, calcs):
         range(-Nc,Nc+1))))
     assert len(cells) == ncells
     cellmap = {(a,b,c) : i for (i, (a,b,c)) in cells}
+    cell_list = np.array([ [a,b,c] for (i, (a,b,c)) in cells],dtype=np.int)
     
     natm  = len(geom.geometry)
     nfrag = len(geom.fragments)
@@ -273,5 +274,5 @@ def hessian_sum(specifiers, calcs):
     hess_total = hess2.copy()
     hess_total[icell0,:,:] += hess1
     hess_result = {'hess1' : hess1, 'hess2' : hess2, 'hess' : hess_total}
-    hess_result['cellmap'] = cellmap
+    hess_result['cell_list'] = cell_list
     return hess_result

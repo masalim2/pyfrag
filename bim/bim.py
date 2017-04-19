@@ -13,6 +13,7 @@ from pyfrag.bim import sums
 def task_str():
     task = { 'bim_e'   : 'energy',
             'bim_grad' : 'gradient',
+            'bim_md'   : 'gradient',
             'bim_hess' : 'hessian'
            }.get(params.options['task'])
     return task

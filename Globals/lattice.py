@@ -55,7 +55,7 @@ def update_lat_params():
     alpha = np.arccos(np.dot(lat_vecs[:,1], lat_vecs[:,2])/(b*c))
     gamma, beta, alpha = np.rad2deg([gamma, beta, alpha])
 
-    lattice = LatticeTuple(a, b, c, alpha, beta, gamma, 0)
+    lattice = [a, b, c, alpha, beta, gamma, 0]
 
 def volume():
     '''Return volume in Angstrom**3 
@@ -112,3 +112,87 @@ def lat_angle_differential():
     dbeta  = (dbeta  - lat_vecs) / DELTA
     dgamma = (dgamma - lat_vecs) / DELTA
     return dalpha, dbeta, dgamma
+
+def lattice_gradient(virial, p0_bar):
+    '''Compute the energy gradient in lattice parameters (a.u. / bohr)
+
+    Args:
+        virial: 3x3 numpy array, from gradient calculation
+        p0_bar: external pressure in bar
+    Returns:
+        lat_grad: 6-dimensional gradient vector in au/bohr, au/degrees
+    '''
+    volume = volume() * geom.ANG2BOHR**3
+    stress = virial / volume
+    stress -= np.eye(3) * p0_bar/geom.AU2BAR
+    stress = 0.5*(stress + stress.T)
+
+    g_lat = np.dot(stress, lat_vecs_inv.T/geom.ANG2BOHR)
+    g_lat = -volume*g_lat
+
+    dalpha, dbeta, dgamma = lat_angle_differential()
+    lat_grad = np.zeros((6,))
+
+    lat_grad[0] = np.dot(g_lat[:,0], lat.lat_vecs[:,0]/lat.lattice[0])
+    lat_grad[1] = np.dot(g_lat[:,1], lat.lat_vecs[:,1]/lat.lattice[1])
+    lat_grad[2] = np.dot(g_lat[:,2], lat.lat_vecs[:,2]/lat.lattice[2])
+
+    lat_grad[3] = np.sum(g_lat*geom.ANG2BOHR*dalpha)
+    lat_grad[4] = np.sum(g_lat*geom.ANG2BOHR*dbeta)
+    lat_grad[5] = np.sum(g_lat*geom.ANG2BOHR*dgamma)
+
+    if not lat.PBC_flag[0]:
+        lat_grad[0] = 0.0
+    if not lat.PBC_flag[1]:
+        lat_grad[1] = 0.0
+    if not lat.PBC_flag[2]:
+        lat_grad[2] = 0.0
+    if not all(lat.PBC_flag):
+        lat_grad[3] = 0.0
+        lat_grad[4] = 0.0
+        lat_grad[5] = 0.0
+
+    return lat_grad
+
+def rescale(scaling):
+    '''Rescale the lattice vectors and shift fragment centers of mass to 
+    preserve scaled COM coordinates while maintaining internal fragment 
+    coordinates.
+    
+    Args:
+        scaling: either a 3x3 lattice vector transformation matrix (ndarray)
+          or a list of lattice parameters (a,b,c,alpha,beta,gamma,axis) in
+          Angstrom.
+    Returns: 
+        None.
+    '''
+    global lattice, lat_vecs, lat_vecs_inv
+    geom  = geom.geometry
+    frags = geom.fragments
+
+    com_coords  = np.array(geom.com(frag) for frag in frags)
+    scal_coords = np.zeros(com_coords.shape)
+    atom_coords = np.zeros(geom.shape)
+
+    # to scaled COM/internal coordinates
+    for i, frag in enumerate(frags):
+        for iat in frag:
+            atom_coords[iat] = geom[iat].pos - com_coords[i]
+        scal_coords[i] = np.dot(lat_vecs_inv, com_coords[i])
+
+    # alter lattice vectors
+    if isinstance(scaling, np.ndarray) and scaling.shape == (3,3):
+        lat_vecs = np.dot(scaling, lat_vecs)
+        update_lat_params()
+        update_lat_vecs()
+    else:
+        assert len(scaling) == 7
+        set_lattice(*scaling)
+        update_lat_vecs()
+
+    # back to cartesian coordinates
+    for i, frag in enumerate(frags):
+        com_coords[i] = np.dot(lat_vecs, scal_coords[i])
+        for iat in frag:
+            atom_coords[iat] += com_coords[i]
+            geom.geometry[iat].pos = atom_coords[iat]

@@ -45,6 +45,7 @@ def parse(inFile):
     global options
 
     options = {}
+    options['input_filename'] = inFile.name
     inputLines = inFile.readlines()
     nlines = len(inputLines)
     n = 0

@@ -171,7 +171,7 @@ def print_bim_hess_results(results):
         fname = os.path.join(opts['home_dir'], fname)
         n += 1
     print "Writing hessian data out to %s" % fname
-    np.savez(fname, hess=results['hess'])
+    np.savez(fname, hess=results['hess'], cell_list=results['cell_list'])
 
 def print_vbct_e_results(results):
     print "VBCT Energy Results (Energy/Eigenvector)"
@@ -180,3 +180,6 @@ def print_vbct_e_results(results):
     eigvecs = results['eigvecs']
     for val, vec in zip(eigvals, eigvecs.T):
         print ("%12.8f" + len(vec)*"%9.4f") %((val+E_nuclear,)+tuple(vec))
+
+def print_bim_md_results(results):
+    pass
