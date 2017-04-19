@@ -1,13 +1,13 @@
-The **globals** Module
+The **Globals** Module
 ======================
 
-The **globals** module contains essential shared data and functionality 
+The **Globals** module contains essential shared data and functionality 
 for *all* types of fragment calculations. 
 
-globals.geom
+Globals.geom
 ------------
 Defines the fundamental Atom class to conveniently load and print geometry
 information.  Contains functions for loading geometry and performing
 *fragmentation*, that is, assigning which atoms belong to which fragments.
 
-.. automodule:: globals
+.. autofunction:: Globals.geom.load_geometry

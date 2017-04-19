@@ -12,6 +12,6 @@ And then module attributes should be accessed with the notation::
 
 .. warning::
     Importing data directly from modules will yield variables that do not
-    correctly update when the corresponding module-level variable is updated. 
+    correctly update when the corresponding module-level variable is changed.
     This can result in very difficult bugs to track. NEVER import variables
     from modules if they may change during program execution!

@@ -13,6 +13,7 @@ from pyfrag.bim import sums
 def task_str():
     task = { 'bim_e'   : 'energy',
             'bim_grad' : 'gradient',
+            'bim_md'   : 'gradient',
             'bim_hess' : 'hessian'
            }.get(params.options['task'])
     return task
@@ -124,8 +125,9 @@ def kernel(comm=None):
     if VERB and rank == 0:
         print "Fragment calculations received."
         print '\n'.join(["%s %s" % (k, v) for k,v in calcs.items()])
+
     if rank == 0:
-        print "Computing Fragment sums"
+        if not QUIET: print "Computing Fragment sums"
         sum_fxn = get_summation_fxn()
         result  = sum_fxn(specifiers, calcs)
     else:

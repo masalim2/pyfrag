@@ -12,7 +12,8 @@ which expresses the total energy of a molecular system as (under
 construction...)
 
 .. math :: E = \sum_{i} E_{i}
-.. autofunction :: vbct.energy.energy
+
+# .. autofunction :: vbct.energy.energy
 
 Implementation
 --------------

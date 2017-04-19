@@ -129,6 +129,9 @@ def load_geometry(data, units='angstrom'):
                 except ValueError:
                     pass # just skip non-atom lines
 
+def pos_array():
+    return np.array([at.pos for at in geometry])
+
 def set_frag_full_system():
     '''No fragmentation: all atoms in system belong to one fragment.
 
