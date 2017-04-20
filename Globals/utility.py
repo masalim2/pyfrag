@@ -2,9 +2,10 @@ import os
 from shutil import rmtree
 import tempfile
 
-from pyfrag.Globals import params, geom, MPI, logger, lattice
+from pyfrag.Globals import params, geom, MPI, lattice
 
 def pretty_time(seconds):
+    '''Convert elapsed seconds to a nice string representation'''
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
@@ -16,13 +17,16 @@ def pretty_time(seconds):
         return "%02dm:%02ds" % (m,s)
 
 def make_scratch_dirs(top_dir=None):
+    '''Establish current directory, scratch directories, and temporary shared
+    directories
+    '''
     home_dir = os.getcwd()
     params.options['home_dir'] = home_dir
-    
+
     # rank-private scratch directory (scrdir)
     scrdir = tempfile.mkdtemp(prefix='job%d_' % MPI.rank, dir=top_dir)
     params.options['scrdir'] = scrdir
-    
+
     # shared scratch files (share_dir)
     share_dir = os.path.join(home_dir, 'shared_temporary_data')
     if not os.path.exists(share_dir) and MPI.rank == 0:
@@ -35,9 +39,13 @@ def clean_scratch_dirs():
         rmtree(params.options['share_dir'])
 
 def parse_input(input_file):
+    '''Open input_file, parse it, load geometry, and MPI-broadcast the data'''
     if MPI.rank == 0:
-        with open(input_file) as fp: params.parse(fp)
+        with open(input_file) as fp:
+            params.parse(fp)
+
         geom.load_geometry(params.options['geometry'])
+
     params.options  = MPI.bcast(params.options, master=0)
     geom.geometry   = MPI.bcast(geom.geometry, master=0)
     lattice.lattice = MPI.bcast(lattice.lattice, master=0)
@@ -47,7 +55,7 @@ def parse_input(input_file):
 
 
 def mw_execute(specifiers, run_calc, comm=None, *args):
-    '''Run a series of calculations in master-worker mode.
+    '''Run a series of generic calculations in master-worker mode.
 
     Args:
         specifiers: a list of tuples which uniquely determine a

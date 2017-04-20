@@ -1,8 +1,9 @@
+'''Geometry optimization (fixed unit cell)'''
 import numpy as np
 from scipy.optimize import minimize
 
 from pyfrag.Globals import lattice as lat
-from pyfrag.Globals import geom, params, MPI, logger
+from pyfrag.Globals import geom, params, MPI
 from pyfrag.bim import bim
 
 def to_flat():
@@ -18,7 +19,12 @@ def from_flat(x):
             ii += 1
 
 def objective_gopt(x):
-    '''energy opt wrt geometry (using E and gradient)'''
+    '''energy opt wrt geometry (using E and gradient)
+
+    This objective function packs/unpacks the geometry from
+    a 1D ndarray, updates geom.geometry, and invokes bim.kernel
+    to update the energy/gradient.
+    '''
     from_flat(x)
     geom.geometry = MPI.bcast(geom.geometry, master=0)
     results = bim.kernel()
@@ -27,8 +33,9 @@ def objective_gopt(x):
     if MPI.rank == 0:
         print "%18.8f %18.8f" % (E, np.abs(grad).mean())
     return E, grad.flatten()
-    
+
 def gopt_callback(xk):
+    '''Report geometry by appending to gopt.xyz'''
     if MPI.rank != 0: return
     with open('gopt.xyz', 'a') as fp:
         fp.write('%d\n' % len(geom.geometry))
@@ -37,6 +44,7 @@ def gopt_callback(xk):
             fp.write(str(at) + '\n')
 
 def kernel():
+    '''Invoke scipy optimizer'''
     options = params.options
     params.quiet = True
     maxiter = options.get('maxiter', 50)
@@ -49,7 +57,7 @@ def kernel():
         print "%18s %18s" % ("Energy/au", "MAGrad/au/bohr")
     res = minimize(objective_gopt, geom0, method='BFGS', jac=True,
             options=minopt, callback=gopt_callback)
-    
+
     new_geom = res.x
     from_flat(new_geom)
     if MPI.rank == 0 and res.success:

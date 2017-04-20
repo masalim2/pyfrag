@@ -1,8 +1,19 @@
+'''Backend for Psi4 -- importing Psi4 module directly'''
+import numpy as np
 import psi4
 
 from pyfrag.Globals import params, geom
 
 def calculate(inp, calc, save):
+    '''Run nwchem on input, return data in results dict
+
+    Args
+        inp: Psi4 input object (geometry, bq_pos, bq_charges)
+        calc: calculation type
+        save: save calculation results
+    Returns
+        results: dictionary
+    '''
     options = params.options
     mol, bqfield, bqs = inp
     psi4.core.set_global_option_python('EXTERN', bqfield.extern)
@@ -16,6 +27,7 @@ def calculate(inp, calc, save):
         theory = 'scf'
     method_str = theory + '/' + options['basis']
 
+    results = {}
     if calc == 'energy' or calc == 'energy_hf':
         results['E_tot'] = psi4.energy(method_str)
     elif calc == 'esp':
@@ -23,6 +35,7 @@ def calculate(inp, calc, save):
     elif calc == 'gradient':
         grad, wfn = psi4.gradient(method_str, return_wfn=True)
         E = psi4.core.get_variable('CURRENT ENERGY')
+        results['E'] = E
         results['gradient'] = psi4.p4util.mat2arr(grad)
         with open('grid.dat', 'w') as fp:
             for bq in bqs:
@@ -41,6 +54,7 @@ def calculate(inp, calc, save):
     return results
 
 def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
+    '''Prepare Psi4 module by setting geometry and BQ field'''
 
     geom_str = '\n'.join(map(str, atoms))
     geom_str += "\nsymmetry c1\nno_reorient\nno_com\n"
@@ -59,4 +73,5 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     return mol, bqfield, bqs
 
 def parse(data, calc, inp, atoms, bqs, save):
+    '''Return data; for compatibilility with generic backend'''
     return data

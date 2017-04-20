@@ -1,3 +1,7 @@
+'''This module contains the globally-shared geometry and fragments list, along
+with supporting data structures (Atom class, z_map, physical constants), and
+functions (loading geometry, performing fragmentation, etc...)
+'''
 import numpy as np
 import re
 import os
@@ -9,7 +13,7 @@ from pyfrag.Globals import params
 BOHR2ANG = 0.529177249
 ANG2BOHR = 1.0/BOHR2ANG
 AU2BAR   = 2.9421910e8
-mass_map = { 
+mass_map = {
    'h'  : 1.0,
    'd'  : 2.0,
    'he' : 4.0,
@@ -27,7 +31,7 @@ z_map = {
 }
 
 # Cutoff bond distances for auto-fragmentation
-frag_cutoffs = { 
+frag_cutoffs = {
                  ('c','c'): 1.5,
                  ('c','h'): 1.3,
                  ('c','o'): 2.0,
@@ -38,7 +42,7 @@ frag_cutoffs = {
 # Module-level data: shared with others
 # geometry: the list of Atoms
 # fragments: the list of frags, each of which is
-#   a list of atom indices 
+#   a list of atom indices
 geometry = []
 fragments = []
 
@@ -52,16 +56,16 @@ class Atom:
                          ''', re.VERBOSE)
 
     def __init__(self, atomstr, units='angstrom'):
-        if units.lower().startswith('bohr'): 
+        if units.lower().startswith('bohr'):
             scale = BOHR2ANG
         else:
             scale = 1.0
 
         name, x, y, z = self.pattern.search(atomstr).groups()
-        
+
         self.formal_chg = name.count('+') - name.count('-')
         self.sym = name.lower()[:2].replace('+','').replace('-','')
-        
+
         x,y,z = [float(r.replace('D', 'E').replace('d','e')) for r in x,y,z]
         self.pos = np.array([x,y,z])*scale
 
@@ -83,13 +87,13 @@ class Atom:
         return at2
 
 
-     
+
 def load_geometry(data, units='angstrom'):
     '''Loads geometry from input text, lists, or filename.
-    
-    Tries to be flexible with the form of input 'data' argument. 
+
+    Tries to be flexible with the form of input 'data' argument.
     Uses regex to extract atomic coordinates from text.
-    
+
     Args:
         data: string, list of strings, list of lists, or filename
             containing the xyz coordinate data
@@ -101,9 +105,9 @@ def load_geometry(data, units='angstrom'):
     geometry[:] = [] # syntax essential to refer to the global geometry!
 
     # Convert input data to a list of strings
-    if isinstance(data, str): 
+    if isinstance(data, str):
         data = data.split('\n')
-    
+
     if isinstance(data[0], str) and os.path.exists(data[0]):
         fname = data[0]
         data[:] = []
@@ -117,9 +121,9 @@ def load_geometry(data, units='angstrom'):
 
     # Now try to make an Atom out of each string
     for atomstr in data:
-        try: 
+        try:
             geometry.append(Atom(atomstr))
-        except AttributeError: 
+        except AttributeError:
             dat = atomstr.split()
             if len(dat) >= 7:
                 try:
@@ -136,7 +140,7 @@ def set_frag_full_system():
     '''No fragmentation: all atoms in system belong to one fragment.
 
     Use this to perform one big reference QM calculation
-    
+
     Args:
         None (module-level geometry is used)
     Returns:
@@ -151,7 +155,7 @@ def set_frag_manual():
     '''Read list of fragments from input file.
 
     Fragmentation is manually specified in the input file.
-    
+
     Args:
         None (module-level geometry is used)
     Returns:
@@ -168,7 +172,7 @@ def set_frag_auto():
     '''Auto-generate list of fragments based on bond-length frag_cutoffs.
 
     Use this if you don't wish to manually assign atoms to fragments.
-    
+
     Args:
         None (module-level geometry is used)
     Returns:
@@ -177,7 +181,7 @@ def set_frag_auto():
     global fragments
     fragments[:] = []
     from itertools import combinations
-    
+
     def cutoff(at1, at2):
         key = tuple(sorted([at1.sym, at2.sym]))
         if key in frag_cutoffs: return frag_cutoffs[key]
@@ -212,14 +216,14 @@ def set_frag_auto():
 
 def com(frag):
     '''Get center of mass of a fragment.
-    
+
     Args
         frag: the list of atom indices
     Returns
         com: numpy array pointing at COM'''
     atoms = [geometry[i] for i in frag]
     totalmass = sum([mass_map[at.sym] for at in atoms])
-    return sum(mass_map[at.sym]*at.pos 
+    return sum(mass_map[at.sym]*at.pos
                 for at in atoms)/totalmass
 
 def charge(frag):

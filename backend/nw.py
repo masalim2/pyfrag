@@ -1,3 +1,4 @@
+'''NWChem Backend'''
 import tempfile
 import textwrap
 import subprocess
@@ -9,7 +10,15 @@ import os
 from pyfrag.Globals import params, geom
 
 def calculate(inp, calc, save):
-    '''Run nwchem on input, return raw output'''
+    '''Run nwchem on input, return raw output
+
+    Args
+        inp: NWChem input object (input file path)
+        calc: calculation type
+        save: save calculation results
+    Returns
+        output_lines: nwchem stdout lines
+    '''
     options = params.options
     args = ['nwchem.x', inp]
     try:
@@ -32,7 +41,11 @@ def calculate(inp, calc, save):
     return output.split('\n')
 
 def invecs(guess):
-    '''Create initial guess string for NWchem scf input'''
+    '''Create initial guess string for NWchem scf input
+
+    Args
+        guess: string or list of strings for fragment guess
+    '''
     if guess is None:
         return 'atomic'
     elif isinstance(guess, str):
@@ -57,7 +70,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('geometry units angstroms noautosym noautoz nocenter\n')
     f.write('\n'.join(map(str, atoms)))
     f.write('\nend\n\n')
-    
+
     f.write('basis spherical noprint\n')
     f.write('  * library %s\n' % options['basis'])
     f.write('end\n\n')
@@ -66,14 +79,14 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     if 'grad' in calc: f.write(' force\n')
     f.write('\n'.join(((4*'%18.8f') % (bq[0], bq[1], bq[2], bq[3])) for bq in bqs))
     f.write('\nend\n\n')
-    
+
     f.write('scf\n')
     f.write('sym off; adapt off\n')
     if charge %2 != 0:
         f.write('%s\n' % options['hftype'])
         f.write('nopen %d\n' % (nelec%2))
     if noscf: f.write('noscf\n')
-    
+
     invec = invecs(guess)
     outvec = os.path.join(options['scrdir'], os.path.basename(f.name))+".movecs"
     vec_string = 'vectors input %s output %s' % (invec, outvec)
@@ -150,7 +163,6 @@ def parse(data, calc, inp, atoms, bqs, save):
                 gradients.append(grad)
             results['gradient'] = np.array(gradients)
             if bqs and 'grad' in options['task']:
-                bq_gradients = []
                 bqforce_name, ext = os.path.splitext(inp)
                 bqforce_name += '.bqforce.dat'
                 results['bq_gradient'] = np.loadtxt(bqforce_name)
@@ -170,5 +182,5 @@ def parse(data, calc, inp, atoms, bqs, save):
         assert len(ddipole) == 9*natm
         results['hess_tri'] = hess_tri
         results['ddipole'] = ddipole
-                
+
     return results

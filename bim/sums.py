@@ -1,26 +1,36 @@
+'''The BIM summation functions to produce full-system properties
+
+Each sum function takes the same arguments:
+    specifiers: a list of specifier tuples (as defined in bim.kernel)
+    calcs: a dict (with keys matching specifiers.keys()) of dicts containing the
+        results from each fragment calculation.
+And returns a dictionary of calculation results
+'''
 import numpy as np
 
 from pyfrag.Globals import params
 from pyfrag.Globals import geom, lattice
-from pyfrag.Globals import neighbor, coulomb
+from pyfrag.Globals import coulomb
 
 def energy_sum(specifiers, calcs):
+    '''Determine total energy'''
     E1 = 0.0
     E2 = 0.0
     nfrag = len(geom.fragments)
-    
+
     for m in specifiers[0:nfrag]:
         E1 += calcs[m]['E_tot']
-    
+
     for i in range(nfrag, len(specifiers), 3):
         cij, ci, cj = specifiers[i:i+3]
         E2 += calcs[cij]['E_tot'] - calcs[ci]['E_tot'] - calcs[cj]['E_tot']
-    
+
     E_coulomb = coulomb.energy_coulomb
-    
+
     return {'E':E1+E2+E_coulomb, 'E1': E1, 'E2' : E2, 'Ec' : E_coulomb}
 
 def gradient_sum(specifiers, calcs):
+    '''compute gradient of total energy'''
     lat_vecs = lattice.lat_vecs
     natm  = len(geom.geometry)
     nfrag = len(geom.fragments)
@@ -39,14 +49,14 @@ def gradient_sum(specifiers, calcs):
         com     = geom.com(atm_i)
 
         E1 += calcs[mon]['E_tot']
-        
+
         # QM gradient/virial
         grad0 = calcs[mon]['gradient']
-        grad1[atm_i] += grad0 
+        grad1[atm_i] += grad0
         for p in range(3):
             for q in range(3):
                 vir1[p,q] -= (com[p]*geom.ANG2BOHR*grad0[:,q]).sum()
-        
+
         # BQ gradient/virial
         bqlist = calcs[mon]['bq_list']
         bqgrad = calcs[mon]['bq_gradient']
@@ -85,7 +95,7 @@ def gradient_sum(specifiers, calcs):
         grad_j  = np.vstack((np.zeros((natm_i, 3)),calcs[cj]['gradient']))
         grad0   = grad_ij - grad_i - grad_j
         grad2[atm_ij] += grad0
-        
+
         for p in range(3):
             for q in range(3):
                 vir2[p,q] -= (com_i[p]*geom.ANG2BOHR*grad0[0:natm_i,q]).sum()
@@ -115,7 +125,7 @@ def gradient_sum(specifiers, calcs):
                 for q in range(3):
                     vir0[p,q] -= (com_k[p]*geom.ANG2BOHR*g0[:,q]).sum()
             n += natm_k
-        
+
         n = 0
         for (k,ka,kb,kc) in bqlist_i:
             at_k   = geom.fragments[k]
@@ -129,7 +139,7 @@ def gradient_sum(specifiers, calcs):
                 for q in range(3):
                     vir0[p,q] += (com_k[p]*geom.ANG2BOHR*g0[:,q]).sum()
             n += natm_k
-        
+
         n = 0
         for (k,ka,kb,kc) in bqlist_j:
             at_k   = geom.fragments[k]
@@ -151,7 +161,7 @@ def gradient_sum(specifiers, calcs):
     vircoul  = coulomb.virial_coulomb
     totalgradient = grad1+grad2+gcoul
     totalvirial   = vir1+vir2+vircoul
-    
+
     E_result = {'E':E1+E2+E_coulomb, 'E1': E1, 'E2' : E2, 'Ec' : E_coulomb}
     g_result = {'gradient' : totalgradient, 'virial' : totalvirial, 'g1' : grad1,
             'g2' : grad2, 'gc' : gcoul, 'vir1' : vir1, 'vir2' : vir2, 'virc' :
@@ -160,6 +170,7 @@ def gradient_sum(specifiers, calcs):
     return g_result
 
 def hessian_sum(specifiers, calcs):
+    '''compute interaction force constants (hessian)'''
     from itertools import product
     cell_ranges = params.options['interaction_cells']
     cell_ranges = map(int, cell_ranges)
@@ -174,14 +185,14 @@ def hessian_sum(specifiers, calcs):
     assert len(cells) == ncells
     cellmap = {(a,b,c) : i for (i, (a,b,c)) in cells}
     cell_list = np.array([ [a,b,c] for (i, (a,b,c)) in cells],dtype=np.int)
-    
+
     natm  = len(geom.geometry)
     nfrag = len(geom.fragments)
-    
+
     hess1 = np.zeros((3*natm,3*natm))
     hess2 = np.zeros((ncells,3*natm,3*natm))
     hess_result = {}
-    
+
     # monomer sums
     for mon in specifiers[0:nfrag]:
         i, = mon
@@ -198,7 +209,7 @@ def hessian_sum(specifiers, calcs):
                     hess1[col,row] += hess0[n]
                     print col, row, hess0[n], i
                 n += 1
-    
+
 
     for idim in range(nfrag, len(specifiers), 3):
         cij, ci, cj = specifiers[idim:idim+3]
@@ -206,7 +217,6 @@ def hessian_sum(specifiers, calcs):
 
         atm_i  = geom.fragments[i]
         atm_j  = geom.fragments[j]
-        atm_ij = atm_i + atm_j
         natm_i = len(atm_i)
         natm_j = len(atm_j)
 
@@ -227,7 +237,7 @@ def hessian_sum(specifiers, calcs):
                     else:
                         col0 = row0
                         n0 = (0,0,0) # j(0)j(0)
-                
+
                 row = row0 + row00
                 col = col0 + col00
 
@@ -238,14 +248,14 @@ def hessian_sum(specifiers, calcs):
                 icell = cellmap[n0]
                 hess2[icell, row, col] += hess0[n]
                 print row, col, hess0[n], i, j
-                
+
                 if row != col or n0 != (0,0,0):
                     icell = cellmap[(-n0[0], -n0[1], -n0[2])]
                     hess2[icell, col, row] += hess0[n]
                     print col, row, hess0[n], i, j
-                
+
                 n += 1
-        
+
         icell0 = cellmap[(0,0,0)]
         hess0 = calcs[ci]['hess_tri']
         n = 0
@@ -258,7 +268,7 @@ def hessian_sum(specifiers, calcs):
                     hess2[icell0,col,row] -= hess0[n]
                     print col, row, -hess0[n], i
                 n += 1
-        
+
         hess0 = calcs[cj]['hess_tri']
         n = 0
         row0 = 3*atm_j[0]

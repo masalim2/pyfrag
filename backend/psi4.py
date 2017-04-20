@@ -1,3 +1,4 @@
+'''Backend for Psi4 -- using subprocess and file input/output'''
 import tempfile
 import sys
 import subprocess
@@ -6,6 +7,7 @@ import numpy as np
 from pyfrag.Globals import params, geom
 
 def calculate(inp, calc, save):
+    '''run psi4 on input, return text output lines from psi4'''
     options = params.options
     args = ['psi4', inp, '-o', 'stdout']
 
@@ -27,7 +29,7 @@ def calculate(inp, calc, save):
     return output.split('\n')
 
 def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
-
+    '''Generate psi4 input file'''
     options = params.options
     nelec = sum(geom.z_map[at.sym] for at in atoms) - charge
     f = tempfile.NamedTemporaryFile(dir=options['scrdir'], delete=False)
@@ -51,7 +53,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write(" basis %s\n" % options['basis'])
     #f.write(" freeze_core True\n")
     f.write("}\n")
-    
+
     if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
     else:
@@ -83,6 +85,7 @@ with open('hess.dat', 'w') as fp:
     return f.name
 
 def parse(data, calc, inp, atoms, bqs, save):
+    '''Parse psi4 output text, return results dict'''
     results = {}
     for n, line in enumerate(data):
         if '@DF-RHF Final Energy' in line:

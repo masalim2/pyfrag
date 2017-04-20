@@ -38,7 +38,7 @@ def monomerSCF(comm=None):
         espcharges0 = espcharges[:] # copy
         myfrags = MPI.scatter(comm, range(len(geom.fragments)), master=0)
         mycharges = []
-        
+
         for m in myfrags:
             fragment = [(m,0,0,0)]
             net_chg = geom.charge(m)

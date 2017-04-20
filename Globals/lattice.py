@@ -1,5 +1,16 @@
+'''This module contains the globally-shared lat_vecs which defines the
+Bravais lattice vectors of the system in a 3x3 ndarray. It comes with supporting
+functionality for 3D PBC calculations:
+    * updating lattice vectors from lattice parameters (a,b,c,alpha,beta,gamma)
+    * the inverse of lat_vecs for transformation to fractional(scaled) coords
+    * computing cell volume
+    * computing gradient wrt lattice parameters, using virial tensor and applied
+      stress
+    * rescaling cell by translating fragment centers of mass, while preserving
+     fragment internal coordinates
+'''
+
 import numpy as np
-from collections import namedtuple
 
 # Module-level data to be shared
 lattice = [0.0, 0.0, 0.0, 90.0, 90.0, 90.0, 0]
@@ -32,7 +43,7 @@ def update_lat_vecs():
     cy = ( np.cos(bc) - np.cos(ac)*np.cos(ab) ) / np.sin(ab)
     cz = np.sqrt(1.0 - cx**2 - cy**2)
     lat_vecs[:,2] = lattice[2] * np.array([cx, cy, cz])
-    
+
     lat_vecs_inv = np.eye(3)
     if all(PBC_flag):
         lat_vecs_inv = np.linalg.inv(lat_vecs)
@@ -58,8 +69,8 @@ def update_lat_params():
     lattice = [a, b, c, alpha, beta, gamma, 0]
 
 def volume():
-    '''Return volume in Angstrom**3 
-    
+    '''Return volume in Angstrom**3
+
     3D case: return the determinant of lat_vecs matrix
     For 2D,1D,0D systems: return cell area, length, unity,
     respectively.
@@ -75,14 +86,14 @@ def volume():
 
 def lat_angle_differential():
     '''Compute partial derivatives of lat_vecs with respect to change in
-    lattice angle parameter. 
+    lattice angle parameter.
 
     Lazy; this is just a quick finite difference calculation
     Args:
         None
     Returns:
-        Three 3x3 numpy arrays. They contain the derivatives 
-        of the lattice vector components with respect to alpha, 
+        Three 3x3 numpy arrays. They contain the derivatives
+        of the lattice vector components with respect to alpha,
         beta, and gamma, respectively. Units of each matrix element are
         Angstroms/degree.'''
 
@@ -95,7 +106,7 @@ def lat_angle_differential():
         vecs[:,1] = b * np.array([np.cos(ab), np.sin(ab), 0.0])
         cx = np.cos(ac)
         cy = ( np.cos(bc) - np.cos(ac)*np.cos(ab) ) / np.sin(ab)
-        cz = np.sqrt(1.0 - cy**2 - cz**2)
+        cz = np.sqrt(1.0 - cx**2 - cy**2)
         vecs[:,2] = c * np.array([cx, cy, cz])
         return vecs
 
@@ -123,13 +134,13 @@ def lattice_gradient(virial, p0_bar):
         lat_grad: 6-dimensional gradient vector in au/bohr, au/degrees
     '''
     from pyfrag.Globals import geom
-    volume = volume() * geom.ANG2BOHR**3
-    stress = virial / volume
+    vol = volume() * geom.ANG2BOHR**3
+    stress = virial / vol
     stress -= np.eye(3) * p0_bar/geom.AU2BAR
     stress = 0.5*(stress + stress.T)
 
     g_lat = np.dot(stress, lat_vecs_inv.T/geom.ANG2BOHR)
-    g_lat = -volume*g_lat
+    g_lat = -vol*g_lat
 
     dalpha, dbeta, dgamma = lat_angle_differential()
     lat_grad = np.zeros((6,))
@@ -156,20 +167,19 @@ def lattice_gradient(virial, p0_bar):
     return lat_grad
 
 def rescale(scaling):
-    '''Rescale the lattice vectors and shift fragment centers of mass to 
-    preserve scaled COM coordinates while maintaining internal fragment 
+    '''Rescale the lattice vectors and shift fragment centers of mass to
+    preserve scaled COM coordinates while maintaining internal fragment
     coordinates.
-    
+
     Args:
         scaling: either a 3x3 lattice vector transformation matrix (ndarray)
           or a list of lattice parameters (a,b,c,alpha,beta,gamma,axis) in
           Angstrom.
-    Returns: 
+    Returns:
         None.
     '''
     from pyfrag.Globals import geom
     global lattice, lat_vecs, lat_vecs_inv
-    geometry  = geom.geometry
     frags = geom.fragments
 
     com_coords  = np.array([geom.com(frag) for frag in frags])

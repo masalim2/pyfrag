@@ -1,8 +1,8 @@
-import sys
-import numpy as np
+'''Binary Interaction Method -- module for embedded-fragment calculations on
+weakly-interacting molecular clusters (energy, gradient, hessian)'''
 
 from pyfrag.Globals import logger, MPI, params
-from pyfrag.Globals import geom, lattice
+from pyfrag.Globals import geom
 from pyfrag.Globals import neighbor, coulomb
 from pyfrag.backend import backend
 from pyfrag.Globals import utility as util
@@ -10,20 +10,31 @@ from pyfrag.bim.monomerscf import monomerSCF
 from pyfrag.bim import sums
 #from pyfrag.utility import mw_execute
 
-def task_str():
+def get_task():
+    '''map from params.options['task'] --> bim summation type
+
+    Returns:
+        task: one of 'energy', 'gradient', 'hessian'
+        sum_fxn: the corresponding BIM summation function
+    '''
     task = { 'bim_e'   : 'energy',
             'bim_grad' : 'gradient',
             'bim_md'   : 'gradient',
             'bim_hess' : 'hessian'
            }.get(params.options['task'], 'gradient')
-    return task
-
-def get_summation_fxn():
-    task = task_str()
     sum_fxn = getattr(sums, '%s_sum' % task)
-    return sum_fxn
+    return task, sum_fxn
 
-def run_frags(specifier, espcharges):
+def create_bim_fragment(specifier, espcharges):
+    '''Create and dispatch a backend fragment calculation.
+
+    Args:
+        specifier: tuple specifying the monomer and cell indices for the
+            requested calculation.
+        espcharges: embedding field charges
+    Returns:
+        results: results dict from fragment calculation
+    '''
     assert len(specifier) in [1, 5, 6]
     #monomer
     if len(specifier) == 1:
@@ -60,26 +71,38 @@ def run_frags(specifier, espcharges):
             fragment = [(j,a,b,c)]
             net_chg = geom.charge(j)
             bqlist.remove( (j,a,b,c) )
-    result = backend.run(task_str(), fragment, net_chg, bqlist, espcharges)
+    task, sum_fxn = get_task()
+    result = backend.run(task, fragment, net_chg, bqlist, espcharges)
     return result
 
 def kernel(comm=None):
+    '''Get fragments, do monomer SCF, and dispatch list of fragment calcs.
+
+    Controlled by setting values in params.options and geom.geometry
+
+    Args:
+        comm (optional): pass a subcommunicator (generated with comm.split)
+        for nested parallelism
+    Returns:
+        results: dictionary of fragment sums
+    '''
+
     options = params.options
     if comm:
-        rank, nproc = comm.Get_rank(), comm.size
+        rank = comm.Get_rank()
     else:
-        comm, rank, nproc = MPI.comm, MPI.rank, MPI.nproc
+        comm, rank = MPI.comm, MPI.rank
     VERB = params.verbose
     QUIET = params.quiet
 
-    if not QUIET and MPI.rank == 0: 
+    if not QUIET and MPI.rank == 0:
         logger.print_parameters()
         logger.print_geometry()
 
     if options['task'] == 'bim_hess':
         for frag in geom.fragments:
             assert frag == sorted(frag)
-    
+
     # Perform fragmentation
     if options['fragmentation'] == 'auto':
         geom.set_frag_auto()
@@ -90,13 +113,13 @@ def kernel(comm=None):
     else:
         geom.set_frag_manual()
     nfrag = len(geom.fragments)
-    if not QUIET and MPI.rank == 0: 
+    if not QUIET and MPI.rank == 0:
         print "Generated %d Fragments" % nfrag
         logger.print_fragment()
 
     # Get neighbor lists
     neighbor.build_lists()
-    if VERB and MPI.rank == 0: 
+    if VERB and MPI.rank == 0:
         logger.print_neighbors()
 
 
@@ -106,7 +129,7 @@ def kernel(comm=None):
     if VERB and MPI.rank == 0:
         print "Converged ESP charges"
         logger.print_fragment(esp_charges=espcharges, charges_only=True)
-    
+
     # Evaluate coulomb corrections
     if not QUIET and MPI.rank == 0: print "Evaluating classical coulomb interactions..."
     coulomb.evaluate_coulomb(espcharges)
@@ -117,12 +140,12 @@ def kernel(comm=None):
         specifiers.append((i,j,a,b,c))
         specifiers.append((i,j,a,b,c,'QMi_BQj'))
         specifiers.append((i,j,a,b,c,'QMj_BQi'))
-    if not QUIET and MPI.rank == 0: 
+    if not QUIET and MPI.rank == 0:
         nmono = nfrag
         ncalc = len(specifiers)
         ndim  = (ncalc - nmono) / 3
         print "Running %d monomers, %d dimers..." % (nmono, ndim)
-    calcs = util.mw_execute(specifiers, run_frags, comm, espcharges)
+    calcs = util.mw_execute(specifiers, create_bim_fragment, comm, espcharges)
 
     if VERB and rank == 0:
         print "Fragment calculations received."
@@ -130,7 +153,7 @@ def kernel(comm=None):
 
     if rank == 0:
         if not QUIET: print "Computing Fragment sums"
-        sum_fxn = get_summation_fxn()
+        task, sum_fxn = get_task()
         result  = sum_fxn(specifiers, calcs)
     else:
         result = {'E': 0.0, 'gradient' : 0.0}

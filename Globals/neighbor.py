@@ -1,7 +1,7 @@
+'''Generate pair lists for QM calculations and BQ embedding'''
 from pyfrag.Globals import lattice as lat
 from pyfrag.Globals import geom
 from pyfrag.Globals import params
-from itertools import combinations
 import numpy as np
 
 # globally shared neighbor lists
@@ -9,6 +9,7 @@ dimer_lists = []
 bq_lists = [ [] for i in range(len(geom.fragments)) ]
 
 def pair_dist(pair_tup):
+    '''Compute dimer separation given a pair tuple'''
     i,j,a,b,c = pair_tup
     lat_vecs = lat.lat_vecs
     shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
@@ -17,7 +18,11 @@ def pair_dist(pair_tup):
     return np.linalg.norm(ri - rj)
 
 def pairlist_accumulator(cell, com):
-    '''count up dimers'''
+    '''count up dimers within R_QM and R_BQ cutoffs
+
+    This is called by a generic breadth-first search method which traverses all
+    unit cells outward from cell 0 (3D flood-fill).
+    '''
     a, b, c = cell
     lat_vecs = lat.lat_vecs
     shift = a*lat_vecs[:,0] + b*lat_vecs[:,1] + c*lat_vecs[:,2]
@@ -32,7 +37,7 @@ def pairlist_accumulator(cell, com):
         ri = com[i]
         for j in range(num_fragments):
             rj = com[j] + shift
-            
+
             if cell == (0,0,0) and i == j:
                 continue
 
@@ -61,9 +66,9 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
     (a,b,c). Once no more interactions are counted, the outward fill ends.
 
     Args
-        pair_accumulate_fxn: function of the form f(cell, **args) 
+        pair_accumulate_fxn: function of the form f(cell, **args)
             which builds neighbor lists between the given cell and origin
-            cell.  It must return the number of pairs within range. 
+            cell.  It must return the number of pairs within range.
         **args: additional arguments to pair_accumulate_fxn
     Returns
         None
@@ -84,7 +89,7 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
                     if newcell not in visited:
                         cells.append(newcell)
                         visited.append(newcell)
-                    
+
                     newcell = list(cell0)
                     newcell[dim] -= 1
                     newcell = tuple(newcell)
@@ -93,6 +98,9 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
                         visited.append(newcell)
 
 def build_lists():
+    '''(re)compute neighbor lists via BFS floodfill search, based on cutoffs
+    defined in params.options
+    '''
     global dimer_lists, bq_lists
     mass_centers = [geom.com(frag) for frag in geom.fragments]
 

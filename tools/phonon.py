@@ -1,3 +1,5 @@
+'''Tool for computing phonon dispersion and vibrational normal modes, given a
+BIM Hessian'''
 from pyfrag.Globals import geom
 from pyfrag.Globals import lattice
 import numpy as np
@@ -53,14 +55,14 @@ def make_brillouin_zone3D(kmesh_density=None):
     grid = np.vstack(np.meshgrid(xp, yp, zp)).reshape(3,-1).T
 
     # For each reciprocal lattice vector:
-    # Flag FALSE all points that lie closer to it than 
+    # Flag FALSE all points that lie closer to it than
     # they do to the origin. What's left is inside the BZ.
     dists_to_origin = np.linalg.norm(grid, axis=1)
     inside_bz       = np.ones(dists_to_origin.shape, dtype=bool)
     for vec in cell_vecs:
         dists_to_vec = np.linalg.norm(grid - vec, axis=1)
         inside_bz = inside_bz & (dists_to_vec+TOL > dists_to_origin)
-   
+
     return grid[inside_bz]
 
 def read_force_consts_np(fname):
@@ -96,7 +98,7 @@ def read_force_consts_txt(fname):
 def mass_weight(hess):
     hess_mw = {}
     ndim = 3*len(geom.geometry)
-    massvec = [geom.mass_map[at.sym] for at in geom.geometry 
+    massvec = [geom.mass_map[at.sym] for at in geom.geometry
                 for i in range(3)]
     sqrt_inv_massvec = 1.0 / np.sqrt(np.array(massvec))
     for cell in hess:
@@ -131,7 +133,7 @@ def smoothing_matrix(hess_mw):
 
     Pr = np.dot(np.dot(Prx, Pry), Prz) # P = Px*Py*Pz
 
-    # Create a correction matrix that is later added to D(k), defined 
+    # Create a correction matrix that is later added to D(k), defined
     # such that at k=0, you are diagonalizing PD(0)P
     d = np.zeros((3*natom, 3*natom))
     for cell in hess_mw:
@@ -146,7 +148,7 @@ def Dmat(hess_mw, kvec, smooth_mat=None):
     d = np.zeros((3*natom,3*natom), dtype='complex128')
     if smooth_mat is None:
         smooth_mat = np.zeros((3*natom, 3*natom))
-    
+
     for cell in hess_mw:
         a,b,c = cell
         rvec = a*Ra + b*Rb + c*Rc
@@ -180,7 +182,7 @@ def phonon_freqs(hess_mw, kmesh, smooth_mat=None):
     return freqs
 
 def parseargs():
-    parser = argparse.ArgumentParser(description = 
+    parser = argparse.ArgumentParser(description =
     'Calculate phonons for given crystal structure and interaction force constants')
     parser.add_argument('structure', help='.xyz structure file')
     parser.add_argument('hessian', nargs='?', default=None, help='.hess data file')
@@ -197,8 +199,9 @@ def parseargs():
     args = parser.parse_args()
     return args
 
+
 if __name__ == "__main__":
-    
+
     args = parseargs()
     #geom.load_geometry(open(args.structure).read().replace('H','D'))
     geom.load_geometry(args.structure)

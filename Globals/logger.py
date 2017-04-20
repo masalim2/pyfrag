@@ -1,19 +1,4 @@
-'''logger module
-  0) different logs can go to different files
-  1) automatically opens a new file with useful/unique name when invoked for the first time
-  2) keeps track of open file handles, closes when application is done
-  3) takes input, formats it nicely, writes it to the appropriate file
-    log_input(inp) -- the input file or input data for a QM calc
-    log_output(output) -- the results and/or errors of a QM calc
-    log_gopt
-    log_cellopt
-    log_MD
-    log_PES
-  -if superlog: 
-     logs calculation input and output (for debugging)
-  -if invoked by other drivers (PES or MD or OPTIMIZER), writes pretty logs out to disk
-
-  log_calcs: each calc input and output is appended to a big log file
+''' Convenience functions for pretty printing/file IO
 '''
 from pyfrag.Globals import geom, lattice, neighbor, params
 import numpy as np
@@ -49,11 +34,11 @@ def pretty_matrix(mat):
 def prettyprint_atoms(atoms, chgs=None):
     if chgs is None:
         for at in atoms:
-            print "%2s %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
+            print "%2s %10.2f %10.2f %10.2f" % (at.sym.capitalize(),
                     at.pos[0], at.pos[1], at.pos[2])
     else:
         for at,chg in zip(atoms, chgs):
-            print "%2s %10.2f %10.2f %10.2f %10.2f" % (at.sym.capitalize(), 
+            print "%2s %10.2f %10.2f %10.2f %10.2f" % (at.sym.capitalize(),
                     at.pos[0], at.pos[1], at.pos[2], chg)
 
 def print_geometry():
@@ -78,11 +63,11 @@ def print_fragment(fragments=None, net_charges=None, esp_charges=None, charges_o
     if net_charges is None:
         net_charges = [geom.charge(frag) for frag in fragments]
     chgs = None
-    
+
     for n, frag in enumerate(fragments):
         atoms = [geom.geometry[i] for i in frag]
         if esp_charges: chgs = [esp_charges[i] for i in frag]
-        
+
         print "(Frag %d Chg %+d)" %  (n, net_charges[n])
         if charges_only:
             for at, chg in zip(atoms, chgs):
@@ -97,14 +82,14 @@ def print_neighbors():
     for d in neighbor.dimer_lists:
         (i,n0,n1,n2), (j,a,b,c) = d
         pair_str = ("%d--%d(%d,%d,%d)" % (i,j,a,b,c)).ljust(15)
-        dist_str = ("  [%.2f Angstrom]" % 
+        dist_str = ("  [%.2f Angstrom]" %
                 neighbor.pair_dist((i,j,a,b,c))).rjust(12)
         print "   ", pair_str + dist_str
     print "Embedding fields"
     for i, bqlist in enumerate(neighbor.bq_lists):
         print "   Fragment %d: %d molecules in bq field" % (i, len(bqlist))
     print ""
-                
+
 def print_parameters():
     options = params.options
     display = '''scrdir backend mem_mb basis hftype
@@ -141,7 +126,7 @@ def print_bim_e_results(results):
     print "%12s %16.8f" % ('E(monomer)', results['E1'])
     print "%12s %16.8f" % ('E(dimer)', results['E2'])
     print "%12s %16.8f" % ('E(coulomb)', results['Ec'])
-    print "-----------------------------" 
+    print "-----------------------------"
     print "%12s %16.8f" % ('E(total)',   results['E'])
     print "%12s %16.8f" % ('E(total)/N', results['E']/len(geom.fragments))
 
@@ -161,6 +146,7 @@ def print_bim_grad_results(results):
     print ""
 
 def print_bim_hess_results(results):
+    opts = params.options
     fname = params.args.input_file
     head, tail = os.path.split(fname)
     base, ext = os.path.splitext(tail)

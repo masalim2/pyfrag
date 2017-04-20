@@ -1,8 +1,7 @@
-# This script uses PyFragment as a module to perform
-# a VBCT energy scan, collecting both fragment 
-# approximations and the exact (non-fragmented) energy
-# Call with mpirun -n <nproc> python pes.py
-# In order to run as parallel job
+''' This script uses PyFragment as a module to perform a VBCT energy scan,
+collecting both fragment approximations and the exact (non-fragmented) energy
+Call with mpirun -n <nproc> python pes.py In order to run as parallel job
+'''
 import pyfrag.vbct as pyfrag
 import pyfrag.Globals.params
 import numpy as np
@@ -25,7 +24,7 @@ def He3_symm_geom(x):
     return pyfrag.geom.load_geometry(geom)
 
 def He3_dimerize_geom(x):
-    # x sweeps from 0 to 1 
+    # x sweeps from 0 to 1
     # coordinate scans from one uhf/avdz local min to another
     # spin density goes (.25|.5|.25) --> (.5|.5|0)
     geom = [ ['He', -1.24 + x*(-1.07825455+1.24), 0.0, 0.0],
@@ -84,7 +83,7 @@ def Ar4_symm_geom(x):
 def NaWat3_linear_geom(x):
     # hf/aug-cc-pvdz optimized (H2O)_3Na+ cluster (higher-E stationary pt)
     # excursion of leftmost water in the O -- Na - OH - O configuration
-    origin = [ 
+    origin = [
      ['Na',    np.array([  0.21087905,    -1.07845876,    -0.00384438])],
      ['O',     np.array([ -0.70376204,     3.26354462,    -0.00020967])],
      ['H',     np.array([ -0.97394692,     3.75994642,    -0.75799166])],
@@ -181,7 +180,7 @@ calcParameterMaps['exact'] = {
          'hftype' : HFTYPE,
          'correlation' : CORRELATION
          }
-calcParameterMaps['GScoupling'] = { 
+calcParameterMaps['GScoupling'] = {
          'diagonal' : 'chargelocal_dimers',
          'relax_neutral_dimers' : False,
          'corr_neutral_dimers' : False,
@@ -194,7 +193,7 @@ calcParameterMaps['GScoupling'] = {
          'hftype' : HFTYPE,
          'correlation' : CORRELATION
          }
-calcParameterMaps['relaxDiag_GScoupling'] = { 
+calcParameterMaps['relaxDiag_GScoupling'] = {
          'diagonal' : 'chargelocal_dimers',
          'relax_neutral_dimers' : True,
          'corr_neutral_dimers' : False,
@@ -207,7 +206,7 @@ calcParameterMaps['relaxDiag_GScoupling'] = {
          'hftype' : HFTYPE,
          'correlation' : CORRELATION
          }
-calcParameterMaps['GSPolarizedCoupling'] = { 
+calcParameterMaps['GSPolarizedCoupling'] = {
          'diagonal' : 'chargelocal_dimers',
          'relax_neutral_dimers' : False,
          'corr_neutral_dimers' : False,
@@ -220,7 +219,7 @@ calcParameterMaps['GSPolarizedCoupling'] = {
          'hftype' : HFTYPE,
          'correlation' : CORRELATION
          }
-calcParameterMaps['relaxDiag_GSPolarizedCoupling'] = { 
+calcParameterMaps['relaxDiag_GSPolarizedCoupling'] = {
          'diagonal' : 'chargelocal_dimers',
          'relax_neutral_dimers' : True,
          'corr_neutral_dimers' : False,
@@ -233,7 +232,7 @@ calcParameterMaps['relaxDiag_GSPolarizedCoupling'] = {
          'hftype' : HFTYPE,
          'correlation' : CORRELATION
          }
-calcParameterMaps['mono_ip'] = { 
+calcParameterMaps['mono_ip'] = {
          'diagonal' : 'mono_ip',
          'relax_neutral_dimers' : True,
          'corr_neutral_dimers' : False,
@@ -263,7 +262,7 @@ def make_datapath():
     else:
         theory = str(CORRELATION)
     path = '_'.join([SYSTEM_NAME, theory, BASIS])
-    
+
     if not os.path.exists(path):
         return os.path.join(os.getcwd(), path+'.dat')
 
@@ -290,7 +289,7 @@ def main(datapath=None):
     GLOBALS = pyfrag.inp.inputdata
     GLOBALS['task'] = 'energy'
     options = params.options
-    
+
     # Store the PES data in a dictionary of dictionaries
     results = {}
     for calc_type, params in calcParameterMaps.items():
@@ -316,7 +315,7 @@ def main(datapath=None):
     rank = pyfrag.rank
     if rank == 0:
         with open(datapath+'.temp', 'wb') as datafile:
-            cPickle.dump((results, calcParameterMaps, 
+            cPickle.dump((results, calcParameterMaps,
                 [geom2xyz(x, geom_generator(x)) for x in coord_range]), datafile)
         sp_data0 = results.values()[0]
         col_names = sp_data0.keys()
@@ -331,7 +330,7 @@ def main(datapath=None):
         for calc_type, properties in results.items():
             for k, v in properties.items():
                 df[k, calc_type] = v
-                
+
         with open(datapath, 'wb') as datafile:
             cPickle.dump((df, calcParameterMaps), datafile)
 

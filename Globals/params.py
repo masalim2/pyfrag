@@ -1,19 +1,16 @@
-'''This module sets its own attributes based on the parsed input. 
-For instance, if  "basis = cc-pvdz" is found in the input file,
-then the attribute params.basis is set to "cc-pvdz".
-
-All data is still stored in the global "options" dictionary
-But module attributes are more convenient to type: 
-     refer to: params.fragmentation
-   instead of: params.options['fragmentation']
+'''This module contains the globally-shared options dict and a method to
+generate it by parsing an input file. Other modules set module-level attributes
+like "quiet" and "verbose".
 '''
-import sys
-
 options = {}
 verbose = False
 qm_logfile = None
 
 def convert_params():
+    '''Sanitize parsed options.
+
+    Make string-->(list, float, boolean) conversions, wherever possible
+    '''
     global options
     for option, value in options.items():
         if type(value) == str:
@@ -27,19 +24,20 @@ def convert_params():
                 options[option] = map(tryFloat, value.split())
 
 def tryFloat(s):
-    '''Try to cast to float, no big deal'''
+    '''Try to cast to float; no big deal'''
     try:
         return float(s)
     except ValueError:
         return s
 
 def parse(inFile):
-    '''Crude input file parser. 
-    
-    Populates the "options" dictionary and sets own attributes
+    '''Crude input file parser.
+
+    Populates the "options" dictionary from an input file.
+
     Args:
         inFile: input file handle for reading
-    Returns: 
+    Returns:
         None
     '''
     global options

@@ -1,3 +1,4 @@
+'''Wrapper functions for quantum chemistry backends'''
 import numpy as np
 import sys
 import os
@@ -35,7 +36,7 @@ def build_atoms(frags, bq_list, bq_charges):
 
     return atoms, bq_field
 
-def run(calc, frags, charge, bq_list, bq_charges, 
+def run(calc, frags, charge, bq_list, bq_charges,
         noscf=False, guess=None, save=False):
     '''QM backend dispatcher: invoke a calculation.
 
@@ -66,13 +67,13 @@ def run(calc, frags, charge, bq_list, bq_charges,
     calc = calc.lower().strip()
     assert calc in 'esp energy gradient hessian'.split()
     assert isinstance(frags, list)
-    assert all(isinstance(frag, tuple) and 
+    assert all(isinstance(frag, tuple) and
                len(frag)==4 for frag in frags)
-    
+
     atoms, bq_field = build_atoms(frags, bq_list, bq_charges)
     if noscf and guess is None:
         raise RuntimeError("No SCF useless without input guess")
-    
+
     if calc == 'esp':
         backend = nw
     else:

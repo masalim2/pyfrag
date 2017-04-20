@@ -1,3 +1,5 @@
+'''Wrap mpi4py, so that the code works as expected whether running in serial
+or parallel'''
 try:
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
