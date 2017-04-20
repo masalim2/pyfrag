@@ -3,8 +3,10 @@ import numpy as np
 import h5py
 import random
 import os
+import signal
+import time
 
-from pyfrag.Globals import params, geom, MPI
+from pyfrag.Globals import params, geom, MPI, logger
 from pyfrag.Globals import lattice as lat
 from pyfrag.Globals import utility as util
 
@@ -23,20 +25,32 @@ class Integrator:
     AMU2AU = 1836.15267376
 
     def __init__(self, forcefield):
+        '''Initialize trajectory 
+
+        Args:
+            forcefield: a method to compute energy/gradient/virial 
+            for a given geometry (must return "results" dictionary)
+        '''
         self.get_MD_options()
         self.forcefield = forcefield
         
+        self.step0 = None
         if self.restart_file:
             self.restart_trajectory_file()
+            self.step0 = MPI.bcast(self.step0, master=0)
         else:
             self.step0 = 0
             self.init_velocity()
+            self.create_trajectory_file()
 
-        self.fp_traj = None
         self.grad = None
+        
         geom.set_frag_auto()
+        params.options['fragmentation'] = 'fixed'
+        nfrag = len(geom.fragments)
 
     def get_MD_options(self):
+        '''Set relevant parameters from input file'''
         options      = params.options
 
         self.restart_file = options.get('md_restart_file')
@@ -47,17 +61,20 @@ class Integrator:
         self.pres_target  = options.get('pressure_bar', 0)
         self.T_bath_str   = options.get('t_bath', '')
         self.P_bath_str   = options.get('p_bath', '')
-        self.nose_tau     = options.get('nose_tau_fs', 20.0)
-        self.berend_tau   = options.get('berend_tau_fs', 10.0)
+        self.nose_tau     = options.get('nose_tau_fs', 40.0)
+        self.berend_tau   = options.get('berend_tau_fs', 40.0)
 
         self.natm = len(geom.geometry)
         self.kin_target = self.K2AU * self.temp_target
+
+        if MPI.rank != 0: return
 
         if 'berend' in self.P_bath_str.lower():
             self.berend_baro = True
             print "# Using Berendsen Barostat"
             print "#     Target", self.pres_target, "bar"
             print "#     Time constant", self.berend_tau, "fs"
+            print ""
         else:
             self.berend_baro = False
         
@@ -66,6 +83,7 @@ class Integrator:
             print "# Using Berendsen Thermostat"
             print "#     Target", self.temp_target, "K"
             print "#     Time constant", self.berend_tau, "fs"
+            print ""
         else:
             self.berend_thermo = False
 
@@ -75,6 +93,7 @@ class Integrator:
             print "# Using Nose-Hoover Chain(M=2) Thermostat"
             print "#     Target", self.temp_target, "K"
             print "#     Time constant", self.nose_tau, "fs"
+            print ""
         else:
             self.nose_thermo = False
         
@@ -82,6 +101,7 @@ class Integrator:
         assert not (self.berend_thermo and self.nose_thermo)
 
     def restart_trajectory_file(self):
+        '''Load trajectory from hdf5 file and append'''
         if MPI.rank != 0: return
 
         try:
@@ -94,20 +114,31 @@ class Integrator:
         self.lat_dset = self.fp_traj['lat']
 
         self.step0  = len(self.pos_dset)
-        self.vel    = self.vel_dset[-1]
+        last_step   = self.step0 - 1
+        pos_shape = self.pos_dset[last_step].shape
+        zeros = np.zeros(pos_shape)
+        while np.allclose(self.pos_dset[last_step], zeros):
+            last_step -= 1
+        self.step0 = last_step + 1
+        print "# Loading trajectory from %s" % self.restart_file
+        print "# Previous trajectory had %d non-blank steps" % self.step0
+        print "# Loading state from step %d" % last_step
+        print ""
+
+        self.vel    = self.vel_dset[last_step]
         
         atoms = self.pos_dset.attrs['atoms'].split()
         for i in range(self.natm):
             geom.geometry[i].sym = atoms[i]
-            geom.geometry[i].pos = self.pos_dset[-1][i]
+            geom.geometry[i].pos = self.pos_dset[last_step][i]
 
-        lat.set_lattice(*self.lat_dset[-1])
+        lat.set_lattice(*self.lat_dset[last_step])
         lat.update_lat_vecs()
         newlen = self.step0 + self.nstep
 
         if 'nose' in self.fp_traj:
             self.nose_dset = self.fp_traj['nose']
-            nose_dof = self.nose_dset[-1]
+            nose_dof = self.nose_dset[last_step]
             self.x1, self.v1, self.x2, self.v2 = nose_dof
             self.nose_dset.resize((newlen, 4))
         
@@ -116,6 +147,7 @@ class Integrator:
         self.lat_dset.resize((newlen, 7))
     
     def create_trajectory_file(self):
+        '''Create new trajectory in hdf5 file; set handles to data'''
         if MPI.rank != 0: return
 
         homedir = params.options['home_dir']
@@ -148,26 +180,29 @@ class Integrator:
         self.pos_dset.attrs['dt_fs'] = self.dt * self.AU2FS
 
     def write_trajectory(self, istep):
+        '''Write to hdf5 trajectory file'''
         if MPI.rank != 0: return
-        if self.fp_traj is None:
-            self.create_trajectory_file()
 
         self.pos_dset[istep] = geom.pos_array()
         self.vel_dset[istep] = self.vel
         self.lat_dset[istep] = lat.lattice
         if self.nose_thermo:
             self.nose_dset[istep] = [self.x1, self.v1, self.x2, self.v2]
+        self.fp_traj.flush()
 
-    def summary_log(self, istep):
+    def summary_log(self, istep, wall_seconds):
+        '''Print MD summary statistics to stdout'''
         if MPI.rank != 0: return
+
         fields = "step time/fs energy kinetic potential " \
-        "temperature/K pressure/au".split()
+        "temperature/K pressure/GPa".split()
 
         virial  = self.force_calc['virial']
         kin_com = self.kinetic_com_tensor()
         volume = lat.volume() * geom.ANG2BOHR**3
         stress = (virial+kin_com) / volume
         pressure = (1./3.)*np.trace(stress)
+        pressure = pressure * geom.AU2BAR * 1.0e-4
         time_fs = istep*self.dt*self.AU2FS
         en_pot  = self.force_calc['E']
         
@@ -181,17 +216,22 @@ class Integrator:
                     3*self.natm*self.kin_target*self.x1 + \
                     self.kin_target*self.x2
             values.append(e_nh)
+        
         if self.berend_baro:
             fields.append('volume/bohr**3')
             values.append(volume)
 
-        if istep == self.step0:
-            print ("@ %5s" + ((len(fields)-1)*"%20s")) % tuple(fields)
+        fields.append('walltime')
+        values.append(util.pretty_time(wall_seconds))
 
-        print ("@ %5d" + ((len(fields)-1)*"%20.6f")) % tuple(values)
+        if istep == 0:
+            print ("@ %5s" + ((len(fields)-1)*"%16s")) % tuple(fields)
+
+        print ("@ %5d" + ((len(fields)-2)*"%16.6f") + "%16s") % tuple(values)
 
 
     def init_velocity(self):
+        '''Set initial vel according to Maxwell-Boltzmann'''
         if MPI.rank != 0: return
 
         random.seed()
@@ -229,6 +269,7 @@ class Integrator:
         assert abs(self.temp - self.temp_target) < 1.0e-9
 
     def update_kinetic_and_temperature(self):
+        '''Update kinetic energy & temperature'''
         self.kin_tensor = np.zeros((3,3))
 
         for i, at in enumerate(geom.geometry):
@@ -239,6 +280,8 @@ class Integrator:
         self.temp = 2*self.kin/(3*self.natm*self.K2AU)
 
     def kinetic_com_tensor(self):
+        '''Compute kinetic energy tensor based on fragment 
+        centers of mass; needed for stress tensor calculation'''
         massvec = np.array([geom.mass_map[at.sym] for at in geom.geometry])
         massvec *= self.AMU2AU
         kin_com = np.zeros((3,3))
@@ -252,6 +295,7 @@ class Integrator:
         return kin_com
 
     def integrate(self):
+        '''Velocity Verlet with thermo/barostatting'''
 
         if self.grad is None:
             # step 0: no grad
@@ -289,6 +333,7 @@ class Integrator:
             self.update_kinetic_and_temperature()
 
     def nose_init(self):
+        '''Initialize NH coordinates & masses.'''
         self.x1 = 0.0
         self.g1 = 0.0
         self.v1 = 0.0
@@ -302,11 +347,12 @@ class Integrator:
         omega = 2*np.pi / time_const
         dof = 3*self.natm
         
-        #omega = (0.002/4)**0.5 # for harmonic oscillator toy
         self.q1 = dof * self.kin_target / omega**2
         self.q2 = self.kin_target / omega**2
     
     def apply_nose_chain(self):
+        '''Half-update NH degrees of freedom together with 
+        system velocity.'''
         self.update_kinetic_and_temperature()
         dof = 3*self.natm
 
@@ -337,9 +383,9 @@ class Integrator:
         self.v2 += self.g2 * (0.25*self.dt)
 
     def apply_berend_thermo(self):
-        '''tau should be at least 10 fs.
-        10 fs can be used for fast equilibration to set temp.
-        for reasonable fluctuations however, tau should be >= 100 fs'''
+        '''Apply Berendsen velocity scaling for temperature control.
+        berend_tau should be at least 10 fs (fast equilibration)
+        at tau>100 fs, the fluctuations should be consistent with NVT'''
         # J Chem Phys 81, 3684 (1984)
 
         tau_fs = self.berend_tau
@@ -355,15 +401,18 @@ class Integrator:
         self.temp = 2*self.kin/(3*self.natm*self.K2AU)
 
     def apply_berend_baro(self):
+        '''Apply Berendsen cell scaling for pressure control.
+        berend_tau must be > 10 fs, as explained for thermostat.
+        '''
 
         # isothermal compressibility of liquid water
-        # See J Chem Phys 81, 3684 (1984)
+        # J Chem Phys 81, 3684 (1984)
         beta = 4.9e-5 * geom.AU2BAR
 
         tau_fs = self.berend_tau
         
         self.update_kinetic_and_temperature()
-        tau = tau_fs / AU2FS
+        tau = tau_fs / self.AU2FS
 
         virial  = self.force_calc['virial']
         kin_com = self.kinetic_com_tensor()
@@ -376,17 +425,18 @@ class Integrator:
         Vscale *= beta*self.dt/(3*tau)
         Vscale = np.eye(3) - Vscale
 
-        lat.rescale(scaling_mat)
+        lat.rescale(Vscale)
        
 
     def detect_and_fix_pbc_crossings(self):
+        '''translate fragments with COM outside unit cell inside'''
         if not all(lat.PBC_flag): return
+
         com = np.array([geom.com(frag) for frag in geom.fragments])
         scaled_pos = np.dot(lat.lat_vecs_inv, geom.pos_array().T).T
         scaled_com = np.dot(lat.lat_vecs_inv, com.T).T
-        assert scaled_pos.shape == (self.natm, 3)
-        assert scaled_com.shape == (len(geom.fragments), 3)
 
+        # if any fractional coordinate of COM is outside [0,1]
         for i, frag in enumerate(geom.fragments):
             for mu in range(3):
                 for iat in frag:
@@ -397,15 +447,16 @@ class Integrator:
             at.pos = pos[i]
 
     def clean_up(self, istep):
+        '''trim and flush hdf5 trajectory data'''
         if MPI.rank != 0: return
         if self.fp_traj is None: return
 
         # don't store zeros
         if istep < self.nstep + self.step0:
-            self.pos_dset.resize((istep+1, self.natm, 3))
-            self.vel_dset.resize((istep+1, self.natm, 3))
-            self.lat_dset.resize((istep+1, 7))
-            if self.nose_thermo: self.nose_dset.resize((istep+1, 4))
+            self.pos_dset.resize((istep, self.natm, 3))
+            self.vel_dset.resize((istep, self.natm, 3))
+            self.lat_dset.resize((istep, 7))
+            if self.nose_thermo: self.nose_dset.resize((istep, 4))
 
         self.fp_traj.flush()
         self.fp_traj.close()
@@ -414,16 +465,8 @@ def bim_force():
     '''BIM gradients'''
     return pyfrag.bim.bim.kernel()
 
-def hooke_force(k=0.002, r_eq=2.0):
-    '''toy system: harmonic oscillator
-    Can use this to verify integration/thermostat scheme
-    1) position, velocity distributions should be gaussian
-    2) (X,V) phase density plot should fill an elliptical region
-    3) For NVE, E is conserved
-    4) For NVT (Nose-Hoover), the quantity in eqn (8) of 
-        J Chem Phys 97, 2635 (1992)
-    is conserved
-    '''
+def hooke_force(k=0.2, r_eq=2.0):
+    '''toy potential: harmonic oscillator'''
     results = {}
 
     r_eq = r_eq*geom.ANG2BOHR
@@ -442,21 +485,38 @@ def hooke_force(k=0.002, r_eq=2.0):
     return results
     
 def kernel():
+    '''MD Main'''
     
-    md_engine = Integrator(bim_force)
+    # catch SIGTERM gracefully
+    def signal_handler(*args): md_engine.clean_up(istep)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     params.quiet = True
+
+    md_engine = Integrator(bim_force)
+    
+    if MPI.rank == 0: 
+        logger.print_parameters()
+        logger.print_geometry()
+        logger.print_fragment()
     
     geom.geometry = MPI.bcast(geom.geometry, master=0)
     lat.lattice   = MPI.bcast(lat.lattice, master=0)
     lat.lat_vecs  = MPI.bcast(lat.lat_vecs, master=0)
 
-    istep = 0
+    istep = md_engine.step0
     try:
         while istep < md_engine.step0+md_engine.nstep:
+            t_start = time.time()
             md_engine.integrate()
-            md_engine.write_trajectory(istep)
-            md_engine.summary_log(istep)
+            t_end = time.time()
+            seconds = t_end - t_start
+
+            if istep % md_engine.save_intval == 0:
+                md_engine.write_trajectory(istep)
+            md_engine.summary_log(istep, seconds)
             istep += 1
+
     except Exception:
         traceback.print_exc()
     finally:

@@ -115,13 +115,13 @@ def print_parameters():
         display.extend('''diagonal relax_neutral_dimers
         corr_neutral_dimers coupling charge_states'''.split())
 
-    if 'opt' in options['task'] or 'md' in options['task']:
-        display.extend('''pressure freeze_cell atom_gmax lat_gmax
+    if 'opt' in options['task']:
+        display.extend('''pressure_bar freeze_cell atom_gmax lat_gmax
         opt_maxiter'''.split())
 
     if 'md' in options['task']:
-        display.extend('''md_restart_file num_steps save_intval d_time
-        temperature'''.split())
+        display.extend('''pressure_bar md_restart_file num_steps save_intval dt_fs
+        temperature t_bath p_bath'''.split())
 
     if 'hess' in options['task']:
         display.append('interaction_cells')
@@ -182,4 +182,7 @@ def print_vbct_e_results(results):
         print ("%12.8f" + len(vec)*"%9.4f") %((val+E_nuclear,)+tuple(vec))
 
 def print_bim_md_results(results):
+    pass
+
+def print_bim_opt_results(results):
     pass

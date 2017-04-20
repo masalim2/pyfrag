@@ -82,7 +82,6 @@ def run(calc, frags, charge, bq_list, bq_charges,
     os.chdir(params.options['scrdir'])
     inp = backend.inp(calc, atoms, bq_field, charge, noscf, guess, save)
     output = backend.calculate(inp, calc, save)
-    os.chdir(cwd)
 
     if params.qm_logfile:
         logger.log_input(inp)
@@ -94,4 +93,5 @@ def run(calc, frags, charge, bq_list, bq_charges,
     else:
         results['bq_list'] = []
         results['bq_gradient'] = []
+    os.chdir(cwd)
     return results

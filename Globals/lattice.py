@@ -122,6 +122,7 @@ def lattice_gradient(virial, p0_bar):
     Returns:
         lat_grad: 6-dimensional gradient vector in au/bohr, au/degrees
     '''
+    from pyfrag.Globals import geom
     volume = volume() * geom.ANG2BOHR**3
     stress = virial / volume
     stress -= np.eye(3) * p0_bar/geom.AU2BAR
@@ -166,18 +167,19 @@ def rescale(scaling):
     Returns: 
         None.
     '''
+    from pyfrag.Globals import geom
     global lattice, lat_vecs, lat_vecs_inv
-    geom  = geom.geometry
+    geometry  = geom.geometry
     frags = geom.fragments
 
-    com_coords  = np.array(geom.com(frag) for frag in frags)
+    com_coords  = np.array([geom.com(frag) for frag in frags])
     scal_coords = np.zeros(com_coords.shape)
-    atom_coords = np.zeros(geom.shape)
+    atom_coords = geom.pos_array()
 
     # to scaled COM/internal coordinates
     for i, frag in enumerate(frags):
         for iat in frag:
-            atom_coords[iat] = geom[iat].pos - com_coords[i]
+            atom_coords[iat] -= com_coords[i]
         scal_coords[i] = np.dot(lat_vecs_inv, com_coords[i])
 
     # alter lattice vectors

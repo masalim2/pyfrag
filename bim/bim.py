@@ -15,7 +15,7 @@ def task_str():
             'bim_grad' : 'gradient',
             'bim_md'   : 'gradient',
             'bim_hess' : 'hessian'
-           }.get(params.options['task'])
+           }.get(params.options['task'], 'gradient')
     return task
 
 def get_summation_fxn():
@@ -85,6 +85,8 @@ def kernel(comm=None):
         geom.set_frag_auto()
     elif options['fragmentation'] == "full_system":
         geom.set_frag_full_system()
+    elif options['fragmentation'] == "fixed":
+        pass
     else:
         geom.set_frag_manual()
     nfrag = len(geom.fragments)
@@ -131,5 +133,5 @@ def kernel(comm=None):
         sum_fxn = get_summation_fxn()
         result  = sum_fxn(specifiers, calcs)
     else:
-        result = {}
+        result = {'E': 0.0, 'gradient' : 0.0}
     return result
