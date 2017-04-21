@@ -104,14 +104,7 @@ def kernel(comm=None):
             assert frag == sorted(frag)
 
     # Perform fragmentation
-    if options['fragmentation'] == 'auto':
-        geom.set_frag_auto()
-    elif options['fragmentation'] == "full_system":
-        geom.set_frag_full_system()
-    elif options['fragmentation'] == "fixed":
-        pass
-    else:
-        geom.set_frag_manual()
+    geom.perform_fragmentation()
     nfrag = len(geom.fragments)
     if not QUIET and MPI.rank == 0:
         print "Generated %d Fragments" % nfrag

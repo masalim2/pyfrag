@@ -38,6 +38,7 @@ def calculate(inp, calc, save):
         source = os.path.join(options['scrdir'], outvec)
         destin = os.path.join(options['share_dir'], outvec)
         copyfile(source, destin)
+    output += "\nmovec_shared_path %s\n" % destin
     return output.split('\n')
 
 def invecs(guess):
@@ -167,6 +168,8 @@ def parse(data, calc, inp, atoms, bqs, save):
                 bqforce_name += '.bqforce.dat'
                 results['bq_gradient'] = np.loadtxt(bqforce_name)
             continue
+        if "movec_shared_path" in line:
+            results['movecs'] = line.split()[-1]
 
     if calc == 'hessian':
         basename, ext = os.path.splitext(inp)

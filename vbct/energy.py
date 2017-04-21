@@ -2,155 +2,95 @@ from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
 
-from pyfrag.Globals import params
-from ChargeState import ChargeState
-from pyfrag.Globals import geom
+from pyfrag.Globals import geom, logger, params
 from pyfrag.Globals import MPI
 
+def print_diagonal_calc_details(diag_results):
+    for i, state in enumerate(charge_states):
+        print state
+        for monomer in state.monomers:
+            atom_strs = map(str, monomer.atoms)
+            charge_strs = ["   charge = %8.6f" % q for q in monomer.esp_charges]
+            print "\n".join(["(frag %2d) %s %s" % (monomer.index, a, c) for a,c in zip(atom_strs, charge_strs)])
+        print ""
+    for i, state in enumerate(charge_states):
+        header = str(state) + " E = %.6f" % H[i,i]
+        print header
+        print "-"*len(header)
+        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % state.E1
+        print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
+        for monomer in state.monomers:
+            if 'corr' not in monomer.energy: monomer.energy['corr'] = 0.0
+            print "    %10s %12.6f %12.6f %12.6f" % (monomer.label(),
+                    monomer.energy['hf'], monomer.energy['corr'],
+                    monomer.energy['total'])
+        print ""
+        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % state.E2
+        for dimer in state.dimers:
+            if 'corr' not in dimer.energy: dimer.energy['corr'] = 0.0
+            print "    %10s %12.6f %12.6f %12.6f" % (str(dimer.index),
+                    dimer.energy['hf'], dimer.energy['corr'],
+                    dimer.energy['total'])
+        print "\n"
 
-def enumerate_states():
-    '''Return the list of ChargeStates according to input options'''
+def verify_options():
+    requisite = '''geometry
+                    basis
+                    hftype
+                    correlation
+                    embedding
+                    diagonal
+                    relax_neutral_dimers
+                    corr_neutral_dimers
+                    coupling
+                    backend
+                    task'''.split('\n')
+    for opt in requisite:
+        assert opt in params.options
 
-    charge_states = []
-    geometry = params.options['geometry']
-    
-    # Fragmentation of geometry
-    if 'fragmentation' in params.options:
-        frag_option = params.options['fragmentation']
-    else:
-        frag_option = 'auto'
-    
-    if isinstance(frag_option, list):
-        fragments = [map(int, s.split()) for s in frag_option]
-    else:
-        frag_method = getattr(geom, 'makefrag_%s' % frag_option)
-        fragments = frag_method(geometry)
+def calc_diagonal(idx, comm=None):
+    monomers = range(nfrag)
+    charges  = [int(idx == j) for j in states]
 
-    # Assign charges to fragments
-    if 'charge_states' in params.options: 
-        states_option = params.options['charge_states']
-    else:
-        states_option = 'single'
-
-    if states_option.startswith('hop'):
-        charge = int(states_option.split()[1])
-        for i in range(len(fragments)):
-            fragment_charges = [0]*len(fragments)
-            fragment_charges[i] = charge
-            charge_states.append(ChargeState(fragments, fragment_charges))
-    else:
-        fragment_charges = [ sum([geometry[i].formal_chg for i in frag ])
-                             for frag in fragments ]
-        charge_states = [ChargeState(fragments, fragment_charges)]
-
-    return charge_states
+    espfield, movecs = monomerSCF(monomers, charges, comm)
+    diag_result = vbct_calc.diagonal(monomers, charges, espfield, movecs, comm)
+    return diag_result
 
 def kernel():
     '''SP energy'''
 
-    comm, rank, nproc = MPI.info()
-    needed_options = '''geometry
-                     basis
-                     hftype
-                     correlation
-                     embedding
-                     diagonal
-                     relax_neutral_dimers
-                     corr_neutral_dimers
-                     coupling
-                     backend
-                     task'''.split('\n')
-    for opt in needed_options:
-        if opt not in params.options:
-            raise RuntimeError("Please specify %s" % opt)
-                   
+    verify_options()
+    geom.perform_fragmentation()
+    nfrag   = len(geom.fragments)
+    nstates = nfrag
+    states = range(nstates)
 
-    if params.VERBOSE and rank == 0:
-        print "    Cluster Ion Calculation Input"
-        print "Energy Driver running %d processors" % comm.size
-        print "-----------------------------------"
-        for k in ['hftype', 'correlation', 'basis', 'diagonal', 
-                  'relax_neutral_dimers', 'corr_neutral_dimers',
-                  'coupling', 'embedding', 'fragmentation', 
-                  'charge_states', 'task']:
-            print "%22s %20s" % (k, params.options[k])
-
-        print "\nGeometry / Angstroms"
-        print "--------------------"
-        print "\n".join(map(str, params.options['geometry']))
-
-    charge_states = enumerate_states()
-    
-    N = len(charge_states)
-    H = np.zeros((N,N))
-    S = np.eye(N)
-    
-    if rank == 0 and params.VERBOSE:
-        print "\nGenerated %d charge configurations:" % N
-        print "\n".join(map(str, charge_states))
+    if params.VERBOSE and MPI.rank == 0:
+        logger.print_parameters()
+        logger.print_geometry()
+        print_vbct_states()
         print "\nMonomer SCF & Diagonal Element Calculation"
         print "------------------------------------------"
 
+    diag_results = {}
+    if MPI.nproc > nstates:
+        work_comm, idx = MPI.create_split_comms(nstates)
 
-    # Diagonals: split into N sub-communicators if nproc > N
-    if nproc > N:
-        pps = nproc // N
-        color = rank // pps
-        if rank > pps * N - 1:
-            color = rank % N
-
-        work_comm = comm.Split(color, rank)
-        charge_states[color].monomerSCF(charge_states[color].monomers,
-                subcomm=work_comm)
-        E = charge_states[color].diagonal(work_comm)
+        diag_result = calc_diagonal(idx, work_comm)
 
         if work_comm.Get_rank() == 0:
-            comm.send(E, dest=0, tag=color)
-            comm.send(charge_states[color].monomers, dest=0, tag=color+nproc)
-            comm.send(charge_states[color].dimers, dest=0, tag=color+2*nproc)
-            comm.send(charge_states[color].E1, dest=0, tag=color+3*nproc)
-            comm.send(charge_states[color].E2, dest=0, tag=color+4*nproc)
-        if rank == 0:
-            for i in range(N):
-                H[i,i] = comm.recv(source=ANY_SOURCE, tag=i)
-                charge_states[i].monomers = comm.recv(source=ANY_SOURCE, tag=i+nproc)
-                charge_states[i].dimers   = comm.recv(source=ANY_SOURCE, tag=i+2*nproc)
-                charge_states[i].E1       = comm.recv(source=ANY_SOURCE, tag=i+3*nproc)
-                charge_states[i].E2       = comm.recv(source=ANY_SOURCE, tag=i+4*nproc)
+            MPI.comm.send(diag_result, dest=0, tag=idx)
+        if MPI.rank == 0:
+            for idx in states:
+                diag_results[idx] = MPI.comm.recv(source=ANY_SOURCE, tag=idx)
         work_comm.Free()
     else:
-        for i in range(N):
-            charge_states[i].monomerSCF(charge_states[i].monomers, subcomm=comm)
-            H[i,i] = charge_states[i].diagonal(comm)
+        for idx in states:
+            diag_results[idx] = calc_diagonal(idx)
 
     # log monomer SCF and diagonal elements
-    if rank == 0 and params.VERBOSE:
-        for i, state in enumerate(charge_states):
-            print state
-            for monomer in state.monomers:
-                atom_strs = map(str, monomer.atoms)
-                charge_strs = ["   charge = %8.6f" % q for q in monomer.esp_charges]
-                print "\n".join(["(frag %2d) %s %s" % (monomer.index, a, c) for a,c in zip(atom_strs, charge_strs)])
-            print ""
-        for i, state in enumerate(charge_states):
-            header = str(state) + " E = %.6f" % H[i,i]
-            print header
-            print "-"*len(header)
-            print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % state.E1
-            print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
-            for monomer in state.monomers:
-                if 'corr' not in monomer.energy: monomer.energy['corr'] = 0.0
-                print "    %10s %12.6f %12.6f %12.6f" % (monomer.label(),
-                        monomer.energy['hf'], monomer.energy['corr'],
-                        monomer.energy['total'])
-            print "" 
-            print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % state.E2
-            for dimer in state.dimers:
-                if 'corr' not in dimer.energy: dimer.energy['corr'] = 0.0
-                print "    %10s %12.6f %12.6f %12.6f" % (str(dimer.index),
-                        dimer.energy['hf'], dimer.energy['corr'],
-                        dimer.energy['total'])
-            print "\n"
+    if MPI.rank == 0 and params.VERBOSE:
+        print_diagonal_calc_details(diag_results)
 
         print "Coupling and Overlap Matrix Elements"
         print "------------------------------------"
@@ -190,7 +130,7 @@ def kernel():
             print "Overlap matrix"
             print "--------------"
             print S
-            
+
     E_nuclear = geom.nuclear_repulsion_energy(params.options['geometry'])
     for i in range(N):
         H[i,i] -= E_nuclear
@@ -202,9 +142,9 @@ def kernel():
         charge_distro += prob0[i]*charge_vec
 
     results = {
-                 'eigvals' : eigvals, 
-                 'eigvecs' : eigvecs, 
-                 'E_nuclear' : E_nuclear, 
+                 'eigvals' : eigvals,
+                 'eigvecs' : eigvecs,
+                 'E_nuclear' : E_nuclear,
                  'E(GS)' : eigvals[0] + E_nuclear,
                  'chgdist(GS)' : charge_distro
               }

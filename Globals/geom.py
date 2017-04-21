@@ -212,7 +212,18 @@ def set_frag_auto():
         fragments.append(sorted(frag))
 
     # sanity check: each atom must be counted once and only once
-    assert sorted([idx for frag in fragments for idx in frag]) == range(natm)
+    assert sorted([idx for fragm in fragments for idx in fragm]) == range(natm)
+
+def perform_fragmentation():
+    options = params.options
+    if options['fragmentation'] == 'auto':
+        set_frag_auto()
+    elif options['fragmentation'] == "full_system":
+        set_frag_full_system()
+    elif options['fragmentation'] == "fixed":
+        pass
+    else:
+        set_frag_manual()
 
 def com(frag):
     '''Get center of mass of a fragment.

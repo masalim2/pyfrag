@@ -71,3 +71,17 @@ def allreduce(comm, data):
     if comm is None:
         return data
     return comm.allreduce(data)
+
+def create_split_comms(N):
+    '''Evenly divide nproc into N subcommunicators.
+
+    Returns subcommunicator and color.
+    '''
+    assert nproc > N, "not enough procs to split into %d subcomms" % N
+
+    pps   = nproc // N
+    color = rank // pps
+    if rank > pps*N - 1:
+        color = rank % N
+    work_comm = comm.Split(color, rank)
+    return work_comm, color

@@ -18,10 +18,9 @@ def monomerSCF(comm=None):
     Returns:
         espcharges: a list of esp-fit atom-centered charges
     '''
-    if comm:
-        rank, nproc = comm.Get_rank(), comm.size
-    else:
-        comm, rank, nproc = MPI.comm, MPI.rank, MPI.comm.size
+    if comm is None:
+        comm = MPI.comm
+
     options = params.options
 
     RMSD_TOL = 0.001
