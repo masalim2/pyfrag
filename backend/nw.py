@@ -38,7 +38,7 @@ def calculate(inp, calc, save):
         source = os.path.join(options['scrdir'], outvec)
         destin = os.path.join(options['share_dir'], outvec)
         copyfile(source, destin)
-    output += "\nmovec_shared_path %s\n" % destin
+        output += "\nmovec_shared_path %s\n" % destin
     return output.split('\n')
 
 def invecs(guess):
@@ -83,9 +83,8 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
 
     f.write('scf\n')
     f.write('sym off; adapt off\n')
-    if charge %2 != 0:
-        f.write('%s\n' % options['hftype'])
-        f.write('nopen %d\n' % (nelec%2))
+    f.write('%s\n' % options['hftype'])
+    f.write('nopen %d\n' % (nelec%2))
     if noscf: f.write('noscf\n')
 
     invec = invecs(guess)

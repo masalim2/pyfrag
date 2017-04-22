@@ -20,12 +20,16 @@ def log_input(inp):
 def log_output(output):
     pass
 
-def pretty_matrix(mat):
+def pretty_matrix(mat, precision=2, name=''):
     rows, cols = mat.shape
-    s_max = "%.2f" % mat.max()
-    s_min = "%.2f" % mat.min()
+    float_fmt = '.' + str(precision) +'f'
+    s_max = ("%"+float_fmt) % mat.max()
+    s_min = ("%"+float_fmt) % mat.min()
     width = max(len(s_max), len(s_min)) + 1
-    format = "%" + str(width) + ".2f"
+    format = "%" + str(width) + float_fmt
+    if name:
+        print name
+        print '-'*len(name)
     for r in range(rows):
         for c in range(cols):
             print format % mat[r,c],

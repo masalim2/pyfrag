@@ -1,37 +1,88 @@
 from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
+from itertools import combinations
 
 from pyfrag.Globals import geom, logger, params
 from pyfrag.Globals import MPI
+from pyfrag.vbct import  vbct_calc
+from pyfrag.vbct.monomerscf import monomerSCF, best_guess
+
+def print_vbct_init(states):
+    logger.print_parameters()
+    logger.print_geometry()
+    print "VBCT Basis"
+    print "----------"
+    for idx in states:
+        print_vbct_state(idx)
+    print "\nMonomer SCF & Diagonal Element Calculation"
+    print "------------------------------------------"
+
+
+def fraglabel(frag, chg):
+    atoms = [geom.geometry[i].sym for i in geom.fragments[frag]]
+    atom_counts = { sym : atoms.count(sym) for sym in set(atoms) }
+    label = '('
+    for sym, count in sorted(atom_counts.items()):
+        label += sym.capitalize()
+        if count > 1: label += str(count)
+    label += ')'
+    if chg != 0: label += "%+d" % chg
+    return label
+
+
+def print_vbct_state(idx):
+    nfrag = len(geom.fragments)
+    frag_labels = [fraglabel(i,i==idx) for i in range(nfrag)]
+    print "State: " + ''.join(frag_labels)
+
+
+def build_secular_equations(diag_results, offdiag_results):
+    N = len(diag_results)
+    H = np.zeros((N,N))
+    S = np.eye(N)
+    for i in range(N):
+        res = diag_results[i]
+        H[i,i] = res['E1'] + res['E2']
+    for res in offdiag_results:
+        i,j = res['idx']
+        H[i,j] = H[j,i] = res['coupling']
+    return H, S
+
 
 def print_diagonal_calc_details(diag_results):
-    for i, state in enumerate(charge_states):
-        print state
-        for monomer in state.monomers:
-            atom_strs = map(str, monomer.atoms)
-            charge_strs = ["   charge = %8.6f" % q for q in monomer.esp_charges]
-            print "\n".join(["(frag %2d) %s %s" % (monomer.index, a, c) for a,c in zip(atom_strs, charge_strs)])
-        print ""
-    for i, state in enumerate(charge_states):
-        header = str(state) + " E = %.6f" % H[i,i]
+    dimer_idxs = list(combinations(range(len(diag_results)), 2))
+    for i, res in enumerate(diag_results):
+        print_vbct_state(i)
+        logger.print_fragment(net_charges=res['net_charges'],
+                              esp_charges=res['esp'], charges_only=True)
+        header = " E = %.6f" % (res['E1'] + res['E2'])
         print header
         print "-"*len(header)
-        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % state.E1
+        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % res['E1']
         print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
-        for monomer in state.monomers:
-            if 'corr' not in monomer.energy: monomer.energy['corr'] = 0.0
-            print "    %10s %12.6f %12.6f %12.6f" % (monomer.label(),
-                    monomer.energy['hf'], monomer.energy['corr'],
-                    monomer.energy['total'])
+        for j, mon in enumerate(res['monomers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (fraglabel(j,int(j==i)),
+                    mon['E_hf'], mon.get('E_corr', 0.0),
+                    mon['E_tot'])
         print ""
-        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % state.E2
-        for dimer in state.dimers:
-            if 'corr' not in dimer.energy: dimer.energy['corr'] = 0.0
-            print "    %10s %12.6f %12.6f %12.6f" % (str(dimer.index),
-                    dimer.energy['hf'], dimer.energy['corr'],
-                    dimer.energy['total'])
+        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % res['E2']
+        for dimidx, dim in zip(dimer_idxs, res['dimers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (str(dimidx),
+                    dim['E_hf'], dim.get('E_corr', 0.0),
+                    dim['E_tot'])
         print "\n"
+    print "Coupling and Overlap Matrix Elements"
+    print "------------------------------------"
+
+
+def print_offdiag_calc_details(pairs, offdiag_results):
+    for pair, res in zip(pairs, offdiag_results):
+        print "Coupling", pair
+        print "---------------"
+        for k,v in res.items():
+            print "    %s <--> %s" % (str(k), str(v))
+
 
 def verify_options():
     requisite = '''geometry
@@ -39,107 +90,107 @@ def verify_options():
                     hftype
                     correlation
                     embedding
-                    diagonal
-                    relax_neutral_dimers
-                    corr_neutral_dimers
-                    coupling
+                    vbct_scheme
                     backend
                     task'''.split('\n')
     for opt in requisite:
-        assert opt in params.options
+        assert opt.strip() in params.options, "input needs %s" % opt
+
 
 def calc_diagonal(idx, comm=None):
-    monomers = range(nfrag)
-    charges  = [int(idx == j) for j in states]
 
-    espfield, movecs = monomerSCF(monomers, charges, comm)
-    diag_result = vbct_calc.diagonal(monomers, charges, espfield, movecs, comm)
+    diag_calc_name = "diag_%s" % params.options['vbct_scheme']
+    diag_calc_fxn = getattr(vbct_calc, diag_calc_name)
+
+    nfrag = len(geom.geometry)
+    monomers = range(nfrag)
+    charges  = [int(idx == j) for j in monomers]
+
+    if params.options['fragmentation'] == 'full_system':
+        espfield, movecs = best_guess()
+    else:
+        espfield, movecs = monomerSCF(monomers, charges, comm)
+    diag_result = diag_calc_fxn(charges, espfield, movecs, comm)
     return diag_result
+
+
+def calc_chg_distro(prob0, diag_results):
+    charge_distro = np.zeros(len(geom.geometry))
+    for i, diag_calc in enumerate(diag_results):
+        charge_vec = np.array(diag_calc['esp'])
+        charge_distro += charge_vec*prob0[i]
+    return charge_distro
+
 
 def kernel():
     '''SP energy'''
 
+    # Setup
     verify_options()
     geom.perform_fragmentation()
     nfrag   = len(geom.fragments)
     nstates = nfrag
     states = range(nstates)
 
-    if params.VERBOSE and MPI.rank == 0:
-        logger.print_parameters()
-        logger.print_geometry()
-        print_vbct_states()
-        print "\nMonomer SCF & Diagonal Element Calculation"
-        print "------------------------------------------"
+    if params.verbose and MPI.rank == 0:
+        print_vbct_init(states)
 
-    diag_results = {}
+    # Diagonal element calculation
+    diag_results = []
+
     if MPI.nproc > nstates:
         work_comm, idx = MPI.create_split_comms(nstates)
-
         diag_result = calc_diagonal(idx, work_comm)
 
         if work_comm.Get_rank() == 0:
             MPI.comm.send(diag_result, dest=0, tag=idx)
+
         if MPI.rank == 0:
             for idx in states:
-                diag_results[idx] = MPI.comm.recv(source=ANY_SOURCE, tag=idx)
+                res = MPI.comm.recv(source=ANY_SOURCE, tag=idx)
+                diag_results.append(res)
+
         work_comm.Free()
     else:
         for idx in states:
-            diag_results[idx] = calc_diagonal(idx)
+            res = calc_diagonal(idx)
+            diag_results.append(res)
 
-    # log monomer SCF and diagonal elements
-    if MPI.rank == 0 and params.VERBOSE:
+    if MPI.rank == 0 and params.verbose:
         print_diagonal_calc_details(diag_results)
 
-        print "Coupling and Overlap Matrix Elements"
-        print "------------------------------------"
+    # Couplings/overlaps calculation
+    coupl_name = "coupl_%s" % params.options['vbct_scheme']
+    calc_coupling = getattr(vbct_calc, coupl_name)
 
-    # Couplings/overlaps
-    pairs = [(i,j) for i in range(N-1) for j in range(i+1,N)]
-    my_pairs = MPI.scatter(comm, pairs, master=0)
-    couplings = [0.0] * len(my_pairs)
-    overlaps  = [0.0] * len(my_pairs)
+    pairs = [(i,j) for i in range(nstates-1) for j in range(i+1,nstates)]
+    my_pairs = MPI.scatter(MPI.comm, pairs, master=0)
 
-    for idx, (i,j) in enumerate(my_pairs):
+    offdiag_results = []
 
-        couplings[idx], overlaps[idx], info = charge_states[i].coupling(charge_states[j])
+    for (i,j) in my_pairs:
+        res = calc_coupling(i, j)
+        offdiag_results.append(res)
 
-        if rank == 0 and nproc == 1 and params.VERBOSE:
-            print "Coupling"
-            for k, v in info.items():
-                print "  %14s" % k, v
-            print ""
+    offdiag_results = MPI.gather(MPI.comm, offdiag_results, master=0)
 
-    couplings = MPI.gather(comm, couplings, master=0)
-    overlaps  = MPI.gather(comm, overlaps,  master=0)
+    if MPI.rank == 0 and params.verbose:
+        print_offdiag_calc_details(pairs, offdiag_results)
 
-    # Solve secular equation, return results
-    if rank == 0:
-        for idx, (i,j) in enumerate(pairs):
-            H[i,j] = H[j,i] = couplings[idx]
-            S[i,j] = S[j,i] =  overlaps[idx]
+    # Construct eigensystem; solve for ground state
+    H, S = build_secular_equations(diag_results, offdiag_results)
 
-    if params.VERBOSE and rank == 0:
-        print "Hamiltonian"
-        print "-----------"
-        print H
-        if np.allclose(S, np.eye(N)):
-            print "Overlap matrix: identity"
-        else:
-            print "Overlap matrix"
-            print "--------------"
-            print S
+    if params.verbose and MPI.rank == 0:
+        logger.pretty_matrix(H, precision=6, name="Hamiltonian")
+        logger.pretty_matrix(S, precision=6, name="Overlap")
 
-    E_nuclear = geom.nuclear_repulsion_energy(params.options['geometry'])
-    for i in range(N):
+    E_nuclear = geom.nuclear_repulsion_energy()
+    for i in states:
         H[i,i] -= E_nuclear
+
     eigvals, eigvecs = eigh(H, b=S)
     prob0 = eigvecs[:,0]**2
-    charge_distro = np.zeros((len(params.options['geometry'])))
-    for i, state in enumerate(charge_states):
-        charge_vec = np.array([q for m in state.monomers for q in m.esp_charges])
-        charge_distro += prob0[i]*charge_vec
+    charge_distro = calc_chg_distro(prob0, diag_results)
 
     results = {
                  'eigvals' : eigvals,
@@ -148,7 +199,7 @@ def kernel():
                  'E(GS)' : eigvals[0] + E_nuclear,
                  'chgdist(GS)' : charge_distro
               }
-    if params.VERBOSE and rank == 0:
+    if params.verbose and MPI.rank == 0:
         print "Final Energy Calculation Results"
         for k,v in results.items():
             print k, "\n   ", v

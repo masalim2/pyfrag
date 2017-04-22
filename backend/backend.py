@@ -45,7 +45,7 @@ def run(calc, frags, charge, bq_list, bq_charges,
     params backend option.
 
     Args
-        calc: one of esp, energy, gradient, hessian
+        calc: one of esp, energy, energy_hf, gradient, hessian
         frags: list of 4-tuples (i,a,b,c) (See build_atoms documentation)
         charge: the net charge of the fragments in QM calculation
         bq_list: the embedding fragments, list of 4-tuples
@@ -65,7 +65,7 @@ def run(calc, frags, charge, bq_list, bq_charges,
     '''
     options = params.options
     calc = calc.lower().strip()
-    assert calc in 'esp energy gradient hessian'.split()
+    assert calc in 'esp energy energy_hf gradient hessian'.split()
     assert isinstance(frags, list)
     assert all(isinstance(frag, tuple) and
                len(frag)==4 for frag in frags)

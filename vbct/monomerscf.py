@@ -2,6 +2,8 @@ import numpy as np
 
 from pyfrag.Globals import params, MPI, geom
 from pyfrag.backend import backend
+def best_guess():
+    for
 
 def monomerSCF(monomers, net_charges, embedding=None, comm=None):
     '''Cycle embedded monomer calculations until the ESP charges converge.
@@ -63,7 +65,7 @@ def monomerSCF(monomers, net_charges, embedding=None, comm=None):
         residual = np.array(espcharges) - np.array(espcharges0)
         RMSD = np.linalg.norm(residual)
         itr += 1
-        if not embedding:
+        if not embedding or len(monomers) == 1:
             return espcharges, movecs
 
     if RMSD > RMSD_TOL:
