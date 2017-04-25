@@ -1,4 +1,11 @@
 # pyfrag
 PyFragment -- collection of python modules for embedded-fragment calculations
 
-Please see the [pdf documentation](docs/build/latex/pyfragment.pdf)
+Documentation is available [online](https://masalim2.github.io/pyfrag/) and in [pdf format](docs/build/latex/pyfragment.pdf)
+
+TODO:
+* cell optimization driver
+* numerical gradient driver
+* dipole moment & polarizability post-processing tools for IR/Raman calculations
+* expand unit test coverage
+* clean up documentation
