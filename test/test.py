@@ -1,16 +1,25 @@
+'''Unit Tests using Python unittest framework
+
+Run all tests from command line using:
+>>> python -m unittest pyfrag/test
+
+Run one test from command line by specifying a specific test case:
+>>> python -m unittest pyfrag/test.TestTrimerRHF
+'''
+
 import unittest
 import sys
 import os
 import numpy as np
 
-from pyfrag.Globals import params, geom, MPI, logger, lattice
+from pyfrag.Globals import params, geom, lattice
 from pyfrag.Globals import utility as util
 
 import pyfrag.backend
 import pyfrag.bim
 import pyfrag.vbct
-import pyfrag.drivers 
-        
+import pyfrag.drivers
+
 filename =  sys.modules[__name__].__file__
 testpath, b  = os.path.split(filename)
 
@@ -22,7 +31,7 @@ class TestTrimerRHF(unittest.TestCase):
         util.parse_input(inpath)
         params.quiet = True
         util.make_scratch_dirs(None)
-    
+
     @classmethod
     def tearDownClass(cls):
         util.clean_scratch_dirs()
@@ -31,7 +40,7 @@ class TestTrimerRHF(unittest.TestCase):
         self.assertEqual(params.options['mem_mb'], 3800)
 
         self.assertEqual(len(geom.geometry),  9)
-        self.assertEqual(sorted([idx for frag in geom.fragments 
+        self.assertEqual(sorted([idx for frag in geom.fragments
                          for idx in frag]), range(9))
 
         opts = params.options
@@ -59,7 +68,7 @@ class TestTrimerRHF(unittest.TestCase):
         E_frag  =  results_frag['E']
 
         self.assertAlmostEqual(E_exact, E_frag, delta=0.001)
-    
+
     def testGradient(self):
         driver = pyfrag.bim.bim
         params.options['task'] = 'bim_grad'
@@ -83,7 +92,7 @@ class TestTrimerMP2(unittest.TestCase):
         util.parse_input(inpath)
         params.quiet = True
         util.make_scratch_dirs(None)
-    
+
     @classmethod
     def tearDownClass(cls):
         util.clean_scratch_dirs()
@@ -105,7 +114,7 @@ class TestTrimerMP2(unittest.TestCase):
 
         self.assertAlmostEqual(E_exact, E_frag, delta=0.001)
         self.assertLess(np.max(np.abs(g_frag-g_exact)), 0.001)
-    
+
     def testGradPSI(self):
         E_exact = np.loadtxt(os.path.join(testpath,
             'outputs/wat3_rimp2.energy'))

@@ -101,8 +101,7 @@ def print_parameters():
               task'''.split()
 
     if 'vbct' in options['task']:
-        display.extend('''diagonal relax_neutral_dimers
-        corr_neutral_dimers coupling charge_states'''.split())
+        display.extend('vbct_scheme')
 
     if 'opt' in options['task']:
         display.extend('''pressure_bar freeze_cell atom_gmax lat_gmax

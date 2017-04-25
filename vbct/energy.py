@@ -1,3 +1,7 @@
+'''Compute GS doublet energy and charge distribution in VBCT scheme
+1) No PBC or truncation of summations: only cluster ions are calculated
+2) only charge +1 is supported: single hole hopping between fragments
+'''
 from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
@@ -9,6 +13,7 @@ from pyfrag.vbct import  vbct_calc
 from pyfrag.vbct.monomerscf import monomerSCF, fullsys_best_guess
 
 def print_vbct_init(states):
+    '''Print header for calculation'''
     logger.print_parameters()
     logger.print_geometry()
     print "VBCT Basis"
@@ -20,6 +25,7 @@ def print_vbct_init(states):
 
 
 def fraglabel(frag, chg):
+    '''Generate chemical formula string for a fragment'''
     atoms = [geom.geometry[i].sym for i in geom.fragments[frag]]
     atom_counts = { sym : atoms.count(sym) for sym in set(atoms) }
     label = '('
