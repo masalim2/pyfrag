@@ -111,7 +111,7 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
         f.write('task %s energy\n\n' % theory)
     elif calc == 'esp':
         f.write('task scf energy\n\n')
-        f.write('esp\n recalculate\nrestrain hfree\nend\n')
+        f.write('esp\n recalculate\nend\n')
         f.write('task esp\n\n')
     elif calc == 'gradient':
         f.write('task %s gradient\n\n' % theory)

@@ -24,6 +24,7 @@ def scatter(comm, data, master=0):
     if comm is None:
         return data
     rank = comm.Get_rank()
+    nproc = comm.size
     N = len(data)
     N_per_proc = N // nproc
     rem = N % nproc
@@ -45,6 +46,7 @@ def scatter(comm, data, master=0):
 def gather(comm, data, master=0):
     '''default gather fxn is dumb...
     data = MPI_gather(comm, data, 0)'''
+    nproc = comm.size
     if comm is None:
         return data
     rank = comm.Get_rank()
@@ -61,6 +63,7 @@ def allgather(comm, data):
     if comm is None:
         return data
     rank = comm.Get_rank()
+    nproc = comm.size
 
     my_data = comm.allgather(data)
     my_data = [item for sublist in my_data for item in sublist]

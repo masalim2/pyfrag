@@ -2,8 +2,45 @@ import numpy as np
 
 from pyfrag.Globals import params, MPI, geom
 from pyfrag.backend import backend
-def best_guess():
-    for
+def fullsys_best_guess(comm=None):
+    if comm is None:
+        comm = MPI.comm
+
+    geom.set_frag_auto()
+    sub_fragments = geom.fragments[:]
+    guess_vecs = []
+
+    esp_list = []
+    for i, frag_i in enumerate(sub_fragments):
+        monomers = range(len(sub_fragments))
+        charges = [int(j==i) for j in monomers]
+        esp, vecs = monomerSCF(monomers,charges,embedding=False,comm=comm)
+        esp_list.append(esp)
+        guess_vecs.append(vecs)
+
+    geom.set_frag_full_system()
+
+    my_calcs = []
+    my_guessvecs = MPI.scatter(comm, guess_vecs, master=0)
+
+    for guess in my_guessvecs:
+        res = backend.run('energy_hf', [(0,0,0,0)], 1, [], [], guess=guess)
+        my_calcs.append(res)
+
+    calcs = MPI.allgather(comm, my_calcs)
+    ibest, best = min(enumerate(calcs), key=lambda x:x[1]['E_hf'])
+    espfield = esp_list[ibest]
+
+    if params.options['correlation']:
+        best = backend.run('energy', [(0,0,0,0)], 1, [], [], guess=guess_vecs[ibest])
+    res = {}
+    res['E1'] = best['E_tot']
+    res['E2'] = 0.0
+    res['monomers'] = [best]
+    res['dimers'] = []
+    res['net_charges'] = [1]
+    res['esp'] = espfield
+    return res
 
 def monomerSCF(monomers, net_charges, embedding=None, comm=None):
     '''Cycle embedded monomer calculations until the ESP charges converge.
@@ -20,6 +57,7 @@ def monomerSCF(monomers, net_charges, embedding=None, comm=None):
         embedding: Override True/False specified in input.
             Default None: use the value specified in input.
         comm: specify a sub-communicator for parallel execution.
+            If string 'serial' is specified, bypass MPI communication.
             Default None: use the top-level communicator in Globals.MPI
     Returns
         espcharges: a list of esp-fit atom-centered charges
@@ -35,13 +73,18 @@ def monomerSCF(monomers, net_charges, embedding=None, comm=None):
 
     if embedding is None:
         embedding = params.options['embedding']
+    else:
+        assert type(embedding) is bool
 
     espcharges = [0.0 for at in geom.geometry]
 
     while RMSD > RMSD_TOL and itr < MAXITER:
 
         espcharges0 = espcharges[:] # copy
-        myfrags = MPI.scatter(comm, zip(monomers, net_charges), master=0)
+        if comm is not 'serial':
+            myfrags = MPI.scatter(comm, zip(monomers, net_charges), master=0)
+        else:
+            myfrags = zip(monomers, net_charges)
         mycharges = []
         myvecs = []
 
@@ -56,8 +99,12 @@ def monomerSCF(monomers, net_charges, embedding=None, comm=None):
             mycharges.append(result['esp_charges'])
             myvecs.append(result['movecs'])
 
-        movecs = MPI.allgather(comm, myvecs)
-        monomer_espcharges = MPI.allgather(comm, mycharges)
+        if comm is not 'serial':
+            movecs = MPI.allgather(comm, myvecs)
+            monomer_espcharges = MPI.allgather(comm, mycharges)
+        else:
+            movecs = myvecs
+            monomer_espcharges = mycharges
         for (m, charges) in zip(monomers, monomer_espcharges):
             for (at, chg) in zip(geom.fragments[m], charges):
                 espcharges[at] = chg

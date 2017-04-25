@@ -83,21 +83,32 @@ def diag_chglocal(charges, espfield, movecs, comm=None):
     return results
 
 def coupl_chglocal(A, B):
-    esps_Aloc, vecs_Aloc = monomerSCF([A,B], [1,0])
-    esps_Bloc, vecs_Bloc = monomerSCF([A,B], [0,1])
+    if A == 0 and B == 2:
+        print "Running monomer SCF A+B"
+    esps_Aloc, vecs_Aloc = monomerSCF([A,B], [1,0], comm='serial')
+    if A == 0 and B == 2:
+        print "Running monomer SCF AB+"
+    esps_Bloc, vecs_Bloc = monomerSCF([A,B], [0,1], comm='serial')
     bqs = []
     esp = []
 
+    if A == 0 and B == 2:
+        print "Running charge-local dimers"
     # Charge local
     frag = [(A,0,0,0), (B,0,0,0)]
     Aloc = backend.run('energy_hf', frag, 1, bqs, esp, noscf=True,
                        guess=vecs_Aloc)
     Bloc = backend.run('energy_hf', frag, 1, bqs, esp, noscf=True,
                        guess=vecs_Bloc)
+    if A == 0 and B == 2:
+        print "done. running relaxed dimer..."
+
     # Relaxed dimer
     Aloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Aloc)
     Bloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Bloc)
     relax = min(Aloc_relax, Bloc_relax, key=lambda x:x['E_tot'])
+    if A == 0 and B == 2:
+        print "done."
 
     E_relax = relax['E_tot']
     E_Aloc  = Aloc['E_tot']

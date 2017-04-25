@@ -6,7 +6,7 @@ from itertools import combinations
 from pyfrag.Globals import geom, logger, params
 from pyfrag.Globals import MPI
 from pyfrag.vbct import  vbct_calc
-from pyfrag.vbct.monomerscf import monomerSCF, best_guess
+from pyfrag.vbct.monomerscf import monomerSCF, fullsys_best_guess
 
 def print_vbct_init(states):
     logger.print_parameters()
@@ -99,19 +99,22 @@ def verify_options():
 
 def calc_diagonal(idx, comm=None):
 
+    print "Rank %d assigned charge state %d, subcomm rank %d" % (MPI.rank, idx, comm.rank)
     diag_calc_name = "diag_%s" % params.options['vbct_scheme']
     diag_calc_fxn = getattr(vbct_calc, diag_calc_name)
 
     nfrag = len(geom.geometry)
     monomers = range(nfrag)
     charges  = [int(idx == j) for j in monomers]
+    print "Rank %d charges" % MPI.rank, charges
 
     if params.options['fragmentation'] == 'full_system':
-        espfield, movecs = best_guess()
+        res = fullsys_best_guess(comm=comm)
     else:
-        espfield, movecs = monomerSCF(monomers, charges, comm)
-    diag_result = diag_calc_fxn(charges, espfield, movecs, comm)
-    return diag_result
+        espfield, movecs = monomerSCF(monomers, charges, comm=comm)
+        print "Charges", charges, "espfield", espfield
+        res = diag_calc_fxn(charges, espfield, movecs, comm=comm)
+    return res
 
 
 def calc_chg_distro(prob0, diag_results):
@@ -165,14 +168,20 @@ def kernel():
 
     pairs = [(i,j) for i in range(nstates-1) for j in range(i+1,nstates)]
     my_pairs = MPI.scatter(MPI.comm, pairs, master=0)
+    print "Rank %d calculating pairs" % MPI.rank, my_pairs
 
     offdiag_results = []
 
     for (i,j) in my_pairs:
+        print "calculating coupling", i, j
         res = calc_coupling(i, j)
         offdiag_results.append(res)
 
+    print "Rank %d reached MPI gather step" % MPI.rank
     offdiag_results = MPI.gather(MPI.comm, offdiag_results, master=0)
+
+    if MPI.rank > 0:
+        return {}
 
     if MPI.rank == 0 and params.verbose:
         print_offdiag_calc_details(pairs, offdiag_results)
