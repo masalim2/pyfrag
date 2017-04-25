@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Background" href="background.html" /> 
+    <link rel="next" title="Setup Instructions" href="setup.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,10 +36,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="background.html" title="Background"
+          <a href="setup.html" title="Setup Instructions"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
@@ -52,14 +49,66 @@
             
   <div class="section" id="pyfragment-documentation">
 <h1>PyFragment Documentation<a class="headerlink" href="#pyfragment-documentation" title="Permalink to this headline">¶</a></h1>
+<p>PyFragment is a collection of Python modules that facilitate the setup and
+parallel execution of <em>embedded-fragment</em> calculations on molecular clusters,
+liquids, and solids. It interfaces with the quantum chemistry software
+packages <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>.</p>
+<p>The <strong>binary interaction method (BIM)</strong> modules perform a variety of
+calculations:</p>
+<ul class="simple">
+<li>Molecular clusters or systems with 1, 2, or 3-dimensional periodic boundary conditions</li>
+<li>Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)</li>
+<li>Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors</li>
+<li>Total system dipole moment, and nuclear dipole/polarizability derivatives for IR intensity</li>
+<li>Nuclear hessian and vibrational analysis tools</li>
+<li>Parallel execution using MPI (through the mpi4py bindings)</li>
+</ul>
+<p>The experimental <strong>valence bond charge-transfer (VBCT)</strong> module is a research
+branch of the software. The intent is to extend molecular fragment
+calculations to systems with significant charge-resonance, where integer
+electron counts cannot be assigned to individual fragments.</p>
+<p>Where applicable, modules can be run as standalone executables with a
+input file supplied on the command line. They may also be imported into
+user-written Python programs to create new functionality or automate some
+tedious task. Several <strong>driver</strong> scripts are already included, which use the
+<strong>BIM</strong> and <strong>VBCT</strong> modules to:</p>
+<ul class="simple">
+<li>Perform a PES scan along any user-defined coordinate</li>
+<li>Find a local minimum in the PES using L-BFGS optimization</li>
+<li>Integrate a molecular dynamics trajectory</li>
+</ul>
+<p>Several tools to process the output of the above calculations are
+included:
+* Phonon dispersion calculation from solid Hessian data
+* <em>to be continued...</em></p>
+</div>
+<div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#gellmann-setup">Gellmann setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#blue-waters-setup">Blue Waters setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#running-as-executable">Running as executable</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="background.html">Background</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="background.html#theory">Theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="background.html#implementation">Implementation</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="inputfile.html">Input to PyFragment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#modular-usage">Modular Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#standalone-execution">Standalone Execution</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="globals.html">The <strong>Globals</strong> Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#globals-geom">Globals.geom</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="samples.html">Sample Calculations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">Extending PyFragment</a></li>
 </ul>
 </div>
 </div>
@@ -81,12 +130,13 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyFragment Documentation</a></li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
   <h4>Next topic</h4>
-  <p class="topless"><a href="background.html"
-                        title="next chapter">Background</a></p>
+  <p class="topless"><a href="setup.html"
+                        title="next chapter">Setup Instructions</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -115,17 +165,14 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="background.html" title="Background"
+          <a href="setup.html" title="Setup Instructions"
              >next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2017, So Hirata Group, University of Illinois.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
     </div>
   </body>
 </html>

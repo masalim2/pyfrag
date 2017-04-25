@@ -66,83 +66,105 @@ liquids, and solids.
 \section{Theory}
 \label{\detokenize{background:theory}}
 The \sphinxstyleemphasis{embedded-fragment} methods are rooted in the many body expansion (MBE),
-which expresses the total energy of a molecular system as
+which expresses the total energy of a molecular system as (under
+construction...)
 \begin{equation*}
 \begin{split}E = \sum_{i} E_{i}\end{split}
-\end{equation*}\index{energy\_driver() (in module drivers)}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{background:drivers.energy_driver}}\pysiglinewithargsret{\sphinxcode{drivers.}\sphinxbfcode{energy\_driver}}{}{}
-SP energy
-
-\end{fulllineitems}
-
-
+\end{equation*}
 
 \section{Implementation}
 \label{\detokenize{background:implementation}}
-A series of modules are available. Please check:
+Under construction...
 
 
 \subsection{Codes}
-\label{\detokenize{background:module-ChargeState}}\label{\detokenize{background:codes}}\index{ChargeState (module)}\index{ChargeState (class in ChargeState)}
+\label{\detokenize{background:codes}}
+Under construction
+
+
+\chapter{The \sphinxstylestrong{globals} Module}
+\label{\detokenize{globals::doc}}\label{\detokenize{globals:the-globals-module}}
+\sphinxstylestrong{globals} contains essential shared data and functionality for \sphinxstyleemphasis{all} types of fragment calculations.
+
+
+\section{globals.geom}
+\label{\detokenize{globals:globals-geom}}
+Defines the fundamental Atom class to conveniently load and print geometry
+information.  Contains functions for loading geometry and performing
+\sphinxstyleemphasis{fragmentation}, that is, assigning which atoms belong to which fragments.
+\phantomsection\label{\detokenize{globals:module-globals.geom}}\index{globals.geom (module)}\index{Atom (class in globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{background:ChargeState.ChargeState}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{ChargeState.}\sphinxbfcode{ChargeState}}{\emph{fragments}, \emph{fragment\_charges}}{}
-Base class for VB CT state
-\index{coupling\_dimer\_gs() (ChargeState.ChargeState method)}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{background:ChargeState.ChargeState.coupling_dimer_gs}}\pysiglinewithargsret{\sphinxbfcode{coupling\_dimer\_gs}}{\emph{state2}, \emph{embed\_flag=None}}{}
--sqrt( {[}E\_(AB)+ - E\_(A+B){]}*{[}E\_(AB)+ - E\_(AB+){]})
-E\_(AB)+ == the relaxed, correlated charged dimer
-E\_(A+B) == non-stationary HF energy of the charge-local dimer
-\begin{quote}
-
-plus monomer correlation energies of E\_A+ and E\_B
-\end{quote}
-
-For a dimer system, this method reproduces the exact E by construction
+\phantomsection\label{\detokenize{globals:globals.geom.Atom}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{globals.geom.}\sphinxbfcode{Atom}}{\emph{atomstr}, \emph{units='angstrom'}}{}
+Convenience class for loading and storing geometry data
 
 \end{fulllineitems}
 
-\index{coupling\_dimer\_gs\_no\_embed() (ChargeState.ChargeState method)}
+\index{load\_geometry() (in module globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{background:ChargeState.ChargeState.coupling_dimer_gs_no_embed}}\pysiglinewithargsret{\sphinxbfcode{coupling\_dimer\_gs\_no\_embed}}{\emph{state2}}{}
-Wraps the above dimer\_gs coupling, but the two monomers do not
-polarize each other in monomerSCF. Hence, it does not exactly
-reproduce the dimer GS energy by construction
+\phantomsection\label{\detokenize{globals:globals.geom.load_geometry}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{load\_geometry}}{\emph{data}, \emph{units='angstrom'}}{}
+Builds geometry from input text, lists, or filename.
+
+Tries to be flexible with the form of input `data' argument. 
+Uses regex to extract atomic coordinates from text.
+\begin{description}
+\item[{Args:}] \leavevmode\begin{description}
+\item[{data: string, list of strings, list of lists, or filename}] \leavevmode
+containing the xyz coordinate data
+
+\end{description}
+
+units (default Angstrom): ``bohr'' or ``angstrom''
+
+\item[{Returns:}] \leavevmode
+geometry: a list of Atom objects
+
+\end{description}
 
 \end{fulllineitems}
 
-\index{coupling\_dimer\_gs\_overlapHOMO() (ChargeState.ChargeState method)}
+\index{makefrag\_auto() (in module globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{background:ChargeState.ChargeState.coupling_dimer_gs_overlapHOMO}}\pysiglinewithargsret{\sphinxbfcode{coupling\_dimer\_gs\_overlapHOMO}}{\emph{state2}}{}
-S*E\_(AB)+ - sqrt( {[}E\_(AB)+ - E\_(A+B){]}*{[}E\_(AB)+ - E\_(AB+){]})
-Second term is same as coupling\_dimer\_gs
-First term is overlap of monomer HOMO's times relaxed dimer energy
-This method also reproduces energy of a dimer by construction; it
-just makes the overlap matrix non-identity
+\phantomsection\label{\detokenize{globals:globals.geom.makefrag_auto}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{makefrag\_auto}}{\emph{geometry}}{}
+Auto-generate list of fragments based on bond-length frag\_cutoffs.
+
+Use this if you don't wish to manually assign atoms to fragments.
+\begin{description}
+\item[{Args:}] \leavevmode
+geometry: list of Atom objects
+
+\item[{Returns:}] \leavevmode
+fragments: a list of fragment atomic indices
+
+\end{description}
 
 \end{fulllineitems}
 
-\index{diag\_chargelocal\_dimers() (ChargeState.ChargeState method)}
+\index{makefrag\_full\_system() (in module globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{background:ChargeState.ChargeState.diag_chargelocal_dimers}}\pysiglinewithargsret{\sphinxbfcode{diag\_chargelocal\_dimers}}{\emph{subcomm=None}}{}
-return E1 + E2, the BIM energy of this charge-transfer configuration
-E1: sum of monomer correlated energies
-E2: sum of dimer interaction energies (E\_AB - E\_A - E\_B)
-\begin{quote}
+\phantomsection\label{\detokenize{globals:globals.geom.makefrag_full_system}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{makefrag\_full\_system}}{\emph{geometry}}{}
+No fragmentation: all atoms in system belong to one fragment.
 
-interaction INCLUDES correlation for relaxed dimers (when A\&B have same charge)
-but it's just the non-stationary HF energy for charge-local dimers
-\end{quote}
+Use this to perform one big reference QM calculation
+\begin{description}
+\item[{Args:}] \leavevmode
+geometry: list of Atom objects
+
+\item[{Returns:}] \leavevmode
+fragments: a list of fragment atomic indices
+
+\end{description}
 
 \end{fulllineitems}
 
+\index{nuclear\_repulsion\_energy() (in module globals.geom)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:globals.geom.nuclear_repulsion_energy}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{nuclear\_repulsion\_energy}}{\emph{geometry}}{}
+Nuclear repulsion energy, hartrees
 
 \end{fulllineitems}
 
@@ -165,8 +187,8 @@ but it's just the non-stationary HF energy for charge-local dimers
 \renewcommand{\indexname}{Python Module Index}
 \begin{sphinxtheindex}
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
-\bigletter{c}
-\item {\sphinxstyleindexentry{ChargeState}}\sphinxstyleindexpageref{background:\detokenize{module-ChargeState}}
+\bigletter{g}
+\item {\sphinxstyleindexentry{globals.geom}}\sphinxstyleindexpageref{globals:\detokenize{module-globals.geom}}
 \end{sphinxtheindex}
 
 \renewcommand{\indexname}{Index}

@@ -1,19 +1,24 @@
 \begin{sphinxtheindex}
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
-  \bigletter C
-  \item ChargeState (class in ChargeState), \hyperpage{1}
-  \item ChargeState (module), \hyperpage{1}
-  \item coupling\_dimer\_gs() (ChargeState.ChargeState method), \hyperpage{1}
-  \item coupling\_dimer\_gs\_no\_embed() (ChargeState.ChargeState method), \hyperpage{1}
-  \item coupling\_dimer\_gs\_overlapHOMO() (ChargeState.ChargeState method), \hyperpage{1}
+  \bigletter A
+  \item Atom (class in globals.geom), \hyperpage{3}
 
   \indexspace
-  \bigletter D
-  \item diag\_chargelocal\_dimers() (ChargeState.ChargeState method), \hyperpage{2}
+  \bigletter G
+  \item globals.geom (module), \hyperpage{3}
 
   \indexspace
-  \bigletter E
-  \item energy\_driver() (in module drivers), \hyperpage{1}
+  \bigletter L
+  \item load\_geometry() (in module globals.geom), \hyperpage{3}
+
+  \indexspace
+  \bigletter M
+  \item makefrag\_auto() (in module globals.geom), \hyperpage{3}
+  \item makefrag\_full\_system() (in module globals.geom), \hyperpage{3}
+
+  \indexspace
+  \bigletter N
+  \item nuclear\_repulsion\_energy() (in module globals.geom), \hyperpage{3}
 
 \end{sphinxtheindex}

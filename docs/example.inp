@@ -1,0 +1,100 @@
+# To run this program, use:
+# mpirun -n <nproc> python main.py <inputfilename> <-v>
+#
+# This is a sample input file
+# comments begin with '#' character
+# one-line entries are parsed as:
+#     <keyword> = <value>
+# multi-line entries are enclosed in braces and parsed as lists:
+#     <keyword> = <list of newline-separated values>
+ 
+# MAIN PARAMETERS
+# ---------------
+scrdir = /home/misha/scratch    # optional: scratch directory
+backend = pyscf                   # Quantum chemistry backend: NW, G09, pyscf, psi4
+mem_mb = 3800                   # memory-per-process for QC backend
+
+basis = aug-cc-pvdz               # all of these options have default values and need not be specified
+hftype = rohf                      # uhf or rohf
+correlation = off                 # can omit this line or specify off/no/false for HF theory
+embedding = True                  # Use embedding field
+r_qm = 8.0 # cutoff in angstroms
+r_bq = 8.0
+r_lr = 200.0
+
+task = bim_e # bim_e bim_grad bim_hess 
+             # vbct_e
+             # bim_opt bim_cellopt
+             # bim_md
+
+# GEOMETRY / ANGSTROMS
+# --------------------
+# list of atoms with formal charges (repeated + or -)
+# fragment charges will be sum of formal charges
+# example for (H2O)(H3O+) cluster:
+geometry {                        
+O 4 0 0
+H 4 1 0
+H 4 0 1
+O 0 0 0
+H+ 1 0 0
+H 0 1 0
+H 0 0 1
+}
+
+# if PBC, include a line containing "a b c alpha beta gamma axis0"
+# if not periodic in b or c dimension, set lattice constant to 0.0
+# example for linear, 1D-periodic HF chain:
+#geometry {   
+#2.0 0.0 0.0 90.0 90.0 0.0 0
+#H 0 0 0
+#F 1 0 0
+#}
+# geometry = geom1.xyz  # or .xyz file path (lattice constants on line 2)
+
+# FRAGMENTATION
+# ------------
+#  3 options
+#     auto        == determine using bond cutoff distances
+#     full_system == no fragmentation (reference calculation)
+#     manual      == newline-separated atom indices
+
+fragmentation = auto 
+#fragmentation = full_system
+#fragmentation { 
+#0 2 3 4                         
+#1
+#5 6 7 8 9 10
+#11
+#}
+
+# VBCT-SPECIFIC OPTIONS
+# ---------------------
+diagonal = chargelocal_dimers     # diagonal element method: which fxn in ChargeState.py
+relax_neutral_dimers = False      # Do SCF on neutral dimers when calculating diagonal element?
+corr_neutral_dimers = False       # Get correlation energy of neutral dimers in diagonal elements?
+coupling = dimer_gs               # dimer_gs, dimer_gs_no_embed, dimer_gs_overlapHOMO, dimer_es_overlap_solve, dimer_GMH, dimer_HOMO_splitting
+
+charge_states  = hop 1           # hop <net-charge> == a basis of charge-hopping states (overrides any formal charges defined in geometry)
+                                 # for instance, 'hop 1' specifies n_frag states; in each state one fragment has a charge of +1 and all others are neutral
+                                 # single == no charge-hopping; use formal charges assigned in geometry (ordinary BIM)
+
+# OPTIMIZER or MD options
+# ------------------------
+pressure = 5000 # bar
+freeze_cell = False # allow lattice to move?
+atom_gmax = 0.0015
+lat_gmax = 0.0003
+opt_maxiter = 50
+
+# MD-only options
+# ---------------
+md_restart_file = restart.dat
+num_steps = 500
+save_intval = 2
+d_time = 1.0 # femtosecond
+temperature = 300 # temperature
+
+# HESSIAN-ONLY: FORCE CONSTANT MATRICES
+# -------------------------------------
+interaction_cells = 2 2 2

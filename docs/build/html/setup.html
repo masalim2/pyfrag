@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setup Instructions &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Background" href="background.html" />
+    <link rel="prev" title="PyFragment Documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="background.html" title="Background"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyFragment Documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="setup-instructions">
+<h1>Setup Instructions<a class="headerlink" href="#setup-instructions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>PyFragment requires Python 2.7 or later, <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These
+modules should be readily importable, i.e.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">mpi4py</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+</pre></div>
+</div>
+<p>should execute without any errors in your Python interpreter.</p>
+<p>Your PYTHONPATH environment variable should include the directory containing
+&#8216;pyfrag&#8217;.  This will allow you to import the PyFrag modules from anywhere.</p>
+<p>PyFragment requires at least quantum chemistry backend to perform the fragment
+calculations. Currently supported packages are <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>. As
+such, at least one of the executables <strong>psi4</strong>, <strong>nwchem.x</strong>, or <strong>g09</strong> must be
+in the PATH.</p>
+</div>
+<div class="section" id="gellmann-setup">
+<h2>Gellmann setup<a class="headerlink" href="#gellmann-setup" title="Permalink to this headline">¶</a></h2>
+<p>To replace the default system Python 2.6 with Python 2.7, the <strong>opt-python</strong>
+module must be loaded.
+A convenient way to set up the requisite Python environment is with virtualenv
+and the pip package manager. Virtualenv allows users to manage a Python
+installation and install packages in a loadable environment stored in the home directory.
+This does not require administrator priveleges and the environment can easily be loaded/unloaded
+as necessary.  In a subdirectory of your home directory, perhaps
+called my-env: run the following commands</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">opt</span><span class="o">-</span><span class="n">python</span> <span class="c1"># replace default Python 2.6 with 2.7</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pypi</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">packages</span><span class="o">/</span><span class="n">source</span><span class="o">/</span><span class="n">p</span><span class="o">/</span><span class="n">pip</span><span class="o">/</span><span class="n">pip</span><span class="o">-</span><span class="mf">1.1</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">check</span><span class="o">-</span><span class="n">certificate</span> <span class="c1"># download PIP</span>
+<span class="n">virtualenv</span> <span class="o">--</span><span class="n">system</span><span class="o">-</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="n">your_environment_name</span> <span class="c1"># setup a new environment with PIP</span>
+<span class="n">source</span> <span class="n">your_environment_name</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span> <span class="c1"># load the environment</span>
+</pre></div>
+</div>
+<p>Notice that the terminal now indicates your virtual environment is loaded. You
+are now able to install packages to this environment using <strong>pip</strong>. Invoke</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mpi4py</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span>
+</pre></div>
+</div>
+<p>In future interactive sessions or any job submissions that require Python 2.7,
+mpi4py, or scipy, be sure that <strong>opt-python</strong> is loaded and
+the <strong>source</strong> line is invoked.</p>
+</div>
+<div class="section" id="blue-waters-setup">
+<h2>Blue Waters setup<a class="headerlink" href="#blue-waters-setup" title="Permalink to this headline">¶</a></h2>
+<p>Blue Waters comes equipped with high-performance builds of the necessary
+python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/python">modules</a>.  Your job submission scripts can set up the environment with the two lines</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
+<span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span><span class="o">-</span><span class="n">mpi</span>
+</pre></div>
+</div>
+<div class="section" id="installing-psi4">
+<h3>Installing Psi4<a class="headerlink" href="#installing-psi4" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>::</dt>
+<dd>git clone <a class="reference external" href="https://github.com/psi4/psi4.git">https://github.com/psi4/psi4.git</a>
+module load bwpy
+export CRAYPE_LINK_TYPE=dynamic
+export CRAY_ADD_RPATH=yes
+mkdir ~/libsci</dd>
+</dl>
+<p>Now, query the currently (default) loaded Cray LibSci module to find the
+directory containg the LibSci libaries.  Make symlinks in ~/libsci
+to all the necessary versions, naming the links corresponding to libsci.*
+as liblapack.*. This is necessary for CMake to recognize the math libraries.
+Finally, export the MATH_ROOT environment variable:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">MATH_ROOT</span><span class="o">=~/</span><span class="n">libsci</span>
+</pre></div>
+</div>
+<p>You will need a newer version of cmake than is provided on Blue Waters. A
+convenient way to quickly get the binary is with Miniconda (conda install
+cmake). This binary will work fine for the build process.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">psi4</span>
+<span class="n">cmake</span> <span class="o">-</span><span class="n">H</span><span class="o">.</span> <span class="o">-</span><span class="n">Bobjdir</span>
+<span class="n">cd</span> <span class="n">objdir</span>
+<span class="n">nohup</span> <span class="n">make</span> <span class="o">&gt;&amp;</span> <span class="n">make</span><span class="o">.</span><span class="n">log</span> <span class="o">&amp;</span>
+</pre></div>
+</div>
+<p>The compilation is rather lengthy; using nohup will allow you to launch the
+build and then log off without interrupting the process.</p>
+</div>
+</div>
+<div class="section" id="running-as-executable">
+<h2>Running as executable<a class="headerlink" href="#running-as-executable" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>To run as an executable on 16 cores, invoke ::</dt>
+<dd>mpirun -n 16 python /directory/to/pyfrag &lt;input-file&gt;</dd>
+</dl>
+<p>from the command line. This causes Python to run the __main__.py module
+located in pyfrag directory.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setup Instructions</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#gellmann-setup">Gellmann setup</a></li>
+<li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a><ul>
+<li><a class="reference internal" href="#installing-psi4">Installing Psi4</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-as-executable">Running as executable</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PyFragment Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="background.html"
+                        title="next chapter">Background</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/setup.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="background.html" title="Background"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyFragment Documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

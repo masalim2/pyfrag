@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The Globals Module &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sample Calculations" href="samples.html" />
+    <link rel="prev" title="Input to PyFragment" href="inputfile.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="samples.html" title="Sample Calculations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="inputfile.html" title="Input to PyFragment"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-globals-module">
+<h1>The <strong>Globals</strong> Module<a class="headerlink" href="#the-globals-module" title="Permalink to this headline">¶</a></h1>
+<p>The <strong>Globals</strong> module contains essential shared data and functionality
+for <em>all</em> types of fragment calculations.</p>
+<div class="section" id="globals-geom">
+<h2>Globals.geom<a class="headerlink" href="#globals-geom" title="Permalink to this headline">¶</a></h2>
+<p>Defines the fundamental Atom class to conveniently load and print geometry
+information.  Contains functions for loading geometry and performing
+<em>fragmentation</em>, that is, assigning which atoms belong to which fragments.</p>
+<dl class="function">
+<dt id="Globals.geom.load_geometry">
+<code class="descclassname">Globals.geom.</code><code class="descname">load_geometry</code><span class="sig-paren">(</span><em>data</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads geometry from input text, lists, or filename.</p>
+<p>Tries to be flexible with the form of input &#8216;data&#8217; argument. 
+Uses regex to extract atomic coordinates from text.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>data: string, list of strings, list of lists, or filename</dt>
+<dd>containing the xyz coordinate data</dd>
+</dl>
+<p class="last">units (default Angstrom): &#8220;bohr&#8221; or &#8220;angstrom&#8221;</p>
+</dd>
+<dt>Returns:</dt>
+<dd>None: the geometry is saved as a module-level variable</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <strong>Globals</strong> Module</a><ul>
+<li><a class="reference internal" href="#globals-geom">Globals.geom</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inputfile.html"
+                        title="previous chapter">Input to PyFragment</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="samples.html"
+                        title="next chapter">Sample Calculations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/globals.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="samples.html" title="Sample Calculations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="inputfile.html" title="Input to PyFragment"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>
