@@ -91,16 +91,15 @@ def print_offdiag_calc_details(pairs, offdiag_results):
 
 
 def verify_options():
-    requisite = '''geometry
-                    basis
+    requisite = '''basis
                     hftype
                     correlation
                     embedding
                     vbct_scheme
-                    backend
-                    task'''.split('\n')
+                    backend'''.split()
     for opt in requisite:
-        assert opt.strip() in params.options, "input needs %s" % opt
+        assert opt.strip() in params.options, "input needs %s" % opt.strip()
+    assert len(geom.geometry) > 0
 
 
 def calc_diagonal(idx, comm=None):

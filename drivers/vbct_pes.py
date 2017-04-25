@@ -2,83 +2,84 @@
 collecting both fragment approximations and the exact (non-fragmented) energy
 Call with mpirun -n <nproc> python pes.py In order to run as parallel job
 '''
-import pyfrag.vbct as pyfrag
-import pyfrag.Globals.params
 import numpy as np
 import sys
-import os
-import pandas as pd
-import cPickle
+import h5py
+import argparse
+
+from pyfrag.vbct import energy as vbct_energy
+from pyfrag.Globals import params, geom, MPI
+from pyfrag.Globals import utility as util
 
 # DEFINE PES coordinate parameterizations here
 #----------------------------------------------
 def He2_geom(x):
-    geom = [ ['He', 0.0, 0.0, 0.0],
+    g = [ ['He', 0.0, 0.0, 0.0],
              ['He',   x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def He3_symm_geom(x):
-    geom = [ ['He', 0.0, 0.0, 0.0],
+    g = [ ['He', 0.0, 0.0, 0.0],
              ['He',   x, 0.0, 0.0],
              ['He', 2*x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def He3_dimerize_geom(x):
     # x sweeps from 0 to 1
     # coordinate scans from one uhf/avdz local min to another
     # spin density goes (.25|.5|.25) --> (.5|.5|0)
-    geom = [ ['He', -1.24 + x*(-1.07825455+1.24), 0.0, 0.0],
+    g = [ ['He', -1.24 + x*(-1.07825455+1.24), 0.0, 0.0],
              ['He',   0.0, 0.0, 0.0],
              ['He',  1.24 +  x*(1.96169068-1.24), 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def He3_excursion_geom(x):
     # x is displacement of weakly bound He from the dimer cation
     # x == 0 is minimum at uhf/avdz
-    geom = [ ['He', -1.07825455, 0.0, 0.0],
+    g = [ ['He', -1.07825455, 0.0, 0.0],
              ['He',   0.0, 0.0, 0.0],
              ['He',  1.96169068 + x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 
 def He4_symm_geom(x):
-    geom = [ ['He', 0.0, 0.0, 0.0],
+    g = [ ['He', 0.0, 0.0, 0.0],
              ['He',   x, 0.0, 0.0],
              ['He', 2*x, 0.0, 0.0],
              ['He', 3*x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def He4_asymm_geom(x):
-    geom = [ ['He',  -2.5 + (-2.06 + 2.5)*x, 0.0, 0.0],
+    g = [ ['He',  -2.5 + (-2.06 + 2.5)*x, 0.0, 0.0],
              ['He', -0.54 + (-.98  + .54)*x, 0.0, 0.0],
              ['He',  0.54 + (0.98 - 0.54)*x, 0.0, 0.0],
              ['He',   2.5 +  (2.06 - 2.5)*x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def He8_geom(ring_pos, radius=2.385, nsolvent=5):
-    geom = [ ['He', -1.074, 0.0, 0.0],
+    g = [ ['He', -1.074, 0.0, 0.0],
              ['He',    0.0, 0.0, 0.0],
              ['He',  1.986, 0.0, 0.0] ]
     dangle = 2*np.pi / nsolvent
     angles = [n*dangle for n in range(nsolvent)]
     for angle in angles:
-        geom.append(['He', ring_pos, round(radius*np.cos(angle),3), round(radius*np.sin(angle),3)])
-    return pyfrag.geom.load_geometry(geom)
+        g.append(['He', ring_pos, round(radius*np.cos(angle),3), round(radius*np.sin(angle),3)])
+    geom.load_geometry(g)
 
 def Ar4_geom(x):
     # about minimum at UHF/LANL2DZ ECP
-    geom = [ ['Ar',   0.0+x, 0.0, 0.0],
+    g = [ ['Ar',   0.0+x, 0.0, 0.0],
              ['Ar',   3.467, 0.0, 0.0],
              ['Ar',   6.061, 0.0, 0.0],
              ['Ar', 9.528-x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def Ar4_symm_geom(x):
-    geom = [ ['Ar', 0.0, 0.0, 0.0],
+    g = [ ['Ar', 0.0, 0.0, 0.0],
              ['Ar',   x, 0.0, 0.0],
              ['Ar', 2*x, 0.0, 0.0],
              ['Ar', 3*x, 0.0, 0.0] ]
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
 
 def NaWat3_linear_geom(x):
     # hf/aug-cc-pvdz optimized (H2O)_3Na+ cluster (higher-E stationary pt)
@@ -103,13 +104,12 @@ def NaWat3_linear_geom(x):
     origin[4][1] += x*line
     origin[5][1] += x*line
     origin[6][1] += x*line
-    geom = []
+    g = []
     for atom in origin:
-        geom.append([atom[0]])
-        geom[-1].extend(list(atom[1]))
+        g.append([atom[0]])
+        g[-1].extend(list(atom[1]))
     # recommend scanning np.linspace(-0.2, 1.0, 11)
-    return pyfrag.geom.load_geometry(geom)
-
+    geom.load_geometry(g)
 
 def NaWat3_triangle_geom(x):
     # hf/aug-cc-pvdz optimized (H2O)_3Na+ cluster (lower-E stationary pt)
@@ -135,12 +135,13 @@ def NaWat3_triangle_geom(x):
     scan_vec = np.cross(vec1, vec2)
     scan_vec /= np.linalg.norm(scan_vec)
     origin[0][1] += x*scan_vec
-    geom = []
+    g = []
     for atom in origin:
-        geom.append([atom[0]])
-        geom[-1].extend(list(atom[1]))
+        g.append([atom[0]])
+        g[-1].extend(list(atom[1]))
     # scan np.linspace(-1.5, 1.5, 13)
-    return pyfrag.geom.load_geometry(geom)
+    geom.load_geometry(g)
+
 
 # DEFINE PES parameter ranges here (consistent naming)
 #-----------------------------------------------------
@@ -156,190 +157,149 @@ Ar4_symm_range = np.linspace(2.4, 3.4, 11)
 NaWat3_linear_range = np.linspace(-0.2, 1.0, 11)
 NaWat3_triangle_range = np.linspace(-1.5, 1.5, 13)
 
-# SPECIFY system name; PES will be generated automatically
-# --------------------------------------------------------
-SYSTEM_NAME = "He3_symm"
 
 # SPECIFY dict of calculations
 # ----------------------------
-BASIS = 'aug-cc-pvdz' # aug-cc-pvdz except Ar is lanl2dz_ecp
-HFTYPE = 'uhf'
-CORRELATION = False
+globalParams = {
+    'mem_mb' : 3000,
+    'embedding' : True,
+    'backend' : 'nw',
+    'basis' : 'aug-cc-pvdz',
+    'hftype' : 'uhf',
+}
 
 calcParameterMaps = {}
-calcParameterMaps['exact'] = {
-         'diagonal' : 'chargelocal_dimers',
-         'relax_neutral_dimers' : False,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'dimer_gs_no_embed',
-         'embedding' : True,
-         'backend' : 'nw',
-         'fragmentation' : 'full_system',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
-calcParameterMaps['GScoupling'] = {
-         'diagonal' : 'chargelocal_dimers',
-         'relax_neutral_dimers' : False,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'dimer_gs_no_embed',
-         'embedding' : True,
-         'backend' : 'nw',
-         'fragmentation' : 'auto',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
-calcParameterMaps['relaxDiag_GScoupling'] = {
-         'diagonal' : 'chargelocal_dimers',
-         'relax_neutral_dimers' : True,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'dimer_gs_no_embed',
-         'embedding' : True,
-         'backend' : 'nw',
-         'fragmentation' : 'auto',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
-calcParameterMaps['GSPolarizedCoupling'] = {
-         'diagonal' : 'chargelocal_dimers',
-         'relax_neutral_dimers' : False,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'dimer_gs',
-         'embedding' : True,
-         'backend' : 'nw',
-         'fragmentation' : 'auto',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
-calcParameterMaps['relaxDiag_GSPolarizedCoupling'] = {
-         'diagonal' : 'chargelocal_dimers',
-         'relax_neutral_dimers' : True,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'dimer_gs',
-         'embedding' : True,
-         'backend' : 'nw',
-         'fragmentation' : 'auto',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
-calcParameterMaps['mono_ip'] = {
-         'diagonal' : 'mono_ip',
-         'relax_neutral_dimers' : True,
-         'corr_neutral_dimers' : False,
-         'coupling' : 'mono_ip',
-         'embedding' : False,
-         'backend' : 'nw',
-         'fragmentation' : 'auto',
-         'charge_states' : 'hop 1',
-         'basis' : BASIS,
-         'hftype' : HFTYPE,
-         'correlation' : CORRELATION
-         }
+calcParameterMaps['hf_exact'] = {
+    'vbct_scheme' : 'chglocal',
+    'fragmentation' : 'full_system',
+    'correlation' : False
+    }
+calcParameterMaps['hf_chglocal'] = {
+    'vbct_scheme' : 'chglocal',
+    'fragmentation' : 'auto',
+    'correlation' : False
+    }
+calcParameterMaps['mp2_exact'] = {
+    'vbct_scheme' : 'chglocal',
+    'fragmentation' : 'full_system',
+    'correlation' : False
+    }
+calcParameterMaps['mp2_chglocal'] = {
+    'vbct_scheme' : 'chglocal',
+    'fragmentation' : 'auto',
+    'correlation' : False
+    }
 
-active_calcs = ['mono_ip', 'exact']
-for calc in calcParameterMaps.keys():
-    if calc not in active_calcs:
-        del calcParameterMaps[calc]
-# Do not modify code below; system&calc params are defined ABOVE
-# ---------------------------------------------------------------
-thisModule = sys.modules[__name__]
-geom_generator = getattr(thisModule, "%s_geom" % SYSTEM_NAME)
-coord_range = getattr(thisModule, "%s_range" % SYSTEM_NAME)
 
-def make_datapath():
-    if not CORRELATION:
-        theory = HFTYPE
-    else:
-        theory = str(CORRELATION)
-    path = '_'.join([SYSTEM_NAME, theory, BASIS])
+def valid_systems():
+    '''Generate list of systems implemented'''
+    thisModule = sys.modules[__name__]
+    for attr in dir(thisModule):
+        if attr.endswith('_geom'):
+            yield attr[:attr.index('_geom')]
 
-    if not os.path.exists(path):
-        return os.path.join(os.getcwd(), path+'.dat')
 
-    i = 1
-    datapath = "%s%s.dat" % (path, str(i))
-    datapath = os.path.join(os.getcwd(), datapath)
-    while os.path.exists(datapath):
-        i += 1
-        datapath = "%s%s.dat" % (path, str(i))
-        datapath = os.path.join(os.getcwd(), datapath)
-    return datapath
-
-def geom2xyz(x, geom):
+def geom2xyz(x):
+    '''Generate .xyz format geometry text'''
     return '%s\npes_coord %5.2f\n%s\n' \
-            % (len(geom), x, '\n'.join(map(str, geom)))
+            % (len(geom.geometry), x, '\n'.join(map(str, geom.geometry)))
 
-def main(datapath=None):
-    if datapath == None:
-        datapath = make_datapath()
 
-    pyfrag.make_scratch_dirs()
-    energy_driver = pyfrag.drv.energy_driver
-    pyfrag.inp.VERBOSE = True
-    GLOBALS = pyfrag.inp.inputdata
-    GLOBALS['task'] = 'energy'
+def get_args():
+    '''Get command line options, ensure validity'''
+    parser = argparse.ArgumentParser(description="Scan PES with VBCT method")
+    parser.add_argument("data_file", help="data storage path")
+    parser.add_argument("system_name", help="molecular cluster identity")
+    parser.add_argument("method", nargs='+', help="calculation method")
+    args = parser.parse_args()
+
+    system_name = args.system_name
+    try:
+        thisModule = sys.modules[__name__]
+        geom_generator = getattr(thisModule, "%s_geom" % system_name)
+        coord_range = getattr(thisModule, "%s_range" % system_name)
+    except AttributeError:
+        print "System %s not yet implemented" % system_name
+        print "Available systems:"
+        for system in valid_systems():
+            print "  *", system
+        sys.exit(0)
+
+    methods = args.method
+    if 'all' in methods:
+        methods = calcParameterMaps.keys()
+    for method in methods:
+        try:
+            assert method in calcParameterMaps.keys(), "%s undefined" % method
+        except AssertionError:
+            print "Method %s not implemented" % method
+            print 'Available methods ("all" to run all):'
+            print "\n".join(["  * %s" % m for m in calcParameterMaps.keys()])
+            sys.exit(0)
+
+    return geom_generator, coord_range, methods, args.data_file, system_name
+
+def log(fp, sysname, method, i, x, coord_range, results):
+    if MPI.rank != 0: return
+
+    group = "%s/%s" % (sysname, method)
+    name = lambda n : '%s/%s' % (group, n)
+    Nstep = len(coord_range)
+
+    geom_pos = geom.pos_array()
+    natm = len(geom_pos)
+
+    if name('energy') not in fp:
+        fp.create_dataset(name('energy'), (Nstep,), dtype=np.double)
+    if name('geom_xyz') not in fp:
+        ds = fp.create_dataset(name('geom_xyz'), (Nstep,natm,3), dtype=np.double)
+        ds.attrs['atom_labels'] = ' '.join([at.sym for at in geom.geometry])
+    if name('pes_coord') not in fp:
+        fp.create_dataset(name('pes_coord'), (Nstep,), dtype=np.double)
+    if name('eigvecs') not in fp:
+        eigvecs = results['eigvecs']
+        N = eigvecs.shape[0]
+        fp.create_dataset(name('eigvecs'), (Nstep,N,N), dtype=np.double)
+    if name('esp_chg') not in fp:
+        fp.create_dataset(name('esp_chg'), (Nstep,natm), dtype=np.double)
+
+    fp[name('energy')][i] = results['E(GS)']
+    fp[name('geom_xyz')][i] = geom_pos
+    fp[name('pes_coord')][i] = x
+    fp[name('eigvecs')][i] = results['eigvecs']
+    fp[name('esp_chg')][i] = results['chgdist(GS)']
+    fp.flush()
+
+def main():
+
+    geom_generator, coord_range, methods, data_file, sysname = get_args()
+    if MPI.rank == 0:
+        print "# System: %s" % sysname
+        print "# Calc methods:", ', '.join(methods)
+        print "# Storing result in", data_file
+        fp = h5py.File(data_file, 'a')
+
+    energy_driver = vbct_energy.kernel
     options = params.options
+    options.update(globalParams)
 
-    # Store the PES data in a dictionary of dictionaries
-    results = {}
-    for calc_type, params in calcParameterMaps.items():
-        GLOBALS.update(params)
-        results[calc_type] = {}
-        properties = {}
-        for x in coord_range:
-            geom = geom_generator(x)
-            GLOBALS['geometry'] = geom
-            try:
-                sp_data = energy_driver()
-            except RuntimeError:
-                sp_data = {k : np.nan for k in results.values()[0]}
-            for k,v in sp_data.items():
-                if k in properties:
-                    properties[k].append(v)
-                else:
-                    properties[k] = [v]
+    for method in methods:
+        method_opts = calcParameterMaps[method]
+        options.update(method_opts)
+        if MPI.rank == 0: print "#", method
 
-        results[calc_type] = properties
-
-    # Rank 0 builds a Pandas DataFrame
-    rank = pyfrag.rank
-    if rank == 0:
-        with open(datapath+'.temp', 'wb') as datafile:
-            cPickle.dump((results, calcParameterMaps,
-                [geom2xyz(x, geom_generator(x)) for x in coord_range]), datafile)
-        sp_data0 = results.values()[0]
-        col_names = sp_data0.keys()
-        column_indices = [col_names, results.keys()]
-        multi_idx = pd.MultiIndex.from_product(column_indices, names=['property', 'calc_type'])
-        df = pd.DataFrame(index=coord_range, columns=multi_idx)
-
-        # Store xyz format geometries
-        df['geom_xyz'] = [geom2xyz(x, geom_generator(x)) for x in coord_range]
-
-        # Store 3-dimensional data: property/calc_type/pes_coordinate
-        for calc_type, properties in results.items():
-            for k, v in properties.items():
-                df[k, calc_type] = v
-
-        with open(datapath, 'wb') as datafile:
-            cPickle.dump((df, calcParameterMaps), datafile)
-
-    pyfrag.clean_scratch_dirs()
+        for i, x in enumerate(coord_range):
+            geom_generator(x)
+            res = energy_driver()
+            if MPI.rank == 0:
+                print x, res['E(GS)']
+                log(fp, sysname, method, i, x, coord_range, res)
+    if MPI.rank == 0:
+        fp.close()
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    util.make_scratch_dirs()
+    try:
         main()
-    elif len(sys.argv) == 2 and not os.path.exists(sys.argv[1]):
-        main(datapath=sys.argv[1])
-    else:
-        print "need unique path"
+    finally:
+        util.clean_scratch_dirs()

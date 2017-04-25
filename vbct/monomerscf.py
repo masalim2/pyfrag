@@ -24,12 +24,12 @@ def fullsys_best_guess(comm=None):
     my_guessvecs = MPI.scatter(comm, guess_vecs, master=0)
 
     for guess in my_guessvecs:
-        res = backend.run('energy_hf', [(0,0,0,0)], 1, [], [], guess=guess)
+        res = backend.run('esp', [(0,0,0,0)], 1, [], [], guess=guess)
         my_calcs.append(res)
 
     calcs = MPI.allgather(comm, my_calcs)
     ibest, best = min(enumerate(calcs), key=lambda x:x[1]['E_hf'])
-    espfield = esp_list[ibest]
+    espfield = calcs[ibest]['esp_charges']
 
     if params.options['correlation']:
         best = backend.run('energy', [(0,0,0,0)], 1, [], [], guess=guess_vecs[ibest])

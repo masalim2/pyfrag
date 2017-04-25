@@ -101,7 +101,7 @@ def print_parameters():
               task'''.split()
 
     if 'vbct' in options['task']:
-        display.extend('vbct_scheme')
+        display.extend(['vbct_scheme'])
 
     if 'opt' in options['task']:
         display.extend('''pressure_bar freeze_cell atom_gmax lat_gmax
