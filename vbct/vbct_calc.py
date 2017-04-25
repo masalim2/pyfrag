@@ -4,12 +4,29 @@ from pyfrag.vbct.monomerscf import monomerSCF
 from itertools import combinations
 
 def make_embed_list(qm_fragment, all_monomers):
+    '''Generate embedding field
+
+    Args
+        qm_fragment: index of monomer or dimer (no PBC)
+    Returns
+        bq_list: list of fragments in bq field of qm_fragment
+    '''
     if type(qm_fragment) is int:
         qm_fragment = (qm_fragment,)
     field = [m for m in all_monomers if m not in qm_fragment]
     return [(m,0,0,0) for m in field]
 
 def diag_chglocal(charges, espfield, movecs, comm=None):
+    '''Charge-local dimer method for diagonal element calculation.
+
+    Only works with NW backend and singly ionized molecular cluster cations.
+
+    Args
+        charges: list of net charges on each fragment
+        espfield: list of esp-fit atomic charges for entire system
+        movecs: list of MO coeff files for each fragment
+        comm: MPI communicator or subcommunicator
+    '''
     if comm is None:
         comm = MPI.comm
 
@@ -83,6 +100,14 @@ def diag_chglocal(charges, espfield, movecs, comm=None):
     return results
 
 def coupl_chglocal(A, B):
+    '''Charge-local dimer method for coupling
+
+    Only works with NW backend and singly ionized molecular cluster cations.
+
+    Args
+        A, B: indices for off-diagonal H element calculation
+    '''
+
     esps_Aloc, vecs_Aloc = monomerSCF([A,B], [1,0], comm='serial')
     esps_Bloc, vecs_Bloc = monomerSCF([A,B], [0,1], comm='serial')
     bqs = []

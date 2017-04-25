@@ -8,9 +8,9 @@ from pyfrag.backend import backend
 def monomerSCF(comm=None):
     '''Cycle embedded monomer calculations until ESP charges converge.
 
-    BIM version: include all monomers in cell 0, take charges from input
-    geometry, bq_lists from Globals.neighbor, and embedding option from input
-    file. No need to do anything if embedding option is off.
+    BIM version: include all monomers, take charges from input geometry,
+    bq_lists from Globals.neighbor, and embedding option from input file. PBC is
+    implicitly handled No need to do anything if embedding option is off.
 
     Args:
         comm: specify a sub-communicator for parallel execution.

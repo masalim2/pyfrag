@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The drivers modules: Molecular dynamics, optimization, and beyond &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The tools modules: post-processing and analysis" href="tools.html" />
+    <link rel="prev" title="The bim module: BIM energies, gradients, and hessians" href="bim.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="The tools modules: post-processing and analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bim.html" title="The bim module: BIM energies, gradients, and hessians"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-drivers-modules-molecular-dynamics-optimization-and-beyond">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">drivers</span></code> modules: Molecular dynamics, optimization, and beyond<a class="headerlink" href="#the-drivers-modules-molecular-dynamics-optimization-and-beyond" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-drivers.bim_md">
+<span id="bim-md-molecular-dynamics"></span><h2><code class="xref py py-data docutils literal"><span class="pre">bim_md</span></code>: Molecular Dynamics<a class="headerlink" href="#module-drivers.bim_md" title="Permalink to this headline">¶</a></h2>
+<p>Molecular dynamics (NVE, NVT, NPT) integration with BIM Forces</p>
+<dl class="class">
+<dt id="drivers.bim_md.Integrator">
+<em class="property">class </em><code class="descclassname">drivers.bim_md.</code><code class="descname">Integrator</code><span class="sig-paren">(</span><em>forcefield</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains data and methods for trajectory initialization,
+Velocity Verlet integration (with Nose-Hoover thermostat, Berendensen
+thermostat, and Berendsen barostat), and HDF5 I/O for trajectory storage</p>
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.apply_berend_baro">
+<code class="descname">apply_berend_baro</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.apply_berend_baro" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply Berendsen cell scaling for pressure control.
+berend_tau must be &gt; 10 fs, as explained for thermostat.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.apply_berend_thermo">
+<code class="descname">apply_berend_thermo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.apply_berend_thermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply Berendsen velocity scaling for temperature control.
+berend_tau should be at least 10 fs (fast equilibration)
+at tau&gt;100 fs, the fluctuations should be consistent with NVT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.apply_nose_chain">
+<code class="descname">apply_nose_chain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.apply_nose_chain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Half-update NH degrees of freedom together with
+system velocity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.clean_up">
+<code class="descname">clean_up</code><span class="sig-paren">(</span><em>istep</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>trim and flush hdf5 trajectory data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.create_trajectory_file">
+<code class="descname">create_trajectory_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.create_trajectory_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new trajectory in hdf5 file; set handles to data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.detect_and_fix_pbc_crossings">
+<code class="descname">detect_and_fix_pbc_crossings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.detect_and_fix_pbc_crossings" title="Permalink to this definition">¶</a></dt>
+<dd><p>translate fragments with COM outside unit cell inside</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.get_MD_options">
+<code class="descname">get_MD_options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.get_MD_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set relevant parameters from input file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.init_velocity">
+<code class="descname">init_velocity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.init_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set initial vel according to Maxwell-Boltzmann</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.integrate">
+<code class="descname">integrate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Velocity Verlet with thermo/barostatting</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.kinetic_com_tensor">
+<code class="descname">kinetic_com_tensor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.kinetic_com_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute kinetic energy tensor based on fragment
+centers of mass; needed for stress tensor calculation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.nose_init">
+<code class="descname">nose_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.nose_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize NH coordinates &amp; masses.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.restart_trajectory_file">
+<code class="descname">restart_trajectory_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.restart_trajectory_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load trajectory from hdf5 file and append</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.summary_log">
+<code class="descname">summary_log</code><span class="sig-paren">(</span><em>istep</em>, <em>wall_seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.summary_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print MD summary statistics to stdout</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.update_kinetic_and_temperature">
+<code class="descname">update_kinetic_and_temperature</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.update_kinetic_and_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update kinetic energy &amp; temperature</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="drivers.bim_md.Integrator.write_trajectory">
+<code class="descname">write_trajectory</code><span class="sig-paren">(</span><em>istep</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.Integrator.write_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to hdf5 trajectory file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_md.bim_force">
+<code class="descclassname">drivers.bim_md.</code><code class="descname">bim_force</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.bim_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>BIM gradients</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_md.hooke_force">
+<code class="descclassname">drivers.bim_md.</code><code class="descname">hooke_force</code><span class="sig-paren">(</span><em>k=0.2</em>, <em>r_eq=2.0</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.hooke_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>toy potential: harmonic oscillator</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_md.kernel">
+<code class="descclassname">drivers.bim_md.</code><code class="descname">kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_md.kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>MD Main</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-drivers.bim_opt">
+<span id="bim-opt-geometry-optimization"></span><h2><code class="xref py py-data docutils literal"><span class="pre">bim_opt</span></code>: Geometry Optimization<a class="headerlink" href="#module-drivers.bim_opt" title="Permalink to this headline">¶</a></h2>
+<p>Geometry optimization (fixed unit cell)</p>
+<dl class="function">
+<dt id="drivers.bim_opt.from_flat">
+<code class="descclassname">drivers.bim_opt.</code><code class="descname">from_flat</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_opt.from_flat" title="Permalink to this definition">¶</a></dt>
+<dd><p>reconstruct geom from flat ndarray</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_opt.gopt_callback">
+<code class="descclassname">drivers.bim_opt.</code><code class="descname">gopt_callback</code><span class="sig-paren">(</span><em>xk</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_opt.gopt_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report geometry by appending to gopt.xyz</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_opt.kernel">
+<code class="descclassname">drivers.bim_opt.</code><code class="descname">kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_opt.kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke scipy optimizer</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_opt.objective_gopt">
+<code class="descclassname">drivers.bim_opt.</code><code class="descname">objective_gopt</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_opt.objective_gopt" title="Permalink to this definition">¶</a></dt>
+<dd><p>energy opt wrt geometry (using E and gradient)</p>
+<p>This objective function packs/unpacks the geometry from
+a 1D ndarray, updates geom.geometry, and invokes bim.kernel
+to update the energy/gradient.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="drivers.bim_opt.to_flat">
+<code class="descclassname">drivers.bim_opt.</code><code class="descname">to_flat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#drivers.bim_opt.to_flat" title="Permalink to this definition">¶</a></dt>
+<dd><p>return 1D ndarray input for objective fxn</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">drivers</span></code> modules: Molecular dynamics, optimization, and beyond</a><ul>
+<li><a class="reference internal" href="#module-drivers.bim_md"><code class="docutils literal"><span class="pre">bim_md</span></code>: Molecular Dynamics</a></li>
+<li><a class="reference internal" href="#module-drivers.bim_opt"><code class="docutils literal"><span class="pre">bim_opt</span></code>: Geometry Optimization</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bim.html"
+                        title="previous chapter">The <code class="docutils literal"><span class="pre">bim</span></code> module: BIM energies, gradients, and hessians</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="next chapter">The <code class="docutils literal"><span class="pre">tools</span></code> modules: post-processing and analysis</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/drivers.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="The tools modules: post-processing and analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bim.html" title="The bim module: BIM energies, gradients, and hessians"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

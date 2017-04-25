@@ -1,3 +1,0 @@
-Sample Calculations
-===================
-under construction...

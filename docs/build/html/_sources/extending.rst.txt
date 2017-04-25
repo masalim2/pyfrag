@@ -1,10 +1,6 @@
 Extending PyFragment
 ====================
 
-When importing modules, all imports should be in the form of ::
-
-    from pyfrag.Globals import logger, params
-    from pyfrag.backend import nw
 
 And then module attributes should be accessed with the notation::
 

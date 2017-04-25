@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The vbct module: charge resonance in cluster cations &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The backend modules: interface to quantum chemistry software" href="backend.html" />
+    <link rel="prev" title="The tools modules: post-processing and analysis" href="tools.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="backend.html" title="The backend modules: interface to quantum chemistry software"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="The tools modules: post-processing and analysis"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-vbct-module-charge-resonance-in-cluster-cations">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">vbct</span></code> module: charge resonance in cluster cations<a class="headerlink" href="#the-vbct-module-charge-resonance-in-cluster-cations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-vbct.energy">
+<span id="energy-vbct-energy-calculation"></span><h2><code class="xref py py-data docutils literal"><span class="pre">energy</span></code>: VBCT energy calculation<a class="headerlink" href="#module-vbct.energy" title="Permalink to this headline">¶</a></h2>
+<p>Compute GS doublet energy and charge distribution in VBCT scheme</p>
+<ol class="arabic simple">
+<li>No PBC or truncation of summations: only cluster ions are calculated</li>
+<li>only charge +1 is supported: single hole hopping between fragments</li>
+</ol>
+<dl class="function">
+<dt id="vbct.energy.build_secular_equations">
+<code class="descclassname">vbct.energy.</code><code class="descname">build_secular_equations</code><span class="sig-paren">(</span><em>diag_results</em>, <em>offdiag_results</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.build_secular_equations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build Hamiltonian and overlap matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.energy.calc_chg_distro">
+<code class="descclassname">vbct.energy.</code><code class="descname">calc_chg_distro</code><span class="sig-paren">(</span><em>prob0</em>, <em>diag_results</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.calc_chg_distro" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate linear combination of esp charge distros</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd><p class="first">prob0: ground state probability distribution
+diag_results: diagonal element calculation results list,</p>
+<blockquote class="last">
+<div>contains esp_charges for each charge-local state</div></blockquote>
+</dd>
+<dt>Returs</dt>
+<dd>charge_distro: approximate charge distribution computed as linear
+combination of VBCT basis charge distros</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.energy.calc_diagonal">
+<code class="descclassname">vbct.energy.</code><code class="descname">calc_diagonal</code><span class="sig-paren">(</span><em>idx</em>, <em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.calc_diagonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatch diagonal element calculation</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>idx: integer index ranging from 0-len(geom.fragments). Which
+diagonal element to calculate
+comm: MPI communicator or subcommunicator</dd>
+<dt>Returns</dt>
+<dd>res: dict, results from diagonal element calculation.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.energy.fraglabel">
+<code class="descclassname">vbct.energy.</code><code class="descname">fraglabel</code><span class="sig-paren">(</span><em>frag</em>, <em>chg</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.fraglabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate chemical formula string for a fragment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.energy.kernel">
+<code class="descclassname">vbct.energy.</code><code class="descname">kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>SP energy: form and diagonalize VBCT matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.energy.print_vbct_init">
+<code class="descclassname">vbct.energy.</code><code class="descname">print_vbct_init</code><span class="sig-paren">(</span><em>states</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.energy.print_vbct_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print header for calculation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vbct.vbct_calc">
+<span id="vbct-calc-algorithms-for-effective-hamiltonian-generation"></span><h2><code class="xref py py-data docutils literal"><span class="pre">vbct_calc</span></code>: algorithms for effective Hamiltonian generation<a class="headerlink" href="#module-vbct.vbct_calc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vbct.vbct_calc.coupl_chglocal">
+<code class="descclassname">vbct.vbct_calc.</code><code class="descname">coupl_chglocal</code><span class="sig-paren">(</span><em>A</em>, <em>B</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.vbct_calc.coupl_chglocal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Charge-local dimer method for coupling</p>
+<p>Only works with NW backend and singly ionized molecular cluster cations.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>A, B: indices for off-diagonal H element calculation</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.vbct_calc.diag_chglocal">
+<code class="descclassname">vbct.vbct_calc.</code><code class="descname">diag_chglocal</code><span class="sig-paren">(</span><em>charges</em>, <em>espfield</em>, <em>movecs</em>, <em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.vbct_calc.diag_chglocal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Charge-local dimer method for diagonal element calculation.</p>
+<p>Only works with NW backend and singly ionized molecular cluster cations.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>charges: list of net charges on each fragment
+espfield: list of esp-fit atomic charges for entire system
+movecs: list of MO coeff files for each fragment
+comm: MPI communicator or subcommunicator</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.vbct_calc.make_embed_list">
+<code class="descclassname">vbct.vbct_calc.</code><code class="descname">make_embed_list</code><span class="sig-paren">(</span><em>qm_fragment</em>, <em>all_monomers</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.vbct_calc.make_embed_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate embedding field</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>qm_fragment: index of monomer or dimer (no PBC)</dd>
+<dt>Returns</dt>
+<dd>bq_list: list of fragments in bq field of qm_fragment</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vbct.monomerscf">
+<span id="monomerscf-self-consistent-vbct-state-esp-charges"></span><h2><code class="xref py py-data docutils literal"><span class="pre">monomerscf</span></code>: self-consistent VBCT state ESP charges<a class="headerlink" href="#module-vbct.monomerscf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vbct.monomerscf.fullsys_best_guess">
+<code class="descclassname">vbct.monomerscf.</code><code class="descname">fullsys_best_guess</code><span class="sig-paren">(</span><em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.monomerscf.fullsys_best_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get conventional E of full system by finding best initial guess.</p>
+<p>Iterates over fragments to produce Nfrag charge-local initial guesses.
+Takes best UHF energy from each of the corresponding initial densities, then
+does correlated calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vbct.monomerscf.monomerSCF">
+<code class="descclassname">vbct.monomerscf.</code><code class="descname">monomerSCF</code><span class="sig-paren">(</span><em>monomers</em>, <em>net_charges</em>, <em>embedding=None</em>, <em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vbct.monomerscf.monomerSCF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cycle embedded monomer calculations until the ESP charges converge.</p>
+<p>VBCT version: specify N monomers and their net charges
+explicitly.  No support for cutoffs/periodicity: every monomer is
+embedded in the field of all other N-1 monomers. Able to override default
+embedding option. Monomer MO vectors are saved; thus one cycle runs even
+if embedding option is turned off.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd><p class="first">monomers: a list of monomer indices
+net_charges: net charge of each monomer
+embedding: Override True/False specified in input.</p>
+<blockquote>
+<div>Default None: use the value specified in input.</div></blockquote>
+<dl class="last docutils">
+<dt>comm: specify a sub-communicator for parallel execution.</dt>
+<dd>If string &#8216;serial&#8217; is specified, bypass MPI communication.
+Default None: use the top-level communicator in Globals.MPI</dd>
+</dl>
+</dd>
+<dt>Returns</dt>
+<dd>espcharges: a list of esp-fit atom-centered charges
+movecs: a list of MO vectors for each monomer</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">vbct</span></code> module: charge resonance in cluster cations</a><ul>
+<li><a class="reference internal" href="#module-vbct.energy"><code class="docutils literal"><span class="pre">energy</span></code>: VBCT energy calculation</a></li>
+<li><a class="reference internal" href="#module-vbct.vbct_calc"><code class="docutils literal"><span class="pre">vbct_calc</span></code>: algorithms for effective Hamiltonian generation</a></li>
+<li><a class="reference internal" href="#module-vbct.monomerscf"><code class="docutils literal"><span class="pre">monomerscf</span></code>: self-consistent VBCT state ESP charges</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="previous chapter">The <code class="docutils literal"><span class="pre">tools</span></code> modules: post-processing and analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="backend.html"
+                        title="next chapter">The <code class="docutils literal"><span class="pre">backend</span></code> modules: interface to quantum chemistry software</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/vbct.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="backend.html" title="The backend modules: interface to quantum chemistry software"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="The tools modules: post-processing and analysis"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

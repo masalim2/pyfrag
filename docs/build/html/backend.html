@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The backend modules: interface to quantum chemistry software &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The test modules: unit testing with Python" href="test.html" />
+    <link rel="prev" title="The vbct module: charge resonance in cluster cations" href="vbct.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="test.html" title="The test modules: unit testing with Python"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="vbct.html" title="The vbct module: charge resonance in cluster cations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-backend-modules-interface-to-quantum-chemistry-software">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">backend</span></code> modules: interface to quantum chemistry software<a class="headerlink" href="#the-backend-modules-interface-to-quantum-chemistry-software" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-backend.backend">
+<span id="backend-generic-qc-functionality"></span><h2><code class="xref py py-data docutils literal"><span class="pre">backend</span></code>: Generic QC functionality<a class="headerlink" href="#module-backend.backend" title="Permalink to this headline">¶</a></h2>
+<p>Wrapper functions for quantum chemistry backends</p>
+<dl class="function">
+<dt id="backend.backend.build_atoms">
+<code class="descclassname">backend.backend.</code><code class="descname">build_atoms</code><span class="sig-paren">(</span><em>frags</em>, <em>bq_list</em>, <em>bq_charges</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.backend.build_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the input geometry/embedding for a QM calculation.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>frags: a list of 4-tuples (i,a,b,c) where i is the fragment index,
+abc indicate the lattice cell.
+bq_list: a list of (4-tuples) indicating the molecules to be placed in
+the embedding field.
+bq_charges: a list of point charges for each atom in the geometry.</dd>
+<dt>Returns</dt>
+<dd>atoms: a list of Atoms for easy printing to the QM &#8220;geometry&#8221; input.
+bq_field: a list of numpy arrays(length-4) in format (x,y,z,q)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.backend.run">
+<code class="descclassname">backend.backend.</code><code class="descname">run</code><span class="sig-paren">(</span><em>calc</em>, <em>frags</em>, <em>charge</em>, <em>bq_list</em>, <em>bq_charges</em>, <em>noscf=False</em>, <em>guess=None</em>, <em>save=False</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.backend.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>QM backend dispatcher: invoke a calculation.</p>
+<p>Currently, for ESP calculation the NWChem package is always dispatched
+for its higher performance.  Otherwise, the backend is determined by the
+params backend option.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd><p class="first">calc: one of esp, energy, energy_hf, gradient, hessian
+frags: list of 4-tuples (i,a,b,c) (See build_atoms documentation)
+charge: the net charge of the fragments in QM calculation
+bq_list: the embedding fragments, list of 4-tuples
+bq_charges: the embedding charges for each atom in the geometry
+noscf (default False): if True, only build Fock matrix from initial</p>
+<blockquote>
+<div>guess and diagonalize once.</div></blockquote>
+<dl class="last docutils">
+<dt>guess (default None): if supplied, provide prior MO for initial</dt>
+<dd>density.</dd>
+<dt>save (default False): if True, return a handle to the MO resulting</dt>
+<dd>from calculation.  For NW &amp; Gaussian, this is a file path &amp; MO file
+will be copied to a shared directory.  For Psi4 and PySCF, the MO
+vectors are directly returned as a 2D numpy array.</dd>
+</dl>
+</dd>
+<dt>Returns</dt>
+<dd>results: a dictionary packaging all of the results together. The
+contents of &#8216;dictionary&#8217; depend on the type of calculation invoked and
+other arguments.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.nw">
+<span id="nw-nwchem-wrapper"></span><h2><code class="xref py py-data docutils literal"><span class="pre">nw</span></code>: NWChem wrapper<a class="headerlink" href="#module-backend.nw" title="Permalink to this headline">¶</a></h2>
+<p>NWChem Backend</p>
+<dl class="function">
+<dt id="backend.nw.calculate">
+<code class="descclassname">backend.nw.</code><code class="descname">calculate</code><span class="sig-paren">(</span><em>inp</em>, <em>calc</em>, <em>save</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.nw.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run nwchem on input, return raw output</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>inp: NWChem input object (input file path)
+calc: calculation type
+save: save calculation results</dd>
+<dt>Returns</dt>
+<dd>output_lines: nwchem stdout lines</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.nw.inp">
+<code class="descclassname">backend.nw.</code><code class="descname">inp</code><span class="sig-paren">(</span><em>calc</em>, <em>atoms</em>, <em>bqs</em>, <em>charge</em>, <em>noscf=False</em>, <em>guess=None</em>, <em>save=False</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.nw.inp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write NWchem input file to temp file. Return filename.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.nw.invecs">
+<code class="descclassname">backend.nw.</code><code class="descname">invecs</code><span class="sig-paren">(</span><em>guess</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.nw.invecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create initial guess string for NWchem scf input</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>guess: string or list of strings for fragment guess</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.nw.parse">
+<code class="descclassname">backend.nw.</code><code class="descname">parse</code><span class="sig-paren">(</span><em>data</em>, <em>calc</em>, <em>inp</em>, <em>atoms</em>, <em>bqs</em>, <em>save</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.nw.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse raw NWchem output.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.psi4">
+<span id="psi4-psi4-wrapper"></span><h2><code class="xref py py-data docutils literal"><span class="pre">psi4</span></code>: Psi4 wrapper<a class="headerlink" href="#module-backend.psi4" title="Permalink to this headline">¶</a></h2>
+<p>Backend for Psi4 &#8211; using subprocess and file input/output</p>
+<dl class="function">
+<dt id="backend.psi4.calculate">
+<code class="descclassname">backend.psi4.</code><code class="descname">calculate</code><span class="sig-paren">(</span><em>inp</em>, <em>calc</em>, <em>save</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.psi4.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>run psi4 on input, return text output lines from psi4</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.psi4.inp">
+<code class="descclassname">backend.psi4.</code><code class="descname">inp</code><span class="sig-paren">(</span><em>calc</em>, <em>atoms</em>, <em>bqs</em>, <em>charge</em>, <em>noscf=False</em>, <em>guess=None</em>, <em>save=False</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.psi4.inp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate psi4 input file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="backend.psi4.parse">
+<code class="descclassname">backend.psi4.</code><code class="descname">parse</code><span class="sig-paren">(</span><em>data</em>, <em>calc</em>, <em>inp</em>, <em>atoms</em>, <em>bqs</em>, <em>save</em><span class="sig-paren">)</span><a class="headerlink" href="#backend.psi4.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse psi4 output text, return results dict</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">backend</span></code> modules: interface to quantum chemistry software</a><ul>
+<li><a class="reference internal" href="#module-backend.backend"><code class="docutils literal"><span class="pre">backend</span></code>: Generic QC functionality</a></li>
+<li><a class="reference internal" href="#module-backend.nw"><code class="docutils literal"><span class="pre">nw</span></code>: NWChem wrapper</a></li>
+<li><a class="reference internal" href="#module-backend.psi4"><code class="docutils literal"><span class="pre">psi4</span></code>: Psi4 wrapper</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="vbct.html"
+                        title="previous chapter">The <code class="docutils literal"><span class="pre">vbct</span></code> module: charge resonance in cluster cations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="test.html"
+                        title="next chapter">The <code class="docutils literal"><span class="pre">test</span></code> modules: unit testing with Python</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/backend.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="test.html" title="The test modules: unit testing with Python"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="vbct.html" title="The vbct module: charge resonance in cluster cations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

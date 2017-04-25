@@ -5,54 +5,63 @@
 
 PyFragment Documentation
 ========================
-PyFragment is a collection of Python modules that facilitate the setup and
-parallel execution of *embedded-fragment* calculations on molecular clusters,
-liquids, and solids. It interfaces with the quantum chemistry software
-packages `Psi4
-<http://www.psicode.org>`_, `NWChem
-<http://www.nwchem-sw.org>`_, and `Gaussian09 <http://www.gaussian.com>`_. 
+`PyFragment <https://www.github.com/masalim2/pyfrag>`_ is a collection of Python
+modules that facilitate the **setup**, **parallel execution**, and **analysis**
+of *embedded-fragment* calculations on molecular clusters, liquids, and solids.
+It currently interfaces with the quantum chemistry software packages `Psi4
+<http://www.psicode.org>`_ and `NWChem <http://www.nwchem-sw.org>`_.
 
-The **binary interaction method (BIM)** modules perform a variety of
+The binary interaction method (**BIM**) module performs a variety of
 calculations:
 
-* Molecular clusters or systems with 1, 2, or 3-dimensional periodic boundary conditions
-* Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)
+* Total energy (or unit cell energy) evaluation at HF, MP2, or beyond
+* Molecular clusters or systems with 1- to 3-dimensional periodic boundary conditions
 * Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors
-* Total system dipole moment, and nuclear dipole/polarizability derivatives for IR intensity
 * Nuclear hessian and vibrational analysis tools
 * Parallel execution using MPI (through the mpi4py bindings)
 
-The experimental **valence bond charge-transfer (VBCT)** module is a research
-branch of the software. The intent is to extend molecular fragment
+The experimental valence bond charge-transfer (**VBCT**) module is part of a new
+method development effort. The intent is to extend molecular fragment
 calculations to systems with significant charge-resonance, where integer
 electron counts cannot be assigned to individual fragments.
 
-Where applicable, modules can be run as standalone executables with a
-input file supplied on the command line. They may also be imported into
-user-written Python programs to create new functionality or automate some
-tedious task. Several **driver** scripts are already included, which use the
-**BIM** and **VBCT** modules to: 
+Modules can be invoked from the command line with a freeform `input file
+<inputfile.html>`_.  They may also be imported to user-written Python programs to
+create new functionality or automate tedious tasks. Several such **driver** scripts
+are already included, which use the BIM and VBCT modules to: 
 
-* Perform a PES scan along any user-defined coordinate
-* Find a local minimum in the PES using L-BFGS optimization
-* Integrate a molecular dynamics trajectory
+* Integrate a **molecular dynamics** trajectory, with optional Nose-Hoover or Berendsen
+  thermostats/barostats
+* Perform a **PES scan** along a user-defined coordinate
+* **Optimize** crystal structure with the BFGS algorithm
 
-Several tools to process the output of the above calculations are
-included:
-* Phonon dispersion calculation from solid Hessian data
-* *to be continued...*
+Pyfragment also includes a suite of **tools** to process the output of the above
+calculations and facilitate data analysis:
 
-Contents
-========
+* Phonon dispersion/density of states calculations from solid Hessian data
+* Molecular dynamics trajectory analysis tool
+
+User guide
+----------
 .. toctree::
    :maxdepth: 2
 
    setup
-   background
+   quickstart
    inputfile
+
+Subpackage documentation
+---------------------------
+.. toctree::
+   :maxdepth: 2
+
+   bim
+   drivers
+   tools
+   vbct
+   backend
+   test
    globals
-   samples
-   extending
 
 
 Indices and tables

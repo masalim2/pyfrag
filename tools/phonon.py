@@ -66,6 +66,7 @@ def make_brillouin_zone3D(kmesh_density=None):
     return grid[inside_bz]
 
 def read_force_consts_np(fname):
+    '''Read force constants from numpy binary file'''
     data = np.load(fname)
     hess = data['hess']
     cell_list = data['cell_list']
@@ -77,6 +78,7 @@ def read_force_consts_np(fname):
     return F
 
 def read_force_consts_txt(fname):
+    '''Read force constants from text file'''
     F = {}
     natom = len(geom.geometry)
     with open(fname) as fp:
@@ -96,6 +98,7 @@ def read_force_consts_txt(fname):
     return F
 
 def mass_weight(hess):
+    '''Return mass-weighted hessian'''
     hess_mw = {}
     ndim = 3*len(geom.geometry)
     massvec = [geom.mass_map[at.sym] for at in geom.geometry
@@ -111,6 +114,7 @@ def mass_weight(hess):
     return hess_mw
 
 def smoothing_matrix(hess_mw):
+    '''Generate matrix for projecting out translational normal modes'''
     # Construct Translational normal modes
     natom = len(geom.geometry)
     Lx = np.zeros((3*natom, 1))
@@ -158,6 +162,7 @@ def Dmat(hess_mw, kvec, smooth_mat=None):
     return d
 
 def phonon(hess_mw, kmesh, smooth_mat=None):
+    '''Compute phonon dispersion and normal modes on a given k-mesh'''
     freqs = []
     vecs = []
     print "# Phonons at", len(kmesh), "k-points"
@@ -172,6 +177,7 @@ def phonon(hess_mw, kmesh, smooth_mat=None):
     return freqs, vecs
 
 def phonon_freqs(hess_mw, kmesh, smooth_mat=None):
+    '''Compute phonon dispersion without returning normal mode eigenvectors'''
     freqs = []
     print "# Phonons at", len(kmesh), "k-points"
     for kvec in kmesh:
@@ -182,6 +188,7 @@ def phonon_freqs(hess_mw, kmesh, smooth_mat=None):
     return freqs
 
 def parseargs():
+    '''Parse command line arguments using argparse'''
     parser = argparse.ArgumentParser(description =
     'Calculate phonons for given crystal structure and interaction force constants')
     parser.add_argument('structure', help='.xyz structure file')

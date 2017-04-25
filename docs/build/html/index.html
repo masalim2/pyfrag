@@ -36,6 +36,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pyfragment 0.1 documentation</a> &#187;</li> 
@@ -49,67 +52,110 @@
             
   <div class="section" id="pyfragment-documentation">
 <h1>PyFragment Documentation<a class="headerlink" href="#pyfragment-documentation" title="Permalink to this headline">¶</a></h1>
-<p>PyFragment is a collection of Python modules that facilitate the setup and
-parallel execution of <em>embedded-fragment</em> calculations on molecular clusters,
-liquids, and solids. It interfaces with the quantum chemistry software
-packages <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>.</p>
-<p>The <strong>binary interaction method (BIM)</strong> modules perform a variety of
+<p><a class="reference external" href="https://www.github.com/masalim2/pyfrag">PyFragment</a> is a collection of Python
+modules that facilitate the <strong>setup</strong>, <strong>parallel execution</strong>, and <strong>analysis</strong>
+of <em>embedded-fragment</em> calculations on molecular clusters, liquids, and solids.
+It currently interfaces with the quantum chemistry software packages <a class="reference external" href="http://www.psicode.org">Psi4</a> and <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>.</p>
+<p>The binary interaction method (<strong>BIM</strong>) module performs a variety of
 calculations:</p>
 <ul class="simple">
-<li>Molecular clusters or systems with 1, 2, or 3-dimensional periodic boundary conditions</li>
-<li>Total energy (or unit cell energy) evaluation (at HF, MP2, and beyond)</li>
+<li>Total energy (or unit cell energy) evaluation at HF, MP2, or beyond</li>
+<li>Molecular clusters or systems with 1- to 3-dimensional periodic boundary conditions</li>
 <li>Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors</li>
-<li>Total system dipole moment, and nuclear dipole/polarizability derivatives for IR intensity</li>
 <li>Nuclear hessian and vibrational analysis tools</li>
 <li>Parallel execution using MPI (through the mpi4py bindings)</li>
 </ul>
-<p>The experimental <strong>valence bond charge-transfer (VBCT)</strong> module is a research
-branch of the software. The intent is to extend molecular fragment
+<p>The experimental valence bond charge-transfer (<strong>VBCT</strong>) module is part of a new
+method development effort. The intent is to extend molecular fragment
 calculations to systems with significant charge-resonance, where integer
 electron counts cannot be assigned to individual fragments.</p>
-<p>Where applicable, modules can be run as standalone executables with a
-input file supplied on the command line. They may also be imported into
-user-written Python programs to create new functionality or automate some
-tedious task. Several <strong>driver</strong> scripts are already included, which use the
-<strong>BIM</strong> and <strong>VBCT</strong> modules to:</p>
+<p>Modules can be invoked from the command line with a freeform <a class="reference external" href="inputfile.html">input file</a>.  They may also be imported to user-written Python programs to
+create new functionality or automate tedious tasks. Several such <strong>driver</strong> scripts
+are already included, which use the BIM and VBCT modules to:</p>
 <ul class="simple">
-<li>Perform a PES scan along any user-defined coordinate</li>
-<li>Find a local minimum in the PES using L-BFGS optimization</li>
-<li>Integrate a molecular dynamics trajectory</li>
+<li>Integrate a <strong>molecular dynamics</strong> trajectory, with optional Nose-Hoover or Berendsen
+thermostats/barostats</li>
+<li>Perform a <strong>PES scan</strong> along a user-defined coordinate</li>
+<li><strong>Optimize</strong> crystal structure with the BFGS algorithm</li>
 </ul>
-<p>Several tools to process the output of the above calculations are
-included:
-* Phonon dispersion calculation from solid Hessian data
-* <em>to be continued...</em></p>
-</div>
-<div class="section" id="contents">
-<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<p>Pyfragment also includes a suite of <strong>tools</strong> to process the output of the above
+calculations and facilitate data analysis:</p>
+<ul class="simple">
+<li>Phonon dispersion/density of states calculations from solid Hessian data</li>
+<li>Molecular dynamics trajectory analysis tool</li>
+</ul>
+<div class="section" id="user-guide">
+<h2>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="setup.html">Setup Instructions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="setup.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#gellmann-setup">Gellmann setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#blue-waters-setup">Blue Waters setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html#running-as-executable">Running as executable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#gellmann-setup-tips">Gellmann setup tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#blue-waters-setup-tips">Blue Waters setup tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#running-pyfragment">Running PyFragment</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="background.html#theory">Theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="background.html#implementation">Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#a-minimal-input-file">A minimal input file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#setting-up-a-molecular-dynamics-run">Setting up a molecular dynamics run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="inputfile.html">Input to PyFragment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="inputfile.html#modular-usage">Modular Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="inputfile.html#standalone-execution">Standalone Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#modular-usage">Modular usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inputfile.html#standalone-execution">Standalone execution</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="globals.html">The <strong>Globals</strong> Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="globals.html#globals-geom">Globals.geom</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="subpackage-documentation">
+<h2>Subpackage documentation<a class="headerlink" href="#subpackage-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bim.html">The <code class="docutils literal"><span class="pre">bim</span></code> module: BIM energies, gradients, and hessians</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bim.html#module-bim.bim"><code class="docutils literal"><span class="pre">bim</span></code>: main BIM routine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bim.html#module-bim.monomerscf"><code class="docutils literal"><span class="pre">monomerscf</span></code>: self-consistent fragment ESP charges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bim.html#module-bim.sums"><code class="docutils literal"><span class="pre">sums</span></code>: summation of fragment energies</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="samples.html">Sample Calculations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extending.html">Extending PyFragment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drivers.html">The <code class="docutils literal"><span class="pre">drivers</span></code> modules: Molecular dynamics, optimization, and beyond</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="drivers.html#module-drivers.bim_md"><code class="docutils literal"><span class="pre">bim_md</span></code>: Molecular Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drivers.html#module-drivers.bim_opt"><code class="docutils literal"><span class="pre">bim_opt</span></code>: Geometry Optimization</a></li>
 </ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">The <code class="docutils literal"><span class="pre">tools</span></code> modules: post-processing and analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tools.html#module-tools.phonon"><code class="docutils literal"><span class="pre">phonon</span></code>: Vibrational Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vbct.html">The <code class="docutils literal"><span class="pre">vbct</span></code> module: charge resonance in cluster cations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vbct.html#module-vbct.energy"><code class="docutils literal"><span class="pre">energy</span></code>: VBCT energy calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vbct.html#module-vbct.vbct_calc"><code class="docutils literal"><span class="pre">vbct_calc</span></code>: algorithms for effective Hamiltonian generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vbct.html#module-vbct.monomerscf"><code class="docutils literal"><span class="pre">monomerscf</span></code>: self-consistent VBCT state ESP charges</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backend.html">The <code class="docutils literal"><span class="pre">backend</span></code> modules: interface to quantum chemistry software</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.backend"><code class="docutils literal"><span class="pre">backend</span></code>: Generic QC functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.nw"><code class="docutils literal"><span class="pre">nw</span></code>: NWChem wrapper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.psi4"><code class="docutils literal"><span class="pre">psi4</span></code>: Psi4 wrapper</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="test.html">The <code class="docutils literal"><span class="pre">test</span></code> modules: unit testing with Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="test.html#module-test.test"><code class="docutils literal"><span class="pre">test</span></code>: serial test cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="globals.html">The <code class="docutils literal"><span class="pre">Globals</span></code> Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.geom">geom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.lattice">lattice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.params">params</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.MPI">MPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.neighbor">neighbor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.coulomb">coulomb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.logger">logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="globals.html#module-Globals.utility">utility</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -129,8 +175,11 @@ included:
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">PyFragment Documentation</a></li>
-<li><a class="reference internal" href="#contents">Contents</a></li>
+<li><a class="reference internal" href="#">PyFragment Documentation</a><ul>
+<li><a class="reference internal" href="#user-guide">User guide</a></li>
+<li><a class="reference internal" href="#subpackage-documentation">Subpackage documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
@@ -164,6 +213,9 @@ included:
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="setup.html" title="Setup Instructions"
              >next</a> |</li>

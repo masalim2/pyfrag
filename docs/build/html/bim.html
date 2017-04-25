@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The bim module: BIM energies, gradients, and hessians &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The drivers modules: Molecular dynamics, optimization, and beyond" href="drivers.html" />
+    <link rel="prev" title="Input to PyFragment" href="inputfile.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="drivers.html" title="The drivers modules: Molecular dynamics, optimization, and beyond"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="inputfile.html" title="Input to PyFragment"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-bim-module-bim-energies-gradients-and-hessians">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">bim</span></code> module: BIM energies, gradients, and hessians<a class="headerlink" href="#the-bim-module-bim-energies-gradients-and-hessians" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-bim.bim">
+<span id="bim-main-bim-routine"></span><h2><code class="xref py py-data docutils literal"><span class="pre">bim</span></code>: main BIM routine<a class="headerlink" href="#module-bim.bim" title="Permalink to this headline">¶</a></h2>
+<p>Binary Interaction Method &#8211; module for embedded-fragment calculations on
+weakly-interacting molecular clusters (energy, gradient, hessian)</p>
+<dl class="function">
+<dt id="bim.bim.create_bim_fragment">
+<code class="descclassname">bim.bim.</code><code class="descname">create_bim_fragment</code><span class="sig-paren">(</span><em>specifier</em>, <em>espcharges</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.bim.create_bim_fragment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and dispatch a backend fragment calculation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>specifier: tuple specifying the monomer and cell indices for the</dt>
+<dd>requested calculation.</dd>
+</dl>
+<p class="last">espcharges: embedding field charges</p>
+</dd>
+<dt>Returns:</dt>
+<dd>results: results dict from fragment calculation</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="bim.bim.get_task">
+<code class="descclassname">bim.bim.</code><code class="descname">get_task</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bim.bim.get_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>map from params.options[&#8216;task&#8217;] &#8211;&gt; bim summation type</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><p class="first">task: one of &#8216;energy&#8217;, &#8216;gradient&#8217;, &#8216;hessian&#8217;</p>
+<p class="last">sum_fxn: the corresponding BIM summation function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="bim.bim.kernel">
+<code class="descclassname">bim.bim.</code><code class="descname">kernel</code><span class="sig-paren">(</span><em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.bim.kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get fragments, do monomer SCF, and dispatch list of fragment calcs.</p>
+<p>Controlled by setting values in params.options and geom.geometry</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>comm (optional): pass a subcommunicator (generated with comm.split)
+for nested parallelism</dd>
+<dt>Returns:</dt>
+<dd>results: dictionary of fragment sums</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bim.monomerscf">
+<span id="monomerscf-self-consistent-fragment-esp-charges"></span><h2><code class="xref py py-data docutils literal"><span class="pre">monomerscf</span></code>: self-consistent fragment ESP charges<a class="headerlink" href="#module-bim.monomerscf" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="bim.monomerscf.monomerSCF">
+<code class="descclassname">bim.monomerscf.</code><code class="descname">monomerSCF</code><span class="sig-paren">(</span><em>comm=None</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.monomerscf.monomerSCF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cycle embedded monomer calculations until ESP charges converge.</p>
+<p>BIM version: include all monomers, take charges from input geometry,
+bq_lists from Globals.neighbor, and embedding option from input file. PBC is
+implicitly handled No need to do anything if embedding option is off.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>comm: specify a sub-communicator for parallel execution.</dt>
+<dd>Default None: use the top-level communicator in Globals.MPI</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>espcharges: a list of esp-fit atom-centered charges</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-bim.sums">
+<span id="sums-summation-of-fragment-energies"></span><h2><code class="xref py py-data docutils literal"><span class="pre">sums</span></code>: summation of fragment energies<a class="headerlink" href="#module-bim.sums" title="Permalink to this headline">¶</a></h2>
+<p>BIM summation functions to compute full-system properties.</p>
+<dl class="docutils">
+<dt>Each sum function takes the same arguments:</dt>
+<dd><p class="first">specifiers: a list of specifier tuples (as defined in bim.kernel)</p>
+<dl class="last docutils">
+<dt>calcs: a dict (with keys matching specifiers.keys()) of dicts containing the</dt>
+<dd>results from each fragment calculation.</dd>
+</dl>
+</dd>
+</dl>
+<p>and each returns a dictionary of calculation results.</p>
+<dl class="function">
+<dt id="bim.sums.energy_sum">
+<code class="descclassname">bim.sums.</code><code class="descname">energy_sum</code><span class="sig-paren">(</span><em>specifiers</em>, <em>calcs</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.sums.energy_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine total energy</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bim.sums.gradient_sum">
+<code class="descclassname">bim.sums.</code><code class="descname">gradient_sum</code><span class="sig-paren">(</span><em>specifiers</em>, <em>calcs</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.sums.gradient_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute gradient of total energy</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bim.sums.hessian_sum">
+<code class="descclassname">bim.sums.</code><code class="descname">hessian_sum</code><span class="sig-paren">(</span><em>specifiers</em>, <em>calcs</em><span class="sig-paren">)</span><a class="headerlink" href="#bim.sums.hessian_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute interaction force constants (hessian)</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">bim</span></code> module: BIM energies, gradients, and hessians</a><ul>
+<li><a class="reference internal" href="#module-bim.bim"><code class="docutils literal"><span class="pre">bim</span></code>: main BIM routine</a></li>
+<li><a class="reference internal" href="#module-bim.monomerscf"><code class="docutils literal"><span class="pre">monomerscf</span></code>: self-consistent fragment ESP charges</a></li>
+<li><a class="reference internal" href="#module-bim.sums"><code class="docutils literal"><span class="pre">sums</span></code>: summation of fragment energies</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inputfile.html"
+                        title="previous chapter">Input to PyFragment</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="drivers.html"
+                        title="next chapter">The <code class="docutils literal"><span class="pre">drivers</span></code> modules: Molecular dynamics, optimization, and beyond</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/bim.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="drivers.html" title="The drivers modules: Molecular dynamics, optimization, and beyond"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="inputfile.html" title="Input to PyFragment"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>

@@ -1,13 +1,10 @@
-'''This module contains the globally-shared lat_vecs which defines the
-Bravais lattice vectors of the system in a 3x3 ndarray. It comes with supporting
+'''This module contains the globally-shared lat_vecs which defines the Bravais
+lattice vectors of the system in a 3x3 ndarray. It comes with supporting
 functionality for 3D PBC calculations:
     * updating lattice vectors from lattice parameters (a,b,c,alpha,beta,gamma)
     * the inverse of lat_vecs for transformation to fractional(scaled) coords
-    * computing cell volume
-    * computing gradient wrt lattice parameters, using virial tensor and applied
-      stress
-    * rescaling cell by translating fragment centers of mass, while preserving
-     fragment internal coordinates
+    * computing cell volume computing gradient wrt lattice parameters, using virial tensor and applied stress
+    * rescaling cell by translating fragment centers of mass, while preserving fragment internal coordinates
 '''
 
 import numpy as np
@@ -85,17 +82,18 @@ def volume():
         return 1.0
 
 def lat_angle_differential():
-    '''Compute partial derivatives of lat_vecs with respect to change in
-    lattice angle parameter.
+    '''Compute partial derivatives of lat_vecs wrt angle parameters.
 
-    Lazy; this is just a quick finite difference calculation
+    This is just a quick finite difference calculation.
+
     Args:
         None
     Returns:
         Three 3x3 numpy arrays. They contain the derivatives
         of the lattice vector components with respect to alpha,
         beta, and gamma, respectively. Units of each matrix element are
-        Angstroms/degree.'''
+        Angstroms/degree.
+    '''
 
     # Compute vecs with slightly displaced angle
     def compute_lat_vecs(a, b, c, alpha, beta, gamma):

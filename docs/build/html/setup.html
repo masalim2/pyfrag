@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Background" href="background.html" />
+    <link rel="next" title="Quick Start" href="quickstart.html" />
     <link rel="prev" title="PyFragment Documentation" href="index.html" /> 
   </head>
   <body role="document">
@@ -37,7 +37,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="background.html" title="Background"
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick Start"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="PyFragment Documentation"
@@ -55,24 +58,26 @@
 <h1>Setup Instructions<a class="headerlink" href="#setup-instructions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
-<p>PyFragment requires Python 2.7 or later, <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These
-modules should be readily importable, i.e.:</p>
+<p>PyFragment requires Python version 2.7. It uses the modules <a class="reference external" href="http://www.numpy.org">numpy</a>, <a class="reference external" href="http://www.scipy.org">scipy</a>, <a class="reference external" href="http://www.h5py.org">h5py</a>, and <a class="reference external" href="http://www.mpi4py.scipy.org">MPI4Py</a>. These must
+be readily importable, i.e.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">import</span> <span class="nn">mpi4py</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 </pre></div>
 </div>
 <p>should execute without any errors in your Python interpreter.</p>
-<p>Your PYTHONPATH environment variable should include the directory containing
-&#8216;pyfrag&#8217;.  This will allow you to import the PyFrag modules from anywhere.</p>
-<p>PyFragment requires at least quantum chemistry backend to perform the fragment
-calculations. Currently supported packages are <a class="reference external" href="http://www.psicode.org">Psi4</a>, <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>, and <a class="reference external" href="http://www.gaussian.com">Gaussian09</a>. As
-such, at least one of the executables <strong>psi4</strong>, <strong>nwchem.x</strong>, or <strong>g09</strong> must be
-in the PATH.</p>
+<p>The <code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code> environment variable must include the path to the top level
+pyfrag directory. This is necessary for the subpackages to find each other.</p>
+<p>PyFragment requires at least one quantum chemistry backend to perform the
+fragment calculations. Currently supported packages are <a class="reference external" href="http://www.psicode.org">Psi4</a> and <a class="reference external" href="http://www.nwchem-sw.org">NWChem</a>. The
+executables  <code class="xref py py-data docutils literal"><span class="pre">psi4</span></code> and <code class="xref py py-data docutils literal"><span class="pre">nwchem.x</span></code> must therefore be in the system
+<code class="xref py py-data docutils literal"><span class="pre">PATH</span></code>. The <code class="xref py py-data docutils literal"><span class="pre">backend</span></code> subpackage can easily be extended for
+PyFragment to interface with other quantum chemistry backends.</p>
 </div>
-<div class="section" id="gellmann-setup">
-<h2>Gellmann setup<a class="headerlink" href="#gellmann-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gellmann-setup-tips">
+<h2>Gellmann setup tips<a class="headerlink" href="#gellmann-setup-tips" title="Permalink to this headline">¶</a></h2>
 <p>To replace the default system Python 2.6 with Python 2.7, the <strong>opt-python</strong>
 module must be loaded.
 A convenient way to set up the requisite Python environment is with virtualenv
@@ -97,24 +102,24 @@ are now able to install packages to this environment using <strong>pip</strong>.
 mpi4py, or scipy, be sure that <strong>opt-python</strong> is loaded and
 the <strong>source</strong> line is invoked.</p>
 </div>
-<div class="section" id="blue-waters-setup">
-<h2>Blue Waters setup<a class="headerlink" href="#blue-waters-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="blue-waters-setup-tips">
+<h2>Blue Waters setup tips<a class="headerlink" href="#blue-waters-setup-tips" title="Permalink to this headline">¶</a></h2>
 <p>Blue Waters comes equipped with high-performance builds of the necessary
 python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/python">modules</a>.  Your job submission scripts can set up the environment with the two lines</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
 <span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span><span class="o">-</span><span class="n">mpi</span>
 </pre></div>
 </div>
-<div class="section" id="installing-psi4">
-<h3>Installing Psi4<a class="headerlink" href="#installing-psi4" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt>::</dt>
-<dd>git clone <a class="reference external" href="https://github.com/psi4/psi4.git">https://github.com/psi4/psi4.git</a>
-module load bwpy
-export CRAYPE_LINK_TYPE=dynamic
-export CRAY_ADD_RPATH=yes
-mkdir ~/libsci</dd>
-</dl>
+<div class="section" id="installing-psi4-on-blue-waters">
+<h3>Installing Psi4 on Blue Waters<a class="headerlink" href="#installing-psi4-on-blue-waters" title="Permalink to this headline">¶</a></h3>
+<p>Checkout the Psi4 repository and prepare the environment for setup:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">psi4</span><span class="o">/</span><span class="n">psi4</span><span class="o">.</span><span class="n">git</span>
+<span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
+<span class="n">export</span> <span class="n">CRAYPE_LINK_TYPE</span><span class="o">=</span><span class="n">dynamic</span>
+<span class="n">export</span> <span class="n">CRAY_ADD_RPATH</span><span class="o">=</span><span class="n">yes</span>
+<span class="n">mkdir</span> <span class="o">~/</span><span class="n">libsci</span>
+</pre></div>
+</div>
 <p>Now, query the currently (default) loaded Cray LibSci module to find the
 directory containg the LibSci libaries.  Make symlinks in ~/libsci
 to all the necessary versions, naming the links corresponding to libsci.*
@@ -136,14 +141,20 @@ cmake). This binary will work fine for the build process.</p>
 build and then log off without interrupting the process.</p>
 </div>
 </div>
-<div class="section" id="running-as-executable">
-<h2>Running as executable<a class="headerlink" href="#running-as-executable" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>To run as an executable on 16 cores, invoke ::</dt>
-<dd>mpirun -n 16 python /directory/to/pyfrag &lt;input-file&gt;</dd>
-</dl>
+<div class="section" id="running-pyfragment">
+<h2>Running PyFragment<a class="headerlink" href="#running-pyfragment" title="Permalink to this headline">¶</a></h2>
+<p>The directory containing PyFragment should be included in the <code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code>
+environment variable.</p>
+<p>To run as an executable on 16 cores, invoke</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">n</span> <span class="mi">16</span> <span class="n">python</span> <span class="o">/</span><span class="n">directory</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">pyfrag</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 <p>from the command line. This causes Python to run the __main__.py module
-located in pyfrag directory.</p>
+located in the pyfrag directory. Alternatively, the program can be invoked
+using</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">n</span> <span class="mi">16</span> <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyfrag</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -157,12 +168,12 @@ located in pyfrag directory.</p>
   <ul>
 <li><a class="reference internal" href="#">Setup Instructions</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#gellmann-setup">Gellmann setup</a></li>
-<li><a class="reference internal" href="#blue-waters-setup">Blue Waters setup</a><ul>
-<li><a class="reference internal" href="#installing-psi4">Installing Psi4</a></li>
+<li><a class="reference internal" href="#gellmann-setup-tips">Gellmann setup tips</a></li>
+<li><a class="reference internal" href="#blue-waters-setup-tips">Blue Waters setup tips</a><ul>
+<li><a class="reference internal" href="#installing-psi4-on-blue-waters">Installing Psi4 on Blue Waters</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#running-as-executable">Running as executable</a></li>
+<li><a class="reference internal" href="#running-pyfragment">Running PyFragment</a></li>
 </ul>
 </li>
 </ul>
@@ -171,8 +182,8 @@ located in pyfrag directory.</p>
   <p class="topless"><a href="index.html"
                         title="previous chapter">PyFragment Documentation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="background.html"
-                        title="next chapter">Background</a></p>
+  <p class="topless"><a href="quickstart.html"
+                        title="next chapter">Quick Start</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -201,7 +212,10 @@ located in pyfrag directory.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="background.html" title="Background"
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quick Start"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="PyFragment Documentation"

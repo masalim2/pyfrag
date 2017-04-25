@@ -1,10 +1,14 @@
 '''Unit Tests using Python unittest framework
 
 Run all tests from command line using:
+
 >>> python -m unittest pyfrag/test
 
 Run one test from command line by specifying a specific test case:
+
 >>> python -m unittest pyfrag/test.TestTrimerRHF
+
+Add new test cases by creating new classes that extend unittest.TestCase:
 '''
 
 import unittest
@@ -24,6 +28,7 @@ filename =  sys.modules[__name__].__file__
 testpath, b  = os.path.split(filename)
 
 class TestTrimerRHF(unittest.TestCase):
+    '''Test RHF energy and gradient on water trimer'''
 
     @classmethod
     def setUpClass(cls):
@@ -84,6 +89,7 @@ class TestTrimerRHF(unittest.TestCase):
         self.assertLess(np.max(np.abs(gfrag-gexact)), 0.0005)
 
 class TestTrimerMP2(unittest.TestCase):
+    '''Test MP2 gradients on water trimer with both NW/Psi4 backends'''
 
     @classmethod
     def setUpClass(cls):

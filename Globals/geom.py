@@ -1,6 +1,9 @@
-'''This module contains the globally-shared geometry and fragments list, along
-with supporting data structures (Atom class, z_map, physical constants), and
-functions (loading geometry, performing fragmentation, etc...)
+'''This module contains the shared :data:`geometry` and :data:`fragments` lists.
+
+It defines the Atom class and supporting data structures to load and print
+geometry information. It also contains the logic for performing *fragmentation*,
+that is, assigning which atoms belong to which fragments. The :data:`geometry`
+and :data:`fragments` lists are shared across all modules.
 '''
 import numpy as np
 import re
@@ -19,7 +22,8 @@ mass_map = {
    'he' : 4.0,
    'o'  : 16.0,
    'c'  : 12.0,
-   'ar' : 40.0
+   'ar' : 40.0,
+   'f'  : 19.0
 }
 z_map = {
    'h'  : 1,
@@ -27,7 +31,8 @@ z_map = {
    'he' : 2,
    'o'  : 8,
    'c'  : 6,
-   'ar' : 18
+   'ar' : 18,
+   'f'  : 9
 }
 
 # Cutoff bond distances for auto-fragmentation
@@ -37,6 +42,7 @@ frag_cutoffs = {
                  ('c','o'): 2.0,
                  ('h','h'): 1.3,
                  ('h','o'): 1.3,
+                 ('f','h'): 1.2
                }
 
 # Module-level data: shared with others
@@ -94,11 +100,12 @@ def load_geometry(data, units='angstrom'):
     Tries to be flexible with the form of input 'data' argument.
     Uses regex to extract atomic coordinates from text.
 
-    Args:
-        data: string, list of strings, list of lists, or filename
-            containing the xyz coordinate data
+    Args
+        data: string, list of strings, list of lists, or filename containing the
+        xyz coordinate data
         units (default Angstrom): "bohr" or "angstrom"
-    Returns:
+
+    Returns
        None: the geometry is saved as a module-level variable
    '''
     global geometry

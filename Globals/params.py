@@ -23,6 +23,24 @@ def convert_params():
             else:
                 options[option] = map(tryFloat, value.split())
 
+def set_defaults():
+    '''Set default parameters if not specified'''
+    global options
+    defaults = { 'fragmentation' : 'auto',
+                 'r_qm' : 20.0,
+                 'r_bq' : 20.0,
+                 'r_lr' : 20.0,
+                 'embedding' : True,
+                 'mem_mb' : 800,
+                'basis' : 'sto-3g',
+                'hftype' : 'uhf',
+                'correlation' : False,
+                'backend' : 'psi4'
+                }
+    for k,v in defaults.items():
+        if k not in options:
+            options[k] = v
+
 def tryFloat(s):
     '''Try to cast to float; no big deal'''
     try:
@@ -79,3 +97,4 @@ def parse(inFile):
                         break
         n = n2
     convert_params()
+    set_defaults()

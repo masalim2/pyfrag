@@ -70,8 +70,10 @@ def BFS_lattice_traversal(pair_accumulate_fxn, **args):
             which builds neighbor lists between the given cell and origin
             cell.  It must return the number of pairs within range.
         **args: additional arguments to pair_accumulate_fxn
+
     Returns
         None
+
     '''
     cells   = [(0,0,0)]
     visited = [(0,0,0)]

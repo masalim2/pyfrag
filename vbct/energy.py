@@ -1,6 +1,7 @@
 '''Compute GS doublet energy and charge distribution in VBCT scheme
-1) No PBC or truncation of summations: only cluster ions are calculated
-2) only charge +1 is supported: single hole hopping between fragments
+
+    1) No PBC or truncation of summations: only cluster ions are calculated
+    2) only charge +1 is supported: single hole hopping between fragments
 '''
 from mpi4py.MPI import ANY_SOURCE
 import numpy as np
@@ -44,6 +45,7 @@ def print_vbct_state(idx):
 
 
 def build_secular_equations(diag_results, offdiag_results):
+    '''Build Hamiltonian and overlap matrix'''
     N = len(diag_results)
     H = np.zeros((N,N))
     S = np.eye(N)
@@ -103,11 +105,19 @@ def verify_options():
 
 
 def calc_diagonal(idx, comm=None):
+    '''Dispatch diagonal element calculation
 
+    Args
+        idx: integer index ranging from 0-len(geom.fragments). Which
+        diagonal element to calculate
+        comm: MPI communicator or subcommunicator
+    Returns
+        res: dict, results from diagonal element calculation.
+    '''
     diag_calc_name = "diag_%s" % params.options['vbct_scheme']
     diag_calc_fxn = getattr(vbct_calc, diag_calc_name)
 
-    nfrag = len(geom.geometry)
+    nfrag = len(geom.fragments)
     monomers = range(nfrag)
     charges  = [int(idx == j) for j in monomers]
 
@@ -120,6 +130,16 @@ def calc_diagonal(idx, comm=None):
 
 
 def calc_chg_distro(prob0, diag_results):
+    '''Generate linear combination of esp charge distros
+
+    Args
+        prob0: ground state probability distribution
+        diag_results: diagonal element calculation results list,
+            contains esp_charges for each charge-local state
+    Returs
+        charge_distro: approximate charge distribution computed as linear
+        combination of VBCT basis charge distros
+    '''
     charge_distro = np.zeros(len(geom.geometry))
     for i, diag_calc in enumerate(diag_results):
         charge_vec = np.array(diag_calc['esp'])
@@ -128,7 +148,7 @@ def calc_chg_distro(prob0, diag_results):
 
 
 def kernel():
-    '''SP energy'''
+    '''SP energy: form and diagonalize VBCT matrix'''
 
     # Setup
     verify_options()

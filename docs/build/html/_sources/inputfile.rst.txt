@@ -2,31 +2,51 @@
 Input to PyFragment
 ===================
 
-Modular Usage
+Modular usage
 ===============
 The modules of PyFragment can be imported into other Python programs or
 interactive sessions. Then, the relevant calculation input can be set
-programatically by interfacing with the **globals.params** module. The following
-code snippet shows an example of the syntax ::
+programatically by interfacing with the **Globals** modules. The following
+code snippet shows an example of the syntax: ::
 
-    from pyfragment.globals import params, geom
+    from pyfrag.Globals import params, geom
+    from pyfrag.bim import bim
     # ... other code here ...
-    params.basis = 'cc-pvtz'
-    params.fragmentation = 'auto'
-    params.r_qm = 10.3
-    params.geometry = '''He 0 0 0
-                         He 1 0 0
-                         He 2 0 0'''.split('\n')
-    geom.load_geometry(params.geometry) # build the geometry object
-    geom.set_frag_auto() # perform the fragmentation
+    params.options['basis'] = 'cc-pvtz'
+    params.options['fragmentation'] = 'auto'
+    params.options['r_qm'] = 10.3
+    params.options['task'] = 'bim_grad'
+    geomtxt = '''He 0 0 0
+                 He 1 0 0
+                 He 2 0 0'''
+    geom.load_geometry(geomtxt) # build the geometry object
+    geom.perform_fragmentation() # auto-fragment
+    result = bim.kernel()
+    grad = result['gradient']
     # ... more code here ...
 
-Standalone Execution
+All imports from PyFragment should be in the form of ::
+
+    from pyfrag.Globals import logger, params
+    from pyfrag.backend import nw
+
+.. warning::
+    **NEVER** import shared data directly from modules, as in:: 
+    
+        from pyfrag.Globals.params import options
+     
+    This will produce local objects that do not change in the scope of other
+    modules when updated. This will result in very difficult bugs to track. By 
+    importing the modules themselves and referencing their attributes, 
+    data is correctly shared between the program modules.
+
+
+Standalone execution
 ====================
 If PyFragment is invoked from the command line, input must come in 
 the form of an input file argument. The input format is somewhat flexible:
 
-    * **case-insensitive**
+    * case-insensitive
     * ignores whitespace
     * ignores comments starting with '#' character
 
@@ -44,9 +64,11 @@ The parser recognizes two types of entries in the input file.
         F 1 0 0
         }
 
-Sample File
-***********
-Here is a sample input file with comments explaining 
-the meaning of the parameters 
+Input File Structure
+********************
+Here is a sample input file with comments explaining the meaning of the
+parameters. The order of input does not matter and parameters irrelvant to the
+calculation can be omitted.
+
 
 .. literalinclude:: example.inp

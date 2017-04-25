@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The Globals Module &#8212; pyfragment 0.1 documentation</title>
+    <title>The Globals Modules &#8212; pyfragment 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,8 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Sample Calculations" href="samples.html" />
-    <link rel="prev" title="Input to PyFragment" href="inputfile.html" /> 
+    <link rel="prev" title="The test modules: unit testing with Python" href="test.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,10 +36,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="samples.html" title="Sample Calculations"
-             accesskey="N">next</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="inputfile.html" title="Input to PyFragment"
+          <a href="test.html" title="The test modules: unit testing with Python"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>
@@ -51,32 +50,390 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="the-globals-module">
-<h1>The <strong>Globals</strong> Module<a class="headerlink" href="#the-globals-module" title="Permalink to this headline">¶</a></h1>
-<p>The <strong>Globals</strong> module contains essential shared data and functionality
-for <em>all</em> types of fragment calculations.</p>
-<div class="section" id="globals-geom">
-<h2>Globals.geom<a class="headerlink" href="#globals-geom" title="Permalink to this headline">¶</a></h2>
-<p>Defines the fundamental Atom class to conveniently load and print geometry
-information.  Contains functions for loading geometry and performing
-<em>fragmentation</em>, that is, assigning which atoms belong to which fragments.</p>
+  <div class="section" id="the-globals-modules">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">Globals</span></code> Modules<a class="headerlink" href="#the-globals-modules" title="Permalink to this headline">¶</a></h1>
+<p>The <strong>Globals</strong> modules contains data and functionality
+shared between all types of fragment calculations.</p>
+<div class="section" id="module-Globals.geom">
+<span id="geom"></span><h2>geom<a class="headerlink" href="#module-Globals.geom" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the shared <code class="xref py py-data docutils literal"><span class="pre">geometry</span></code> and <code class="xref py py-data docutils literal"><span class="pre">fragments</span></code> lists.</p>
+<p>It defines the Atom class and supporting data structures to load and print
+geometry information. It also contains the logic for performing <em>fragmentation</em>,
+that is, assigning which atoms belong to which fragments. The <code class="xref py py-data docutils literal"><span class="pre">geometry</span></code>
+and <code class="xref py py-data docutils literal"><span class="pre">fragments</span></code> lists are shared across all modules.</p>
+<dl class="class">
+<dt id="Globals.geom.Atom">
+<em class="property">class </em><code class="descclassname">Globals.geom.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>atomstr</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.Atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience class for loading and storing geometry data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.geom.com">
+<code class="descclassname">Globals.geom.</code><code class="descname">com</code><span class="sig-paren">(</span><em>frag</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.com" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get center of mass of a fragment.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd>frag: the list of atom indices</dd>
+<dt>Returns</dt>
+<dd>com: numpy array pointing at COM</dd>
+</dl>
+</dd></dl>
+
 <dl class="function">
 <dt id="Globals.geom.load_geometry">
 <code class="descclassname">Globals.geom.</code><code class="descname">load_geometry</code><span class="sig-paren">(</span><em>data</em>, <em>units='angstrom'</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.load_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads geometry from input text, lists, or filename.</p>
-<p>Tries to be flexible with the form of input &#8216;data&#8217; argument. 
+<p>Tries to be flexible with the form of input &#8216;data&#8217; argument.
 Uses regex to extract atomic coordinates from text.</p>
 <dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first docutils">
-<dt>data: string, list of strings, list of lists, or filename</dt>
-<dd>containing the xyz coordinate data</dd>
-</dl>
-<p class="last">units (default Angstrom): &#8220;bohr&#8221; or &#8220;angstrom&#8221;</p>
-</dd>
-<dt>Returns:</dt>
+<dt>Args</dt>
+<dd>data: string, list of strings, list of lists, or filename containing the
+xyz coordinate data
+units (default Angstrom): &#8220;bohr&#8221; or &#8220;angstrom&#8221;</dd>
+<dt>Returns</dt>
 <dd>None: the geometry is saved as a module-level variable</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.geom.nuclear_repulsion_energy">
+<code class="descclassname">Globals.geom.</code><code class="descname">nuclear_repulsion_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.nuclear_repulsion_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return nuclear repulsion energy / a.u.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.geom.set_frag_auto">
+<code class="descclassname">Globals.geom.</code><code class="descname">set_frag_auto</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.set_frag_auto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auto-generate list of fragments based on bond-length frag_cutoffs.</p>
+<p>Use this if you don&#8217;t wish to manually assign atoms to fragments.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>None (module-level geometry is used)</dd>
+<dt>Returns:</dt>
+<dd>None (module-level fragments list is set)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.geom.set_frag_full_system">
+<code class="descclassname">Globals.geom.</code><code class="descname">set_frag_full_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.set_frag_full_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>No fragmentation: all atoms in system belong to one fragment.</p>
+<p>Use this to perform one big reference QM calculation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>None (module-level geometry is used)</dd>
+<dt>Returns:</dt>
+<dd>None (module-level fragments list is set)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.geom.set_frag_manual">
+<code class="descclassname">Globals.geom.</code><code class="descname">set_frag_manual</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.geom.set_frag_manual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read list of fragments from input file.</p>
+<p>Fragmentation is manually specified in the input file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>None (module-level geometry is used)</dd>
+<dt>Returns:</dt>
+<dd>None (module-level fragments list is set)</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.lattice">
+<span id="lattice"></span><h2>lattice<a class="headerlink" href="#module-Globals.lattice" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the globally-shared lat_vecs which defines the Bravais
+lattice vectors of the system in a 3x3 ndarray. It comes with supporting
+functionality for 3D PBC calculations:</p>
+<blockquote>
+<div><ul class="simple">
+<li>updating lattice vectors from lattice parameters (a,b,c,alpha,beta,gamma)</li>
+<li>the inverse of lat_vecs for transformation to fractional(scaled) coords</li>
+<li>computing cell volume computing gradient wrt lattice parameters, using virial tensor and applied stress</li>
+<li>rescaling cell by translating fragment centers of mass, while preserving fragment internal coordinates</li>
+</ul>
+</div></blockquote>
+<dl class="function">
+<dt id="Globals.lattice.lat_angle_differential">
+<code class="descclassname">Globals.lattice.</code><code class="descname">lat_angle_differential</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.lat_angle_differential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute partial derivatives of lat_vecs wrt angle parameters.</p>
+<p>This is just a quick finite difference calculation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>None</dd>
+<dt>Returns:</dt>
+<dd>Three 3x3 numpy arrays. They contain the derivatives
+of the lattice vector components with respect to alpha,
+beta, and gamma, respectively. Units of each matrix element are
+Angstroms/degree.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.lattice.lattice_gradient">
+<code class="descclassname">Globals.lattice.</code><code class="descname">lattice_gradient</code><span class="sig-paren">(</span><em>virial</em>, <em>p0_bar</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.lattice_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the energy gradient in lattice parameters (a.u. / bohr)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>virial: 3x3 numpy array, from gradient calculation
+p0_bar: external pressure in bar</dd>
+<dt>Returns:</dt>
+<dd>lat_grad: 6-dimensional gradient vector in au/bohr, au/degrees</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.lattice.rescale">
+<code class="descclassname">Globals.lattice.</code><code class="descname">rescale</code><span class="sig-paren">(</span><em>scaling</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.rescale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rescale the lattice vectors and shift fragment centers of mass to
+preserve scaled COM coordinates while maintaining internal fragment
+coordinates.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>scaling: either a 3x3 lattice vector transformation matrix (ndarray)</dt>
+<dd>or a list of lattice parameters (a,b,c,alpha,beta,gamma,axis) in
+Angstrom.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.lattice.update_lat_params">
+<code class="descclassname">Globals.lattice.</code><code class="descname">update_lat_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.update_lat_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update lattice parameters NamedTuple from &#8220;lat_vecs&#8221;</p>
+<p>The inverse of update_lat_vecs; recomputes the lattice parameters based on
+the current vectors. Lattice parameter units are angstrom/degree.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.lattice.update_lat_vecs">
+<code class="descclassname">Globals.lattice.</code><code class="descname">update_lat_vecs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.update_lat_vecs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update lattice vectors matrix (3x3, angstrom) from &#8220;lattice&#8221;.</p>
+<p>Invoke this function whenever the lattice variable is changed to recompute
+the lattice vectors. No input arguments or return values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.lattice.volume">
+<code class="descclassname">Globals.lattice.</code><code class="descname">volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.lattice.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return volume in Angstrom**3</p>
+<p>3D case: return the determinant of lat_vecs matrix
+For 2D,1D,0D systems: return cell area, length, unity,
+respectively.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.params">
+<span id="params"></span><h2>params<a class="headerlink" href="#module-Globals.params" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the globally-shared options dict and a method to
+generate it by parsing an input file. Other modules set module-level attributes
+like &#8220;quiet&#8221; and &#8220;verbose&#8221;.</p>
+<dl class="function">
+<dt id="Globals.params.convert_params">
+<code class="descclassname">Globals.params.</code><code class="descname">convert_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.params.convert_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sanitize parsed options.</p>
+<p>Make string&#8211;&gt;(list, float, boolean) conversions, wherever possible</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.params.parse">
+<code class="descclassname">Globals.params.</code><code class="descname">parse</code><span class="sig-paren">(</span><em>inFile</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.params.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crude input file parser.</p>
+<p>Populates the &#8220;options&#8221; dictionary from an input file.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>inFile: input file handle for reading</dd>
+<dt>Returns:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.params.set_defaults">
+<code class="descclassname">Globals.params.</code><code class="descname">set_defaults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.params.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set default parameters if not specified</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.params.tryFloat">
+<code class="descclassname">Globals.params.</code><code class="descname">tryFloat</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.params.tryFloat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to cast to float; no big deal</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.MPI">
+<span id="mpi"></span><h2>MPI<a class="headerlink" href="#module-Globals.MPI" title="Permalink to this headline">¶</a></h2>
+<p>Wrap mpi4py, so that the code works as expected whether running in serial
+or parallel</p>
+<dl class="function">
+<dt id="Globals.MPI.allgather">
+<code class="descclassname">Globals.MPI.</code><code class="descname">allgather</code><span class="sig-paren">(</span><em>comm</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.MPI.allgather" title="Permalink to this definition">¶</a></dt>
+<dd><p>default allgather fxn is dumb...
+data = MPI_allgather(comm, mydata)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.MPI.create_split_comms">
+<code class="descclassname">Globals.MPI.</code><code class="descname">create_split_comms</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.MPI.create_split_comms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evenly divide nproc into N subcommunicators.</p>
+<p>Returns subcommunicator and color.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.MPI.gather">
+<code class="descclassname">Globals.MPI.</code><code class="descname">gather</code><span class="sig-paren">(</span><em>comm</em>, <em>data</em>, <em>master=0</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.MPI.gather" title="Permalink to this definition">¶</a></dt>
+<dd><p>default gather fxn is dumb...
+data = MPI_gather(comm, data, 0)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.MPI.scatter">
+<code class="descclassname">Globals.MPI.</code><code class="descname">scatter</code><span class="sig-paren">(</span><em>comm</em>, <em>data</em>, <em>master=0</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.MPI.scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>default scatter fxn is dumb; can only handle one item per rank.  This
+will split a list evenly among the ranks by creating a list of lists.
+mydata = MPI_scatter(comm, data, 0)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.neighbor">
+<span id="neighbor"></span><h2>neighbor<a class="headerlink" href="#module-Globals.neighbor" title="Permalink to this headline">¶</a></h2>
+<p>Generate pair lists for QM calculations and BQ embedding</p>
+<dl class="function">
+<dt id="Globals.neighbor.BFS_lattice_traversal">
+<code class="descclassname">Globals.neighbor.</code><code class="descname">BFS_lattice_traversal</code><span class="sig-paren">(</span><em>pair_accumulate_fxn</em>, <em>**args</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.neighbor.BFS_lattice_traversal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic floodfill algorithm to visit cells &amp; build neighbor lists.</p>
+<p>This function performs a Breadth-First Search (BFS) starting from the
+central unit cell (0,0,0) and moving outwards in all periodic dimensions.
+It requires an accumulation function as its first argument, which is used
+to count up all the relevant interactions between origin and a given cell
+(a,b,c). Once no more interactions are counted, the outward fill ends.</p>
+<dl class="docutils">
+<dt>Args</dt>
+<dd><dl class="first docutils">
+<dt>pair_accumulate_fxn: function of the form f(cell, <a href="#id1"><span class="problematic" id="id2">**</span></a>args)</dt>
+<dd>which builds neighbor lists between the given cell and origin
+cell.  It must return the number of pairs within range.</dd>
+</dl>
+<p class="last"><a href="#id3"><span class="problematic" id="id4">**</span></a>args: additional arguments to pair_accumulate_fxn</p>
+</dd>
+<dt>Returns</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.neighbor.build_lists">
+<code class="descclassname">Globals.neighbor.</code><code class="descname">build_lists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Globals.neighbor.build_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>(re)compute neighbor lists via BFS floodfill search, based on cutoffs
+defined in params.options</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.neighbor.pair_dist">
+<code class="descclassname">Globals.neighbor.</code><code class="descname">pair_dist</code><span class="sig-paren">(</span><em>pair_tup</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.neighbor.pair_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute dimer separation given a pair tuple</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.neighbor.pairlist_accumulator">
+<code class="descclassname">Globals.neighbor.</code><code class="descname">pairlist_accumulator</code><span class="sig-paren">(</span><em>cell</em>, <em>com</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.neighbor.pairlist_accumulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>count up dimers within R_QM and R_BQ cutoffs</p>
+<p>This is called by a generic breadth-first search method which traverses all
+unit cells outward from cell 0 (3D flood-fill).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.coulomb">
+<span id="coulomb"></span><h2>coulomb<a class="headerlink" href="#module-Globals.coulomb" title="Permalink to this headline">¶</a></h2>
+<p>Evaluate classical point charge interactions between fragments</p>
+<dl class="function">
+<dt id="Globals.coulomb.accumulate_pair">
+<code class="descclassname">Globals.coulomb.</code><code class="descname">accumulate_pair</code><span class="sig-paren">(</span><em>idx1</em>, <em>idx2</em>, <em>cell</em>, <em>scale</em>, <em>charges</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.coulomb.accumulate_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coluomb E, grad, virial for a specific dimer.</p>
+<p>The coulomb interactions are accumulated into module-level variables
+energy_coulomb, gradient_coulomb, and virial_coulomb.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>idx1, idx2: indices of monomers
+cell: lattice vectors for molecule at idx2
+scale: scale factor for energy contribution
+charges: list of charges for the whole system</dd>
+</dl>
+<p>Returns None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.coulomb.coulomb_accumulator">
+<code class="descclassname">Globals.coulomb.</code><code class="descname">coulomb_accumulator</code><span class="sig-paren">(</span><em>cell</em>, <em>charges</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.coulomb.coulomb_accumulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulate all the dimer interactions between cell 0 and a given cell.</p>
+<p>This is called by a generic breadth-first search method which traverses all
+unit cells outward from cell 0 (3D flood-fill).  The pair interactions are
+computed in parallel and must be accumulated later.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>cell: a,b,c lattice indices of cell interacting with cell 0
+charges: list of esp charges on each fragment</dd>
+<dt>Returns:</dt>
+<dd>num_pairs: the number of interactions counted with the given cell</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.coulomb.evaluate_coulomb">
+<code class="descclassname">Globals.coulomb.</code><code class="descname">evaluate_coulomb</code><span class="sig-paren">(</span><em>espfield</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.coulomb.evaluate_coulomb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate all coulomb interactions via BFS over cells</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-Globals.logger">
+<span id="logger"></span><h2>logger<a class="headerlink" href="#module-Globals.logger" title="Permalink to this headline">¶</a></h2>
+<p>Convenience functions for pretty printing/file IO</p>
+</div>
+<div class="section" id="module-Globals.utility">
+<span id="utility"></span><h2>utility<a class="headerlink" href="#module-Globals.utility" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="Globals.utility.make_scratch_dirs">
+<code class="descclassname">Globals.utility.</code><code class="descname">make_scratch_dirs</code><span class="sig-paren">(</span><em>top_dir=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.utility.make_scratch_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Establish current directory, scratch directories, and temporary shared
+directories</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.utility.mw_execute">
+<code class="descclassname">Globals.utility.</code><code class="descname">mw_execute</code><span class="sig-paren">(</span><em>specifiers</em>, <em>run_calc</em>, <em>comm=None</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.utility.mw_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a series of generic calculations in master-worker mode.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>specifiers: a list of tuples which uniquely determine a</dt>
+<dd>fragment calculation.</dd>
+<dt>run_calc: the function which accepts a specifier tuple,</dt>
+<dd>sets up a QM calculation, invokes the backend, and
+returns the relevant calculation results.</dd>
+<dt>comm: optional subcommunicator, default None: use Globals.MPI</dt>
+<dd>communicator</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>calcs: the dictionary of results indexed by specifiers</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.utility.parse_input">
+<code class="descclassname">Globals.utility.</code><code class="descname">parse_input</code><span class="sig-paren">(</span><em>input_file</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.utility.parse_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open input_file, parse it, load geometry, and MPI-broadcast the data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Globals.utility.pretty_time">
+<code class="descclassname">Globals.utility.</code><code class="descname">pretty_time</code><span class="sig-paren">(</span><em>seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#Globals.utility.pretty_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert elapsed seconds to a nice string representation</p>
 </dd></dl>
 
 </div>
@@ -90,18 +447,22 @@ Uses regex to extract atomic coordinates from text.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">The <strong>Globals</strong> Module</a><ul>
-<li><a class="reference internal" href="#globals-geom">Globals.geom</a></li>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">Globals</span></code> Modules</a><ul>
+<li><a class="reference internal" href="#module-Globals.geom">geom</a></li>
+<li><a class="reference internal" href="#module-Globals.lattice">lattice</a></li>
+<li><a class="reference internal" href="#module-Globals.params">params</a></li>
+<li><a class="reference internal" href="#module-Globals.MPI">MPI</a></li>
+<li><a class="reference internal" href="#module-Globals.neighbor">neighbor</a></li>
+<li><a class="reference internal" href="#module-Globals.coulomb">coulomb</a></li>
+<li><a class="reference internal" href="#module-Globals.logger">logger</a></li>
+<li><a class="reference internal" href="#module-Globals.utility">utility</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="inputfile.html"
-                        title="previous chapter">Input to PyFragment</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="samples.html"
-                        title="next chapter">Sample Calculations</a></p>
+  <p class="topless"><a href="test.html"
+                        title="previous chapter">The <code class="docutils literal"><span class="pre">test</span></code> modules: unit testing with Python</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -130,10 +491,10 @@ Uses regex to extract atomic coordinates from text.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="samples.html" title="Sample Calculations"
-             >next</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="inputfile.html" title="Input to PyFragment"
+          <a href="test.html" title="The test modules: unit testing with Python"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
       </ul>

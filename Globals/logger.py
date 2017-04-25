@@ -18,7 +18,13 @@ def log_input(inp):
         fp.write(open(inp).read()+'\n')
 
 def log_output(output):
-    pass
+    if type(output) is list:
+        output = '\n'.join(output)
+    if type(output) is not str:
+        return
+    homedir = params.options['home_dir']
+    with open(os.path.join(homedir, params.qm_logfile), 'a') as fp:
+        fp.write(output)
 
 def pretty_matrix(mat, precision=2, name=''):
     rows, cols = mat.shape

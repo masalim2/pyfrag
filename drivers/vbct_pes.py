@@ -240,6 +240,7 @@ def get_args():
     return geom_generator, coord_range, methods, args.data_file, system_name
 
 def log(fp, sysname, method, i, x, coord_range, results):
+    '''Log to HDF5 file'''
     if MPI.rank != 0: return
 
     group = "%s/%s" % (sysname, method)

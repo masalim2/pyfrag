@@ -1,10 +1,12 @@
-'''The BIM summation functions to produce full-system properties
+'''BIM summation functions to compute full-system properties.
 
 Each sum function takes the same arguments:
     specifiers: a list of specifier tuples (as defined in bim.kernel)
+
     calcs: a dict (with keys matching specifiers.keys()) of dicts containing the
         results from each fragment calculation.
-And returns a dictionary of calculation results
+
+and each returns a dictionary of calculation results.
 '''
 import numpy as np
 

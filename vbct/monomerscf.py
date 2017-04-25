@@ -3,6 +3,12 @@ import numpy as np
 from pyfrag.Globals import params, MPI, geom
 from pyfrag.backend import backend
 def fullsys_best_guess(comm=None):
+    '''Get conventional E of full system by finding best initial guess.
+
+    Iterates over fragments to produce Nfrag charge-local initial guesses.
+    Takes best UHF energy from each of the corresponding initial densities, then
+    does correlated calculation.
+    '''
     if comm is None:
         comm = MPI.comm
 

@@ -15,6 +15,7 @@ def get_task():
 
     Returns:
         task: one of 'energy', 'gradient', 'hessian'
+
         sum_fxn: the corresponding BIM summation function
     '''
     task = { 'bim_e'   : 'energy',

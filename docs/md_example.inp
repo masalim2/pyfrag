@@ -1,0 +1,26 @@
+scrdir = /scratch
+backend = psi4                
+mem_mb = 3800                 
+
+basis = aug-cc-pvdz            
+correlation = MP2              
+embedding = True                
+r_qm = 8.0 # cutoff in angstroms
+r_bq = 10.0
+r_lr = 200.0
+
+task = bim_md 
+             
+geometry = wat_init.xyz # pbc specified in file as "a b c alpha beta gamma 0"
+fragmentation = auto
+
+
+# md_restart_file = md_example.hdf5
+pressure_bar = 0
+num_steps = 8000
+save_intval = 2
+dt_fs = 0.5
+temperature = 250 # kelvin
+T_bath = nose-hoover
+P_bath = berendsen
+nose_tau_fs = 30.0 # time constant for computing fictitious masses

@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The tools modules: post-processing and analysis &#8212; pyfragment 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The vbct module" href="vbct.html" />
+    <link rel="prev" title="The drivers modules: Molecular dynamics, optimization, and beyond" href="drivers.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vbct.html" title="The vbct module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="drivers.html" title="The drivers modules: Molecular dynamics, optimization, and beyond"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-tools-modules-post-processing-and-analysis">
+<h1>The <code class="xref py py-data docutils literal"><span class="pre">tools</span></code> modules: post-processing and analysis<a class="headerlink" href="#the-tools-modules-post-processing-and-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tools.phonon">
+<span id="phonon-vibrational-analysis"></span><h2><code class="xref py py-data docutils literal"><span class="pre">phonon</span></code>: Vibrational Analysis<a class="headerlink" href="#module-tools.phonon" title="Permalink to this headline">¶</a></h2>
+<p>Tool for computing phonon dispersion and vibrational normal modes, given a
+BIM Hessian</p>
+<dl class="function">
+<dt id="tools.phonon.make_brillouin_zone3D">
+<code class="descclassname">tools.phonon.</code><code class="descname">make_brillouin_zone3D</code><span class="sig-paren">(</span><em>kmesh_density=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.make_brillouin_zone3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Brute-force generate uniform grid inside 1st Brillouin zone.</p>
+<p>Brute force but clean approach. Truncates a uniform rectangular grid;
+therefore, nonorthogonal cells may require a high density of points to
+sample adequately near the zone boundaries.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.mass_weight">
+<code class="descclassname">tools.phonon.</code><code class="descname">mass_weight</code><span class="sig-paren">(</span><em>hess</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.mass_weight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return mass-weighted hessian</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.parseargs">
+<code class="descclassname">tools.phonon.</code><code class="descname">parseargs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.parseargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse command line arguments using argparse</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.phonon">
+<code class="descclassname">tools.phonon.</code><code class="descname">phonon</code><span class="sig-paren">(</span><em>hess_mw</em>, <em>kmesh</em>, <em>smooth_mat=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.phonon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute phonon dispersion and normal modes on a given k-mesh</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.phonon_freqs">
+<code class="descclassname">tools.phonon.</code><code class="descname">phonon_freqs</code><span class="sig-paren">(</span><em>hess_mw</em>, <em>kmesh</em>, <em>smooth_mat=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.phonon_freqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute phonon dispersion without returning normal mode eigenvectors</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.read_force_consts_np">
+<code class="descclassname">tools.phonon.</code><code class="descname">read_force_consts_np</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.read_force_consts_np" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read force constants from numpy binary file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.read_force_consts_txt">
+<code class="descclassname">tools.phonon.</code><code class="descname">read_force_consts_txt</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.read_force_consts_txt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read force constants from text file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.phonon.smoothing_matrix">
+<code class="descclassname">tools.phonon.</code><code class="descname">smoothing_matrix</code><span class="sig-paren">(</span><em>hess_mw</em><span class="sig-paren">)</span><a class="headerlink" href="#tools.phonon.smoothing_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate matrix for projecting out translational normal modes</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="docutils literal"><span class="pre">tools</span></code> modules: post-processing and analysis</a><ul>
+<li><a class="reference internal" href="#module-tools.phonon"><code class="docutils literal"><span class="pre">phonon</span></code>: Vibrational Analysis</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="drivers.html"
+                        title="previous chapter">The <code class="docutils literal"><span class="pre">drivers</span></code> modules: Molecular dynamics, optimization, and beyond</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vbct.html"
+                        title="next chapter">The <code class="docutils literal"><span class="pre">vbct</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tools.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vbct.html" title="The vbct module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="drivers.html" title="The drivers modules: Molecular dynamics, optimization, and beyond"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyfragment 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Michael Salim, University of Illinois.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.5.
+    </div>
+  </body>
+</html>
