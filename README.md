@@ -1,5 +1,4 @@
-# pyfrag
-PyFragment -- collection of python modules for embedded-fragment calculations
+PyFragment -- collection of Python modules for embedded-fragment calculations
 
 Documentation is available [online](https://masalim2.github.io/pyfrag/) and in [pdf format](docs/build/latex/pyfragment.pdf)
 
