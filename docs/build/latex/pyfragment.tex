@@ -7,8 +7,9 @@
 
 \usepackage[utf8]{inputenc}
 \ifdefined\DeclareUnicodeCharacter
+ \ifdefined\DeclareUnicodeCharacterAsOptional\else
   \DeclareUnicodeCharacter{00A0}{\nobreakspace}
-\fi
+\fi\fi
 \usepackage{cmap}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amstext}
@@ -28,7 +29,6 @@
 \usepackage{hypcap}% it must be loaded after hyperref.
 % Set up styles of URL: it should be placed after hyperref.
 \urlstyle{same}
-\addto\captionsenglish{\renewcommand{\contentsname}{Table of Contents}}
 
 \addto\captionsenglish{\renewcommand{\figurename}{Fig.}}
 \addto\captionsenglish{\renewcommand{\tablename}{Table}}
@@ -41,7 +41,7 @@
 
 
 \title{pyfragment Documentation}
-\date{Feb 28, 2017}
+\date{Apr 25, 2017}
 \release{0.1}
 \author{Misha Salim}
 \newcommand{\sphinxlogo}{}
@@ -55,116 +55,1790 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
+\sphinxhref{https://www.github.com/masalim2/pyfrag}{PyFragment} is a collection of Python
+modules that facilitate the \sphinxstylestrong{setup}, \sphinxstylestrong{parallel execution}, and \sphinxstylestrong{analysis}
+of \sphinxstyleemphasis{embedded-fragment} calculations on molecular clusters, liquids, and solids.
+It currently interfaces with the quantum chemistry software packages \sphinxhref{http://www.psicode.org}{Psi4} and \sphinxhref{http://www.nwchem-sw.org}{NWChem}.
 
-\chapter{Background}
-\label{\detokenize{background::doc}}\label{\detokenize{background:pyfragment-documentation}}\label{\detokenize{background:background}}
-PyFragment is a collection of Python modules that facilitate the setup and
-parallel execution of \sphinxstyleemphasis{embedded-fragment} calculations on molecular clusters,
-liquids, and solids.
+The binary interaction method (\sphinxstylestrong{BIM}) module performs a variety of
+calculations:
+\begin{itemize}
+\item {} 
+Total energy (or unit cell energy) evaluation at HF, MP2, or beyond
+
+\item {} 
+Molecular clusters or systems with 1- to 3-dimensional periodic boundary conditions
+
+\item {} 
+Nuclear gradients and stress tensor, even for nonorthogonal lattice vectors
+
+\item {} 
+Nuclear hessian and vibrational analysis tools
+
+\item {} 
+Parallel execution using MPI (through the mpi4py bindings)
+
+\end{itemize}
+
+The experimental valence bond charge-transfer (\sphinxstylestrong{VBCT}) module is part of a new
+method development effort. The intent is to extend molecular fragment
+calculations to systems with significant charge-resonance, where integer
+electron counts cannot be assigned to individual fragments.
+
+Modules can be invoked from the command line with a freeform input file.  They may also be imported to user-written Python programs to
+create new functionality or automate tedious tasks. Several such \sphinxstylestrong{driver} scripts
+are already included, which use the BIM and VBCT modules to:
+\begin{itemize}
+\item {} 
+Integrate a \sphinxstylestrong{molecular dynamics} trajectory, with optional Nose-Hoover or Berendsen
+thermostats/barostats
+
+\item {} 
+Perform a \sphinxstylestrong{PES scan} along a user-defined coordinate
+
+\item {} 
+\sphinxstylestrong{Optimize} crystal structure with the BFGS algorithm
+
+\end{itemize}
+
+Pyfragment also includes a suite of \sphinxstylestrong{tools} to process the output of the above
+calculations and facilitate data analysis:
+\begin{itemize}
+\item {} 
+Phonon dispersion/density of states calculations from solid Hessian data
+
+\item {} 
+Molecular dynamics trajectory analysis tool
+
+\end{itemize}
 
 
-\section{Theory}
-\label{\detokenize{background:theory}}
-The \sphinxstyleemphasis{embedded-fragment} methods are rooted in the many body expansion (MBE),
-which expresses the total energy of a molecular system as (under
-construction...)
-\begin{equation*}
-\begin{split}E = \sum_{i} E_{i}\end{split}
-\end{equation*}
+\chapter{User guide}
+\label{\detokenize{index:user-guide}}\label{\detokenize{index:pyfragment-documentation}}
 
-\section{Implementation}
-\label{\detokenize{background:implementation}}
-Under construction...
+\section{Setup Instructions}
+\label{\detokenize{setup:setup-instructions}}\label{\detokenize{setup::doc}}
+
+\subsection{Prerequisites}
+\label{\detokenize{setup:prerequisites}}
+PyFragment requires Python version 2.7. It uses the modules \sphinxhref{http://www.numpy.org}{numpy}, \sphinxhref{http://www.scipy.org}{scipy}, \sphinxhref{http://www.h5py.org}{h5py}, and \sphinxhref{http://www.mpi4py.scipy.org}{MPI4Py}. These must
+be readily importable, i.e.:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{numpy}
+\PYG{k+kn}{import} \PYG{n+nn}{scipy}
+\PYG{k+kn}{import} \PYG{n+nn}{mpi4py}
+\PYG{k+kn}{import} \PYG{n+nn}{h5py}
+\PYG{k+kn}{import} \PYG{n+nn}{argparse}
+\end{sphinxVerbatim}
+
+should execute without any errors in your Python interpreter.
+
+The \sphinxcode{PYTHONPATH} environment variable must include the path to the top level
+pyfrag directory. This is necessary for the subpackages to find each other.
+
+PyFragment requires at least one quantum chemistry backend to perform the
+fragment calculations. Currently supported packages are \sphinxhref{http://www.psicode.org}{Psi4} and \sphinxhref{http://www.nwchem-sw.org}{NWChem}. The
+executables  \sphinxcode{psi4} and \sphinxcode{nwchem.x} must therefore be in the system
+\sphinxcode{PATH}. The \sphinxcode{backend} subpackage can easily be extended for
+PyFragment to interface with other quantum chemistry backends.
 
 
-\subsection{Codes}
-\label{\detokenize{background:codes}}
-Under construction
+\subsection{Gellmann setup tips}
+\label{\detokenize{setup:gellmann-setup-tips}}
+To replace the default system Python 2.6 with Python 2.7, the \sphinxstylestrong{opt-python}
+module must be loaded.
+A convenient way to set up the requisite Python environment is with virtualenv
+and the pip package manager. Virtualenv allows users to manage a Python
+installation and install packages in a loadable environment stored in the home directory.
+This does not require administrator priveleges and the environment can easily be loaded/unloaded
+as necessary.  In a subdirectory of your home directory, perhaps
+called my-env: run the following commands
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{module} \PYG{n}{load} \PYG{n}{opt}\PYG{o}{\PYGZhy{}}\PYG{n}{python} \PYG{c+c1}{\PYGZsh{} replace default Python 2.6 with 2.7}
+\PYG{n}{wget} \PYG{n}{https}\PYG{p}{:}\PYG{o}{/}\PYG{o}{/}\PYG{n}{pypi}\PYG{o}{.}\PYG{n}{python}\PYG{o}{.}\PYG{n}{org}\PYG{o}{/}\PYG{n}{packages}\PYG{o}{/}\PYG{n}{source}\PYG{o}{/}\PYG{n}{p}\PYG{o}{/}\PYG{n}{pip}\PYG{o}{/}\PYG{n}{pip}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.1}\PYG{o}{.}\PYG{n}{tar}\PYG{o}{.}\PYG{n}{gz} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{n}{no}\PYG{o}{\PYGZhy{}}\PYG{n}{check}\PYG{o}{\PYGZhy{}}\PYG{n}{certificate} \PYG{c+c1}{\PYGZsh{} download PIP}
+\PYG{n}{virtualenv} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{n}{system}\PYG{o}{\PYGZhy{}}\PYG{n}{site}\PYG{o}{\PYGZhy{}}\PYG{n}{packages} \PYG{n}{your\PYGZus{}environment\PYGZus{}name} \PYG{c+c1}{\PYGZsh{} setup a new environment with PIP}
+\PYG{n}{source} \PYG{n}{your\PYGZus{}environment\PYGZus{}name}\PYG{o}{/}\PYG{n+nb}{bin}\PYG{o}{/}\PYG{n}{activate} \PYG{c+c1}{\PYGZsh{} load the environment}
+\end{sphinxVerbatim}
+
+Notice that the terminal now indicates your virtual environment is loaded. You
+are now able to install packages to this environment using \sphinxstylestrong{pip}. Invoke
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{pip} \PYG{n}{install} \PYG{n}{mpi4py}
+\PYG{n}{pip} \PYG{n}{install} \PYG{n}{scipy}
+\end{sphinxVerbatim}
+
+In future interactive sessions or any job submissions that require Python 2.7,
+mpi4py, or scipy, be sure that \sphinxstylestrong{opt-python} is loaded and
+the \sphinxstylestrong{source} line is invoked.
 
 
-\chapter{The \sphinxstylestrong{globals} Module}
-\label{\detokenize{globals::doc}}\label{\detokenize{globals:the-globals-module}}
-\sphinxstylestrong{globals} contains essential shared data and functionality for \sphinxstyleemphasis{all} types of fragment calculations.
+\subsection{Blue Waters setup tips}
+\label{\detokenize{setup:blue-waters-setup-tips}}
+Blue Waters comes equipped with high-performance builds of the necessary
+python \sphinxhref{https://bluewaters.ncsa.illinois.edu/python}{modules}.  Your job submission scripts can set up the environment with the two lines
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{module} \PYG{n}{load} \PYG{n}{bwpy}
+\PYG{n}{module} \PYG{n}{load} \PYG{n}{bwpy}\PYG{o}{\PYGZhy{}}\PYG{n}{mpi}
+\end{sphinxVerbatim}
 
 
-\section{globals.geom}
-\label{\detokenize{globals:globals-geom}}
-Defines the fundamental Atom class to conveniently load and print geometry
-information.  Contains functions for loading geometry and performing
-\sphinxstyleemphasis{fragmentation}, that is, assigning which atoms belong to which fragments.
-\phantomsection\label{\detokenize{globals:module-globals.geom}}\index{globals.geom (module)}\index{Atom (class in globals.geom)}
+\subsubsection{Installing Psi4 on Blue Waters}
+\label{\detokenize{setup:installing-psi4-on-blue-waters}}
+Checkout the Psi4 repository and prepare the environment for setup:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{git} \PYG{n}{clone} \PYG{n}{https}\PYG{p}{:}\PYG{o}{/}\PYG{o}{/}\PYG{n}{github}\PYG{o}{.}\PYG{n}{com}\PYG{o}{/}\PYG{n}{psi4}\PYG{o}{/}\PYG{n}{psi4}\PYG{o}{.}\PYG{n}{git}
+\PYG{n}{module} \PYG{n}{load} \PYG{n}{bwpy}
+\PYG{n}{export} \PYG{n}{CRAYPE\PYGZus{}LINK\PYGZus{}TYPE}\PYG{o}{=}\PYG{n}{dynamic}
+\PYG{n}{export} \PYG{n}{CRAY\PYGZus{}ADD\PYGZus{}RPATH}\PYG{o}{=}\PYG{n}{yes}
+\PYG{n}{mkdir} \PYG{o}{\PYGZti{}}\PYG{o}{/}\PYG{n}{libsci}
+\end{sphinxVerbatim}
+
+Now, query the currently (default) loaded Cray LibSci module to find the
+directory containg the LibSci libaries.  Make symlinks in \textasciitilde{}/libsci
+to all the necessary versions, naming the links corresponding to libsci.*
+as liblapack.*. This is necessary for CMake to recognize the math libraries.
+Finally, export the MATH\_ROOT environment variable:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{export} \PYG{n}{MATH\PYGZus{}ROOT}\PYG{o}{=}\PYG{o}{\PYGZti{}}\PYG{o}{/}\PYG{n}{libsci}
+\end{sphinxVerbatim}
+
+You will need a newer version of cmake than is provided on Blue Waters. A
+convenient way to quickly get the binary is with Miniconda (conda install
+cmake). This binary will work fine for the build process.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{cd} \PYG{n}{psi4}
+\PYG{n}{cmake} \PYG{o}{\PYGZhy{}}\PYG{n}{H}\PYG{o}{.} \PYG{o}{\PYGZhy{}}\PYG{n}{Bobjdir}
+\PYG{n}{cd} \PYG{n}{objdir}
+\PYG{n}{nohup} \PYG{n}{make} \PYG{o}{\PYGZgt{}}\PYG{o}{\PYGZam{}} \PYG{n}{make}\PYG{o}{.}\PYG{n}{log} \PYG{o}{\PYGZam{}}
+\end{sphinxVerbatim}
+
+The compilation is rather lengthy; using nohup will allow you to launch the
+build and then log off without interrupting the process.
+
+
+\subsection{Running PyFragment}
+\label{\detokenize{setup:running-pyfragment}}
+The directory containing PyFragment should be included in the \sphinxcode{PYTHONPATH}
+environment variable.
+
+To run as an executable on 16 cores, invoke
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{mpirun} \PYG{o}{\PYGZhy{}}\PYG{n}{n} \PYG{l+m+mi}{16} \PYG{n}{python} \PYG{o}{/}\PYG{n}{directory}\PYG{o}{/}\PYG{n}{to}\PYG{o}{/}\PYG{n}{pyfrag} \PYG{o}{\PYGZlt{}}\PYG{n+nb}{input}\PYG{o}{\PYGZhy{}}\PYG{n}{file}\PYG{o}{\PYGZgt{}}
+\end{sphinxVerbatim}
+
+from the command line. This causes Python to run the \_\_main\_\_.py module
+located in the pyfrag directory. Alternatively, the program can be invoked
+using
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{mpirun} \PYG{o}{\PYGZhy{}}\PYG{n}{n} \PYG{l+m+mi}{16} \PYG{n}{python} \PYG{o}{\PYGZhy{}}\PYG{n}{m} \PYG{n}{pyfrag} \PYG{o}{\PYGZlt{}}\PYG{n+nb}{input}\PYG{o}{\PYGZhy{}}\PYG{n}{file}\PYG{o}{\PYGZgt{}}
+\end{sphinxVerbatim}
+
+
+\section{Quick Start Guide}
+\label{\detokenize{quickstart:quick-start-guide}}\label{\detokenize{quickstart::doc}}
+Follow the setup instructions and start a Python shell.  Try the
+command
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag} \PYG{k}{import} \PYG{n}{bim}
+\end{sphinxVerbatim}
+
+If any errors occur, it is likely that a prerequisite Python package is missing
+or the directory containing \sphinxcode{pyfrag} is missing from the
+\sphinxcode{PYTHONPATH} environment variable.  Be sure that \sphinxcode{nwchem.x} and
+\sphinxcode{psi4} are callable from the shell.
+
+
+\subsection{A minimal input file}
+\label{\detokenize{quickstart:a-minimal-input-file}}
+The following is an input file to run a BIM calculation of the water
+trimer Hartree-Fock/sto-3g energy:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{geometry} \PYG{p}{\PYGZob{}}
+ \PYG{n}{O}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.167787}    \PYG{l+m+mf}{1.645761}    \PYG{l+m+mf}{0.108747}
+ \PYG{n}{H}    \PYG{l+m+mf}{0.613411}    \PYG{l+m+mf}{1.10262}    \PYG{l+m+mf}{0.113724}
+ \PYG{n}{H}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.093821}    \PYG{l+m+mf}{2.20972}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.643619}
+ \PYG{n}{O}    \PYG{l+m+mf}{1.517569}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.667424}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.080674}
+ \PYG{n}{H}    \PYG{l+m+mf}{1.989645}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.098799}    \PYG{l+m+mf}{0.612047}
+ \PYG{n}{H}    \PYG{l+m+mf}{0.668397}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.091798}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.139744}
+ \PYG{n}{O}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.350388}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.964879}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.092208}
+ \PYG{n}{H}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.908991}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.211298}    \PYG{l+m+mf}{0.626207}
+ \PYG{n}{H}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1.263787}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.018107}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.055536}
+\PYG{p}{\PYGZcb{}}
+\PYG{n}{correlation} \PYG{o}{=} \PYG{k+kc}{False}
+\PYG{n}{basis} \PYG{o}{=} \PYG{n}{sto}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{3}\PYG{n}{g}
+\PYG{n}{task} \PYG{o}{=} \PYG{n}{bim\PYGZus{}e}
+\end{sphinxVerbatim}
+
+Save the file to \sphinxcode{minimal.inp} and invoke:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{mpirun} \PYG{o}{\PYGZhy{}}\PYG{n}{n} \PYG{l+m+mi}{3} \PYG{n}{python} \PYG{o}{\PYGZhy{}}\PYG{n}{m} \PYG{n}{pyfrag} \PYG{n}{minimal}\PYG{o}{.}\PYG{n}{inp} \PYG{o}{\PYGZhy{}}\PYG{n}{v}
+\end{sphinxVerbatim}
+
+If all is working correctly, your output should end with the lines
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{Computing} \PYG{n}{Fragment} \PYG{n}{sums}
+\PYG{n}{Task} \PYG{n}{bim\PYGZus{}e} \PYG{n}{done} \PYG{o+ow}{in} \PYG{l+m+mi}{00}\PYG{n}{m}\PYG{p}{:}\PYG{l+m+mi}{07}\PYG{n}{s}
+
+  \PYG{n}{E}\PYG{p}{(}\PYG{n}{monomer}\PYG{p}{)}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{224.91589306}
+    \PYG{n}{E}\PYG{p}{(}\PYG{n}{dimer}\PYG{p}{)}       \PYG{l+m+mf}{0.01182801}
+  \PYG{n}{E}\PYG{p}{(}\PYG{n}{coulomb}\PYG{p}{)}       \PYG{l+m+mf}{0.00000000}
+\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}
+    \PYG{n}{E}\PYG{p}{(}\PYG{n}{total}\PYG{p}{)}    \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{224.90406505}
+  \PYG{n}{E}\PYG{p}{(}\PYG{n}{total}\PYG{p}{)}\PYG{o}{/}\PYG{n}{N}     \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{74.96802168}
+\end{sphinxVerbatim}
+
+
+\subsection{Setting up a molecular dynamics run}
+\label{\detokenize{quickstart:setting-up-a-molecular-dynamics-run}}
+The following input file is more involved and overrides various defaults in the
+code. It loads a liquid water geometry from an external .xyz file and requests a
+new NPT molecular dynamics trajectory.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{scrdir} \PYG{o}{=} \PYG{o}{/}\PYG{n}{scratch}
+\PYG{n}{backend} \PYG{o}{=} \PYG{n}{psi4}                
+\PYG{n}{mem\PYGZus{}mb} \PYG{o}{=} \PYG{l+m+mi}{3800}                 
+
+\PYG{n}{basis} \PYG{o}{=} \PYG{n}{aug}\PYG{o}{\PYGZhy{}}\PYG{n}{cc}\PYG{o}{\PYGZhy{}}\PYG{n}{pvdz}            
+\PYG{n}{correlation} \PYG{o}{=} \PYG{n}{MP2}              
+\PYG{n}{embedding} \PYG{o}{=} \PYG{k+kc}{True}                
+\PYG{n}{r\PYGZus{}qm} \PYG{o}{=} \PYG{l+m+mf}{8.0} \PYG{c+c1}{\PYGZsh{} cutoff in angstroms}
+\PYG{n}{r\PYGZus{}bq} \PYG{o}{=} \PYG{l+m+mf}{10.0}
+\PYG{n}{r\PYGZus{}lr} \PYG{o}{=} \PYG{l+m+mf}{200.0}
+
+\PYG{n}{task} \PYG{o}{=} \PYG{n}{bim\PYGZus{}md} 
+             
+\PYG{n}{geometry} \PYG{o}{=} \PYG{n}{wat\PYGZus{}init}\PYG{o}{.}\PYG{n}{xyz} \PYG{c+c1}{\PYGZsh{} pbc specified in file as \PYGZdq{}a b c alpha beta gamma 0\PYGZdq{}}
+\PYG{n}{fragmentation} \PYG{o}{=} \PYG{n}{auto}
+
+
+\PYG{c+c1}{\PYGZsh{} md\PYGZus{}restart\PYGZus{}file = md\PYGZus{}example.hdf5}
+\PYG{n}{pressure\PYGZus{}bar} \PYG{o}{=} \PYG{l+m+mi}{0}
+\PYG{n}{num\PYGZus{}steps} \PYG{o}{=} \PYG{l+m+mi}{8000}
+\PYG{n}{save\PYGZus{}intval} \PYG{o}{=} \PYG{l+m+mi}{2}
+\PYG{n}{dt\PYGZus{}fs} \PYG{o}{=} \PYG{l+m+mf}{0.5}
+\PYG{n}{temperature} \PYG{o}{=} \PYG{l+m+mi}{250} \PYG{c+c1}{\PYGZsh{} kelvin}
+\PYG{n}{T\PYGZus{}bath} \PYG{o}{=} \PYG{n}{nose}\PYG{o}{\PYGZhy{}}\PYG{n}{hoover}
+\PYG{n}{P\PYGZus{}bath} \PYG{o}{=} \PYG{n}{berendsen}
+\PYG{n}{nose\PYGZus{}tau\PYGZus{}fs} \PYG{o}{=} \PYG{l+m+mf}{30.0} \PYG{c+c1}{\PYGZsh{} time constant for computing fictitious masses}
+\end{sphinxVerbatim}
+
+All of the trajectory information will be logged to \sphinxcode{md\_example.hdf5}
+which is a convenient storage format for later trajectory analyses with Python.
+It also serves as the restart file, which may be requested by the
+\sphinxcode{md\_restart\_file} parameter in a later job to resume MD integration from
+the last time step.
+
+
+\section{Input to PyFragment}
+\label{\detokenize{inputfile:input-to-pyfragment}}\label{\detokenize{inputfile::doc}}
+
+\subsection{Modular usage}
+\label{\detokenize{inputfile:modular-usage}}
+The modules of PyFragment can be imported into other Python programs or
+interactive sessions. Then, the relevant calculation input can be set
+programatically by interfacing with the \sphinxstylestrong{Globals} modules. The following
+code snippet shows an example of the syntax:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag}\PYG{n+nn}{.}\PYG{n+nn}{Globals} \PYG{k}{import} \PYG{n}{params}\PYG{p}{,} \PYG{n}{geom}
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag}\PYG{n+nn}{.}\PYG{n+nn}{bim} \PYG{k}{import} \PYG{n}{bim}
+\PYG{c+c1}{\PYGZsh{} ... other code here ...}
+\PYG{n}{params}\PYG{o}{.}\PYG{n}{options}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{basis}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{cc\PYGZhy{}pvtz}\PYG{l+s+s1}{\PYGZsq{}}
+\PYG{n}{params}\PYG{o}{.}\PYG{n}{options}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{fragmentation}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{auto}\PYG{l+s+s1}{\PYGZsq{}}
+\PYG{n}{params}\PYG{o}{.}\PYG{n}{options}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{r\PYGZus{}qm}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+m+mf}{10.3}
+\PYG{n}{params}\PYG{o}{.}\PYG{n}{options}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{task}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bim\PYGZus{}grad}\PYG{l+s+s1}{\PYGZsq{}}
+\PYG{n}{geomtxt} \PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}\PYG{l+s+s1}{He 0 0 0}
+\PYG{l+s+s1}{             He 1 0 0}
+\PYG{l+s+s1}{             He 2 0 0}\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}\PYGZsq{}}
+\PYG{n}{geom}\PYG{o}{.}\PYG{n}{load\PYGZus{}geometry}\PYG{p}{(}\PYG{n}{geomtxt}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} build the geometry object}
+\PYG{n}{geom}\PYG{o}{.}\PYG{n}{perform\PYGZus{}fragmentation}\PYG{p}{(}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} auto\PYGZhy{}fragment}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{bim}\PYG{o}{.}\PYG{n}{kernel}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{grad} \PYG{o}{=} \PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{gradient}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}
+\PYG{c+c1}{\PYGZsh{} ... more code here ...}
+\end{sphinxVerbatim}
+
+All imports from PyFragment should be in the form of
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag}\PYG{n+nn}{.}\PYG{n+nn}{Globals} \PYG{k}{import} \PYG{n}{logger}\PYG{p}{,} \PYG{n}{params}
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag}\PYG{n+nn}{.}\PYG{n+nn}{backend} \PYG{k}{import} \PYG{n}{nw}
+\end{sphinxVerbatim}
+
+\begin{sphinxadmonition}{warning}{Warning:}
+\sphinxstylestrong{NEVER} import shared data directly from modules, as in:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from} \PYG{n+nn}{pyfrag}\PYG{n+nn}{.}\PYG{n+nn}{Globals}\PYG{n+nn}{.}\PYG{n+nn}{params} \PYG{k}{import} \PYG{n}{options}
+\end{sphinxVerbatim}
+
+This will produce local objects that do not change in the scope of other
+modules when updated. This will result in very difficult bugs to track. By
+importing the modules themselves and referencing their attributes,
+data is correctly shared between the program modules.
+\end{sphinxadmonition}
+
+
+\subsection{Standalone execution}
+\label{\detokenize{inputfile:standalone-execution}}
+If PyFragment is invoked from the command line, input must come in
+the form of an input file argument. The input format is somewhat flexible:
+\begin{itemize}
+\item {} 
+case-insensitive
+
+\item {} 
+ignores whitespace
+
+\item {} 
+ignores comments starting with `\#' character
+
+\end{itemize}
+
+The parser recognizes two types of entries in the input file.
+\begin{enumerate}
+\item {} 
+\sphinxstylestrong{One line} entries use an = (equals sign)
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{geometry} \PYG{o}{=} \PYG{n}{geom1}\PYG{o}{.}\PYG{n}{xyz}
+\end{sphinxVerbatim}
+
+\item {} 
+\sphinxstylestrong{Multi-line} entries are enclosed in curly braces
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{geometry} \PYG{p}{\PYGZob{}}
+\PYG{l+m+mf}{2.0} \PYG{l+m+mf}{0.0} \PYG{l+m+mf}{0.0} \PYG{l+m+mf}{90.0} \PYG{l+m+mf}{90.0} \PYG{l+m+mf}{0.0} \PYG{l+m+mi}{0}
+\PYG{n}{H} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0}
+\PYG{n}{F} \PYG{l+m+mi}{1} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0}
+\PYG{p}{\PYGZcb{}}
+\end{sphinxVerbatim}
+
+\end{enumerate}
+
+
+\subsubsection{Input File Structure}
+\label{\detokenize{inputfile:input-file-structure}}
+Here is a sample input file with comments explaining the meaning of the
+parameters. The order of input does not matter and parameters irrelvant to the
+calculation can be omitted.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} To run this program, use:}
+\PYG{c+c1}{\PYGZsh{} mpirun \PYGZhy{}n \PYGZlt{}nproc\PYGZgt{} python pyfrag \PYGZlt{}inputfilename\PYGZgt{} \PYGZlt{}\PYGZhy{}v\PYGZgt{}}
+\PYG{c+c1}{\PYGZsh{}}
+\PYG{c+c1}{\PYGZsh{} This is a sample input file}
+\PYG{c+c1}{\PYGZsh{} comments begin with \PYGZsq{}\PYGZsh{}\PYGZsq{} character}
+\PYG{c+c1}{\PYGZsh{} one\PYGZhy{}line entries are parsed as:}
+\PYG{c+c1}{\PYGZsh{}     \PYGZlt{}keyword\PYGZgt{} = \PYGZlt{}value\PYGZgt{}}
+\PYG{c+c1}{\PYGZsh{} multi\PYGZhy{}line entries are enclosed in braces and parsed as lists:}
+\PYG{c+c1}{\PYGZsh{}     \PYGZlt{}keyword\PYGZgt{} = \PYGZlt{}list of newline\PYGZhy{}separated values\PYGZgt{}}
+ 
+\PYG{c+c1}{\PYGZsh{} MAIN PARAMETERS}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{scrdir} \PYG{o}{=} \PYG{o}{/}\PYG{n}{home}\PYG{o}{/}\PYG{n}{misha}\PYG{o}{/}\PYG{n}{scratch}    \PYG{c+c1}{\PYGZsh{} optional scratch directory (default /tmp)}
+\PYG{n}{backend} \PYG{o}{=} \PYG{n}{pyscf}                 \PYG{c+c1}{\PYGZsh{} Quantum chemistry backend: NW or psi4}
+\PYG{n}{mem\PYGZus{}mb} \PYG{o}{=} \PYG{l+m+mi}{3800}                   \PYG{c+c1}{\PYGZsh{} memory\PYGZhy{}per\PYGZhy{}process for QC backend}
+
+\PYG{n}{basis} \PYG{o}{=} \PYG{n}{aug}\PYG{o}{\PYGZhy{}}\PYG{n}{cc}\PYG{o}{\PYGZhy{}}\PYG{n}{pvdz}               
+\PYG{n}{hftype} \PYG{o}{=} \PYG{n}{rohf}                     \PYG{c+c1}{\PYGZsh{} uhf or rohf}
+\PYG{n}{correlation} \PYG{o}{=} \PYG{n}{off}                 \PYG{c+c1}{\PYGZsh{} can omit this line or specify off/no/false for HF theory}
+\PYG{n}{embedding} \PYG{o}{=} \PYG{k+kc}{True}                  \PYG{c+c1}{\PYGZsh{} Use embedding field}
+\PYG{n}{r\PYGZus{}qm} \PYG{o}{=} \PYG{l+m+mf}{8.0} \PYG{c+c1}{\PYGZsh{} cutoff in angstroms}
+\PYG{n}{r\PYGZus{}bq} \PYG{o}{=} \PYG{l+m+mf}{8.0}
+\PYG{n}{r\PYGZus{}lr} \PYG{o}{=} \PYG{l+m+mf}{200.0}
+
+\PYG{n}{task} \PYG{o}{=} \PYG{n}{bim\PYGZus{}e} \PYG{c+c1}{\PYGZsh{} bim\PYGZus{}e bim\PYGZus{}grad bim\PYGZus{}hess }
+             \PYG{c+c1}{\PYGZsh{} vbct\PYGZus{}e}
+             \PYG{c+c1}{\PYGZsh{} bim\PYGZus{}opt}
+             \PYG{c+c1}{\PYGZsh{} bim\PYGZus{}md}
+
+\PYG{c+c1}{\PYGZsh{} GEOMETRY / ANGSTROMS}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{c+c1}{\PYGZsh{} list of atoms with formal charges (repeated + or \PYGZhy{})}
+\PYG{c+c1}{\PYGZsh{} fragment charges will be sum of formal charges}
+\PYG{c+c1}{\PYGZsh{} example for (H2O)(H3O+) cluster:}
+\PYG{n}{geometry} \PYG{p}{\PYGZob{}}                        
+\PYG{n}{O} \PYG{l+m+mi}{4} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0}
+\PYG{n}{H} \PYG{l+m+mi}{4} \PYG{l+m+mi}{1} \PYG{l+m+mi}{0}
+\PYG{n}{H} \PYG{l+m+mi}{4} \PYG{l+m+mi}{0} \PYG{l+m+mi}{1}
+\PYG{n}{O} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0}
+\PYG{n}{H}\PYG{o}{+} \PYG{l+m+mi}{1} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0}
+\PYG{n}{H} \PYG{l+m+mi}{0} \PYG{l+m+mi}{1} \PYG{l+m+mi}{0}
+\PYG{n}{H} \PYG{l+m+mi}{0} \PYG{l+m+mi}{0} \PYG{l+m+mi}{1}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{\PYGZsh{} if PBC, include a line containing \PYGZdq{}a b c alpha beta gamma axis0\PYGZdq{}}
+\PYG{c+c1}{\PYGZsh{} if not periodic in b or c dimension, set lattice constant to 0.0}
+\PYG{c+c1}{\PYGZsh{} example for linear, 1D\PYGZhy{}periodic HF chain:}
+\PYG{c+c1}{\PYGZsh{}geometry \PYGZob{}   }
+\PYG{c+c1}{\PYGZsh{}2.0 0.0 0.0 90.0 90.0 0.0 0}
+\PYG{c+c1}{\PYGZsh{}H 0 0 0}
+\PYG{c+c1}{\PYGZsh{}F 1 0 0}
+\PYG{c+c1}{\PYGZsh{}\PYGZcb{}}
+\PYG{c+c1}{\PYGZsh{} geometry = geom1.xyz  \PYGZsh{} or .xyz file path (lattice constants on line 2)}
+
+\PYG{c+c1}{\PYGZsh{} FRAGMENTATION (3 options)}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{fragmentation} \PYG{o}{=} \PYG{n}{auto}         \PYG{c+c1}{\PYGZsh{} use bond cutoffs in Globals.geom}
+\PYG{c+c1}{\PYGZsh{}fragmentation = full\PYGZus{}system \PYGZsh{} no fragmentation (reference calculation)}
+\PYG{c+c1}{\PYGZsh{}fragmentation \PYGZob{}             \PYGZsh{} newline\PYGZhy{}separated atom indices}
+\PYG{c+c1}{\PYGZsh{}0 2 3 4                         }
+\PYG{c+c1}{\PYGZsh{}1}
+\PYG{c+c1}{\PYGZsh{}5 6 7 8 9 10}
+\PYG{c+c1}{\PYGZsh{}11}
+\PYG{c+c1}{\PYGZsh{}\PYGZcb{}}
+
+\PYG{c+c1}{\PYGZsh{} VBCT\PYGZhy{}SPECIFIC OPTIONS}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{vbct\PYGZus{}scheme} \PYG{o}{=} \PYG{n}{chglocal} \PYG{c+c1}{\PYGZsh{}chglocal or mono\PYGZus{}ip}
+
+\PYG{c+c1}{\PYGZsh{} OPTIMIZER options}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{atom\PYGZus{}gmax} \PYG{o}{=} \PYG{l+m+mf}{0.0015} \PYG{c+c1}{\PYGZsh{} max nuclear gradient tolerance}
+\PYG{n}{lat\PYGZus{}gmax} \PYG{o}{=} \PYG{l+m+mf}{0.0003} \PYG{c+c1}{\PYGZsh{} max lattice gradient }
+\PYG{n}{opt\PYGZus{}maxiter} \PYG{o}{=} \PYG{l+m+mi}{50}
+
+\PYG{c+c1}{\PYGZsh{} MD\PYGZhy{}only options}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{pressure} \PYG{o}{=} \PYG{l+m+mi}{5000} \PYG{c+c1}{\PYGZsh{} bar}
+\PYG{n}{temperature} \PYG{o}{=} \PYG{l+m+mi}{300} \PYG{c+c1}{\PYGZsh{} temperature}
+\PYG{n}{num\PYGZus{}steps} \PYG{o}{=} \PYG{l+m+mi}{500}
+\PYG{n}{md\PYGZus{}restart\PYGZus{}file} \PYG{o}{=} \PYG{n}{restart}\PYG{o}{.}\PYG{n}{hdf5}
+\PYG{n}{save\PYGZus{}intval} \PYG{o}{=} \PYG{l+m+mi}{2}
+\PYG{n}{dt\PYGZus{}fs} \PYG{o}{=} \PYG{l+m+mf}{1.0} \PYG{c+c1}{\PYGZsh{} femtosecond}
+\PYG{n}{T\PYGZus{}bath} \PYG{o}{=} \PYG{n}{nose}   \PYG{c+c1}{\PYGZsh{} None, Nose\PYGZhy{}Hoover, or Berendsen}
+\PYG{n}{P\PYGZus{}bath} \PYG{o}{=} \PYG{n}{berend} \PYG{c+c1}{\PYGZsh{} None or Berendsen}
+
+\PYG{c+c1}{\PYGZsh{} HESSIAN: force constant matrices}
+\PYG{c+c1}{\PYGZsh{} \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{n}{interaction\PYGZus{}cells} \PYG{o}{=} \PYG{l+m+mi}{2} \PYG{l+m+mi}{2} \PYG{l+m+mi}{2}
+\end{sphinxVerbatim}
+
+
+\chapter{Subpackage documentation}
+\label{\detokenize{index:subpackage-documentation}}
+
+\section{The \sphinxstyleliteralintitle{bim} module: BIM energies, gradients, and hessians}
+\label{\detokenize{bim:the-bim-module-bim-energies-gradients-and-hessians}}\label{\detokenize{bim::doc}}
+
+\subsection{\sphinxstyleliteralintitle{bim}: main BIM routine}
+\label{\detokenize{bim:module-bim.bim}}\label{\detokenize{bim:bim-main-bim-routine}}\index{bim.bim (module)}
+Binary Interaction Method -- module for embedded-fragment calculations on
+weakly-interacting molecular clusters (energy, gradient, hessian)
+\index{create\_bim\_fragment() (in module bim.bim)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{globals:globals.geom.Atom}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{globals.geom.}\sphinxbfcode{Atom}}{\emph{atomstr}, \emph{units='angstrom'}}{}
+\phantomsection\label{\detokenize{bim:bim.bim.create_bim_fragment}}\pysiglinewithargsret{\sphinxcode{bim.bim.}\sphinxbfcode{create\_bim\_fragment}}{\emph{specifier}, \emph{espcharges}}{}
+Create and dispatch a backend fragment calculation.
+\begin{description}
+\item[{Args:}] \leavevmode\begin{description}
+\item[{specifier: tuple specifying the monomer and cell indices for the}] \leavevmode
+requested calculation.
+
+\end{description}
+
+espcharges: embedding field charges
+
+\item[{Returns:}] \leavevmode
+results: results dict from fragment calculation
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{get\_task() (in module bim.bim)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.bim.get_task}}\pysiglinewithargsret{\sphinxcode{bim.bim.}\sphinxbfcode{get\_task}}{}{}
+map from params.options{[}'task'{]} --\textgreater{} bim summation type
+\begin{description}
+\item[{Returns:}] \leavevmode
+task: one of `energy', `gradient', `hessian'
+
+sum\_fxn: the corresponding BIM summation function
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{kernel() (in module bim.bim)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.bim.kernel}}\pysiglinewithargsret{\sphinxcode{bim.bim.}\sphinxbfcode{kernel}}{\emph{comm=None}}{}
+Get fragments, do monomer SCF, and dispatch list of fragment calcs.
+
+Controlled by setting values in params.options and geom.geometry
+\begin{description}
+\item[{Args:}] \leavevmode
+comm (optional): pass a subcommunicator (generated with comm.split)
+for nested parallelism
+
+\item[{Returns:}] \leavevmode
+results: dictionary of fragment sums
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{monomerscf}: self-consistent fragment ESP charges}
+\label{\detokenize{bim:monomerscf-self-consistent-fragment-esp-charges}}\label{\detokenize{bim:module-bim.monomerscf}}\index{bim.monomerscf (module)}\index{monomerSCF() (in module bim.monomerscf)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.monomerscf.monomerSCF}}\pysiglinewithargsret{\sphinxcode{bim.monomerscf.}\sphinxbfcode{monomerSCF}}{\emph{comm=None}}{}
+Cycle embedded monomer calculations until ESP charges converge.
+
+BIM version: include all monomers, take charges from input geometry,
+bq\_lists from Globals.neighbor, and embedding option from input file. PBC is
+implicitly handled No need to do anything if embedding option is off.
+\begin{description}
+\item[{Args:}] \leavevmode\begin{description}
+\item[{comm: specify a sub-communicator for parallel execution.}] \leavevmode
+Default None: use the top-level communicator in Globals.MPI
+
+\end{description}
+
+\item[{Returns:}] \leavevmode
+espcharges: a list of esp-fit atom-centered charges
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{sums}: summation of fragment energies}
+\label{\detokenize{bim:module-bim.sums}}\label{\detokenize{bim:sums-summation-of-fragment-energies}}\index{bim.sums (module)}
+BIM summation functions to compute full-system properties.
+\begin{description}
+\item[{Each sum function takes the same arguments:}] \leavevmode
+specifiers: a list of specifier tuples (as defined in bim.kernel)
+\begin{description}
+\item[{calcs: a dict (with keys matching specifiers.keys()) of dicts containing the}] \leavevmode
+results from each fragment calculation.
+
+\end{description}
+
+\end{description}
+
+and each returns a dictionary of calculation results.
+\index{energy\_sum() (in module bim.sums)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.sums.energy_sum}}\pysiglinewithargsret{\sphinxcode{bim.sums.}\sphinxbfcode{energy\_sum}}{\emph{specifiers}, \emph{calcs}}{}
+Determine total energy
+
+\end{fulllineitems}
+
+\index{gradient\_sum() (in module bim.sums)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.sums.gradient_sum}}\pysiglinewithargsret{\sphinxcode{bim.sums.}\sphinxbfcode{gradient\_sum}}{\emph{specifiers}, \emph{calcs}}{}
+compute gradient of total energy
+
+\end{fulllineitems}
+
+\index{hessian\_sum() (in module bim.sums)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{bim:bim.sums.hessian_sum}}\pysiglinewithargsret{\sphinxcode{bim.sums.}\sphinxbfcode{hessian\_sum}}{\emph{specifiers}, \emph{calcs}}{}
+compute interaction force constants (hessian)
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{drivers} modules: Molecular dynamics, optimization, and beyond}
+\label{\detokenize{drivers:the-drivers-modules-molecular-dynamics-optimization-and-beyond}}\label{\detokenize{drivers::doc}}
+
+\subsection{\sphinxstyleliteralintitle{bim\_md}: Molecular Dynamics}
+\label{\detokenize{drivers:bim-md-molecular-dynamics}}\label{\detokenize{drivers:module-drivers.bim_md}}\index{drivers.bim\_md (module)}
+Molecular dynamics (NVE, NVT, NPT) integration with BIM Forces
+\index{Integrator (class in drivers.bim\_md)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{drivers.bim\_md.}\sphinxbfcode{Integrator}}{\emph{forcefield}}{}
+Contains data and methods for trajectory initialization,
+Velocity Verlet integration (with Nose-Hoover thermostat, Berendensen
+thermostat, and Berendsen barostat), and HDF5 I/O for trajectory storage
+\index{apply\_berend\_baro() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.apply_berend_baro}}\pysiglinewithargsret{\sphinxbfcode{apply\_berend\_baro}}{}{}
+Apply Berendsen cell scaling for pressure control.
+berend\_tau must be \textgreater{} 10 fs, as explained for thermostat.
+
+\end{fulllineitems}
+
+\index{apply\_berend\_thermo() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.apply_berend_thermo}}\pysiglinewithargsret{\sphinxbfcode{apply\_berend\_thermo}}{}{}
+Apply Berendsen velocity scaling for temperature control.
+berend\_tau should be at least 10 fs (fast equilibration)
+at tau\textgreater{}100 fs, the fluctuations should be consistent with NVT
+
+\end{fulllineitems}
+
+\index{apply\_nose\_chain() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.apply_nose_chain}}\pysiglinewithargsret{\sphinxbfcode{apply\_nose\_chain}}{}{}
+Half-update NH degrees of freedom together with
+system velocity.
+
+\end{fulllineitems}
+
+\index{clean\_up() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.clean_up}}\pysiglinewithargsret{\sphinxbfcode{clean\_up}}{\emph{istep}}{}
+trim and flush hdf5 trajectory data
+
+\end{fulllineitems}
+
+\index{create\_trajectory\_file() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.create_trajectory_file}}\pysiglinewithargsret{\sphinxbfcode{create\_trajectory\_file}}{}{}
+Create new trajectory in hdf5 file; set handles to data
+
+\end{fulllineitems}
+
+\index{detect\_and\_fix\_pbc\_crossings() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.detect_and_fix_pbc_crossings}}\pysiglinewithargsret{\sphinxbfcode{detect\_and\_fix\_pbc\_crossings}}{}{}
+translate fragments with COM outside unit cell inside
+
+\end{fulllineitems}
+
+\index{get\_MD\_options() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.get_MD_options}}\pysiglinewithargsret{\sphinxbfcode{get\_MD\_options}}{}{}
+Set relevant parameters from input file
+
+\end{fulllineitems}
+
+\index{init\_velocity() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.init_velocity}}\pysiglinewithargsret{\sphinxbfcode{init\_velocity}}{}{}
+Set initial vel according to Maxwell-Boltzmann
+
+\end{fulllineitems}
+
+\index{integrate() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.integrate}}\pysiglinewithargsret{\sphinxbfcode{integrate}}{}{}
+Velocity Verlet with thermo/barostatting
+
+\end{fulllineitems}
+
+\index{kinetic\_com\_tensor() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.kinetic_com_tensor}}\pysiglinewithargsret{\sphinxbfcode{kinetic\_com\_tensor}}{}{}
+Compute kinetic energy tensor based on fragment
+centers of mass; needed for stress tensor calculation
+
+\end{fulllineitems}
+
+\index{nose\_init() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.nose_init}}\pysiglinewithargsret{\sphinxbfcode{nose\_init}}{}{}
+Initialize NH coordinates \& masses.
+
+\end{fulllineitems}
+
+\index{restart\_trajectory\_file() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.restart_trajectory_file}}\pysiglinewithargsret{\sphinxbfcode{restart\_trajectory\_file}}{}{}
+Load trajectory from hdf5 file and append
+
+\end{fulllineitems}
+
+\index{summary\_log() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.summary_log}}\pysiglinewithargsret{\sphinxbfcode{summary\_log}}{\emph{istep}, \emph{wall\_seconds}}{}
+Print MD summary statistics to stdout
+
+\end{fulllineitems}
+
+\index{update\_kinetic\_and\_temperature() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.update_kinetic_and_temperature}}\pysiglinewithargsret{\sphinxbfcode{update\_kinetic\_and\_temperature}}{}{}
+Update kinetic energy \& temperature
+
+\end{fulllineitems}
+
+\index{write\_trajectory() (drivers.bim\_md.Integrator method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.Integrator.write_trajectory}}\pysiglinewithargsret{\sphinxbfcode{write\_trajectory}}{\emph{istep}}{}
+Write to hdf5 trajectory file
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{bim\_force() (in module drivers.bim\_md)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.bim_force}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_md.}\sphinxbfcode{bim\_force}}{}{}
+BIM gradients
+
+\end{fulllineitems}
+
+\index{hooke\_force() (in module drivers.bim\_md)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.hooke_force}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_md.}\sphinxbfcode{hooke\_force}}{\emph{k=0.2}, \emph{r\_eq=2.0}}{}
+toy potential: harmonic oscillator
+
+\end{fulllineitems}
+
+\index{kernel() (in module drivers.bim\_md)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_md.kernel}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_md.}\sphinxbfcode{kernel}}{}{}
+MD Main
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{bim\_opt}: Geometry Optimization}
+\label{\detokenize{drivers:bim-opt-geometry-optimization}}\label{\detokenize{drivers:module-drivers.bim_opt}}\index{drivers.bim\_opt (module)}
+Geometry optimization (fixed unit cell)
+\index{from\_flat() (in module drivers.bim\_opt)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_opt.from_flat}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_opt.}\sphinxbfcode{from\_flat}}{\emph{x}}{}
+reconstruct geom from flat ndarray
+
+\end{fulllineitems}
+
+\index{gopt\_callback() (in module drivers.bim\_opt)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_opt.gopt_callback}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_opt.}\sphinxbfcode{gopt\_callback}}{\emph{xk}}{}
+Report geometry by appending to gopt.xyz
+
+\end{fulllineitems}
+
+\index{kernel() (in module drivers.bim\_opt)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_opt.kernel}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_opt.}\sphinxbfcode{kernel}}{}{}
+Invoke scipy optimizer
+
+\end{fulllineitems}
+
+\index{objective\_gopt() (in module drivers.bim\_opt)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_opt.objective_gopt}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_opt.}\sphinxbfcode{objective\_gopt}}{\emph{x}}{}
+energy opt wrt geometry (using E and gradient)
+
+This objective function packs/unpacks the geometry from
+a 1D ndarray, updates geom.geometry, and invokes bim.kernel
+to update the energy/gradient.
+
+\end{fulllineitems}
+
+\index{to\_flat() (in module drivers.bim\_opt)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{drivers:drivers.bim_opt.to_flat}}\pysiglinewithargsret{\sphinxcode{drivers.bim\_opt.}\sphinxbfcode{to\_flat}}{}{}
+return 1D ndarray input for objective fxn
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{tools} modules: post-processing and analysis}
+\label{\detokenize{tools:the-tools-modules-post-processing-and-analysis}}\label{\detokenize{tools::doc}}
+
+\subsection{\sphinxstyleliteralintitle{phonon}: Vibrational Analysis}
+\label{\detokenize{tools:phonon-vibrational-analysis}}\label{\detokenize{tools:module-tools.phonon}}\index{tools.phonon (module)}
+Tool for computing phonon dispersion and vibrational normal modes, given a
+BIM Hessian
+\index{make\_brillouin\_zone3D() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.make_brillouin_zone3D}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{make\_brillouin\_zone3D}}{\emph{kmesh\_density=None}}{}
+Brute-force generate uniform grid inside 1st Brillouin zone.
+
+Brute force but clean approach. Truncates a uniform rectangular grid;
+therefore, nonorthogonal cells may require a high density of points to
+sample adequately near the zone boundaries.
+
+\end{fulllineitems}
+
+\index{mass\_weight() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.mass_weight}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{mass\_weight}}{\emph{hess}}{}
+Return mass-weighted hessian
+
+\end{fulllineitems}
+
+\index{parseargs() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.parseargs}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{parseargs}}{}{}
+Parse command line arguments using argparse
+
+\end{fulllineitems}
+
+\index{phonon() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.phonon}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{phonon}}{\emph{hess\_mw}, \emph{kmesh}, \emph{smooth\_mat=None}}{}
+Compute phonon dispersion and normal modes on a given k-mesh
+
+\end{fulllineitems}
+
+\index{phonon\_freqs() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.phonon_freqs}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{phonon\_freqs}}{\emph{hess\_mw}, \emph{kmesh}, \emph{smooth\_mat=None}}{}
+Compute phonon dispersion without returning normal mode eigenvectors
+
+\end{fulllineitems}
+
+\index{read\_force\_consts\_np() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.read_force_consts_np}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{read\_force\_consts\_np}}{\emph{fname}}{}
+Read force constants from numpy binary file
+
+\end{fulllineitems}
+
+\index{read\_force\_consts\_txt() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.read_force_consts_txt}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{read\_force\_consts\_txt}}{\emph{fname}}{}
+Read force constants from text file
+
+\end{fulllineitems}
+
+\index{smoothing\_matrix() (in module tools.phonon)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{tools:tools.phonon.smoothing_matrix}}\pysiglinewithargsret{\sphinxcode{tools.phonon.}\sphinxbfcode{smoothing\_matrix}}{\emph{hess\_mw}}{}
+Generate matrix for projecting out translational normal modes
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{vbct} module: charge resonance in cluster cations}
+\label{\detokenize{vbct::doc}}\label{\detokenize{vbct:the-vbct-module-charge-resonance-in-cluster-cations}}
+
+\subsection{\sphinxstyleliteralintitle{energy}: VBCT energy calculation}
+\label{\detokenize{vbct:module-vbct.energy}}\label{\detokenize{vbct:energy-vbct-energy-calculation}}\index{vbct.energy (module)}
+Compute GS doublet energy and charge distribution in VBCT scheme
+\begin{enumerate}
+\item {} 
+No PBC or truncation of summations: only cluster ions are calculated
+
+\item {} 
+only charge +1 is supported: single hole hopping between fragments
+
+\end{enumerate}
+\index{build\_secular\_equations() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.build_secular_equations}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{build\_secular\_equations}}{\emph{diag\_results}, \emph{offdiag\_results}}{}
+Build Hamiltonian and overlap matrix
+
+\end{fulllineitems}
+
+\index{calc\_chg\_distro() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.calc_chg_distro}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{calc\_chg\_distro}}{\emph{prob0}, \emph{diag\_results}}{}
+Generate linear combination of esp charge distros
+\begin{description}
+\item[{Args}] \leavevmode
+prob0: ground state probability distribution
+diag\_results: diagonal element calculation results list,
+\begin{quote}
+
+contains esp\_charges for each charge-local state
+\end{quote}
+
+\item[{Returs}] \leavevmode
+charge\_distro: approximate charge distribution computed as linear
+combination of VBCT basis charge distros
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{calc\_diagonal() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.calc_diagonal}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{calc\_diagonal}}{\emph{idx}, \emph{comm=None}}{}
+Dispatch diagonal element calculation
+\begin{description}
+\item[{Args}] \leavevmode
+idx: integer index ranging from 0-len(geom.fragments). Which
+diagonal element to calculate
+comm: MPI communicator or subcommunicator
+
+\item[{Returns}] \leavevmode
+res: dict, results from diagonal element calculation.
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{fraglabel() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.fraglabel}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{fraglabel}}{\emph{frag}, \emph{chg}}{}
+Generate chemical formula string for a fragment
+
+\end{fulllineitems}
+
+\index{kernel() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.kernel}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{kernel}}{}{}
+SP energy: form and diagonalize VBCT matrix
+
+\end{fulllineitems}
+
+\index{print\_vbct\_init() (in module vbct.energy)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.energy.print_vbct_init}}\pysiglinewithargsret{\sphinxcode{vbct.energy.}\sphinxbfcode{print\_vbct\_init}}{\emph{states}}{}
+Print header for calculation
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{vbct\_calc}: algorithms for effective Hamiltonian generation}
+\label{\detokenize{vbct:module-vbct.vbct_calc}}\label{\detokenize{vbct:vbct-calc-algorithms-for-effective-hamiltonian-generation}}\index{vbct.vbct\_calc (module)}\index{coupl\_chglocal() (in module vbct.vbct\_calc)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.vbct_calc.coupl_chglocal}}\pysiglinewithargsret{\sphinxcode{vbct.vbct\_calc.}\sphinxbfcode{coupl\_chglocal}}{\emph{A}, \emph{B}}{}
+Charge-local dimer method for coupling
+
+Only works with NW backend and singly ionized molecular cluster cations.
+\begin{description}
+\item[{Args}] \leavevmode
+A, B: indices for off-diagonal H element calculation
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{diag\_chglocal() (in module vbct.vbct\_calc)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.vbct_calc.diag_chglocal}}\pysiglinewithargsret{\sphinxcode{vbct.vbct\_calc.}\sphinxbfcode{diag\_chglocal}}{\emph{charges}, \emph{espfield}, \emph{movecs}, \emph{comm=None}}{}
+Charge-local dimer method for diagonal element calculation.
+
+Only works with NW backend and singly ionized molecular cluster cations.
+\begin{description}
+\item[{Args}] \leavevmode
+charges: list of net charges on each fragment
+espfield: list of esp-fit atomic charges for entire system
+movecs: list of MO coeff files for each fragment
+comm: MPI communicator or subcommunicator
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{make\_embed\_list() (in module vbct.vbct\_calc)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.vbct_calc.make_embed_list}}\pysiglinewithargsret{\sphinxcode{vbct.vbct\_calc.}\sphinxbfcode{make\_embed\_list}}{\emph{qm\_fragment}, \emph{all\_monomers}}{}
+Generate embedding field
+\begin{description}
+\item[{Args}] \leavevmode
+qm\_fragment: index of monomer or dimer (no PBC)
+
+\item[{Returns}] \leavevmode
+bq\_list: list of fragments in bq field of qm\_fragment
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{monomerscf}: self-consistent VBCT state ESP charges}
+\label{\detokenize{vbct:module-vbct.monomerscf}}\label{\detokenize{vbct:monomerscf-self-consistent-vbct-state-esp-charges}}\index{vbct.monomerscf (module)}\index{fullsys\_best\_guess() (in module vbct.monomerscf)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.monomerscf.fullsys_best_guess}}\pysiglinewithargsret{\sphinxcode{vbct.monomerscf.}\sphinxbfcode{fullsys\_best\_guess}}{\emph{comm=None}}{}
+Get conventional E of full system by finding best initial guess.
+
+Iterates over fragments to produce Nfrag charge-local initial guesses.
+Takes best UHF energy from each of the corresponding initial densities, then
+does correlated calculation.
+
+\end{fulllineitems}
+
+\index{monomerSCF() (in module vbct.monomerscf)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{vbct:vbct.monomerscf.monomerSCF}}\pysiglinewithargsret{\sphinxcode{vbct.monomerscf.}\sphinxbfcode{monomerSCF}}{\emph{monomers}, \emph{net\_charges}, \emph{embedding=None}, \emph{comm=None}}{}
+Cycle embedded monomer calculations until the ESP charges converge.
+
+VBCT version: specify N monomers and their net charges
+explicitly.  No support for cutoffs/periodicity: every monomer is
+embedded in the field of all other N-1 monomers. Able to override default
+embedding option. Monomer MO vectors are saved; thus one cycle runs even
+if embedding option is turned off.
+\begin{description}
+\item[{Args}] \leavevmode
+monomers: a list of monomer indices
+net\_charges: net charge of each monomer
+embedding: Override True/False specified in input.
+\begin{quote}
+
+Default None: use the value specified in input.
+\end{quote}
+\begin{description}
+\item[{comm: specify a sub-communicator for parallel execution.}] \leavevmode
+If string `serial' is specified, bypass MPI communication.
+Default None: use the top-level communicator in Globals.MPI
+
+\end{description}
+
+\item[{Returns}] \leavevmode
+espcharges: a list of esp-fit atom-centered charges
+movecs: a list of MO vectors for each monomer
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{backend} modules: interface to quantum chemistry software}
+\label{\detokenize{backend:the-backend-modules-interface-to-quantum-chemistry-software}}\label{\detokenize{backend::doc}}
+
+\subsection{\sphinxstyleliteralintitle{backend}: Generic QC functionality}
+\label{\detokenize{backend:backend-generic-qc-functionality}}\label{\detokenize{backend:module-backend.backend}}\index{backend.backend (module)}
+Wrapper functions for quantum chemistry backends
+\index{build\_atoms() (in module backend.backend)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.backend.build_atoms}}\pysiglinewithargsret{\sphinxcode{backend.backend.}\sphinxbfcode{build\_atoms}}{\emph{frags}, \emph{bq\_list}, \emph{bq\_charges}}{}
+Make the input geometry/embedding for a QM calculation.
+\begin{description}
+\item[{Args}] \leavevmode
+frags: a list of 4-tuples (i,a,b,c) where i is the fragment index,
+abc indicate the lattice cell.
+bq\_list: a list of (4-tuples) indicating the molecules to be placed in
+the embedding field.
+bq\_charges: a list of point charges for each atom in the geometry.
+
+\item[{Returns}] \leavevmode
+atoms: a list of Atoms for easy printing to the QM \sphinxquotedblleft{}geometry\sphinxquotedblright{} input.
+bq\_field: a list of numpy arrays(length-4) in format (x,y,z,q)
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{run() (in module backend.backend)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.backend.run}}\pysiglinewithargsret{\sphinxcode{backend.backend.}\sphinxbfcode{run}}{\emph{calc}, \emph{frags}, \emph{charge}, \emph{bq\_list}, \emph{bq\_charges}, \emph{noscf=False}, \emph{guess=None}, \emph{save=False}}{}
+QM backend dispatcher: invoke a calculation.
+
+Currently, for ESP calculation the NWChem package is always dispatched
+for its higher performance.  Otherwise, the backend is determined by the
+params backend option.
+\begin{description}
+\item[{Args}] \leavevmode
+calc: one of esp, energy, energy\_hf, gradient, hessian
+frags: list of 4-tuples (i,a,b,c) (See build\_atoms documentation)
+charge: the net charge of the fragments in QM calculation
+bq\_list: the embedding fragments, list of 4-tuples
+bq\_charges: the embedding charges for each atom in the geometry
+noscf (default False): if True, only build Fock matrix from initial
+\begin{quote}
+
+guess and diagonalize once.
+\end{quote}
+\begin{description}
+\item[{guess (default None): if supplied, provide prior MO for initial}] \leavevmode
+density.
+
+\item[{save (default False): if True, return a handle to the MO resulting}] \leavevmode
+from calculation.  For NW \& Gaussian, this is a file path \& MO file
+will be copied to a shared directory.  For Psi4 and PySCF, the MO
+vectors are directly returned as a 2D numpy array.
+
+\end{description}
+
+\item[{Returns}] \leavevmode
+results: a dictionary packaging all of the results together. The
+contents of `dictionary' depend on the type of calculation invoked and
+other arguments.
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{nw}: NWChem wrapper}
+\label{\detokenize{backend:module-backend.nw}}\label{\detokenize{backend:nw-nwchem-wrapper}}\index{backend.nw (module)}
+NWChem Backend
+\index{calculate() (in module backend.nw)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.nw.calculate}}\pysiglinewithargsret{\sphinxcode{backend.nw.}\sphinxbfcode{calculate}}{\emph{inp}, \emph{calc}, \emph{save}}{}
+Run nwchem on input, return raw output
+\begin{description}
+\item[{Args}] \leavevmode
+inp: NWChem input object (input file path)
+calc: calculation type
+save: save calculation results
+
+\item[{Returns}] \leavevmode
+output\_lines: nwchem stdout lines
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{inp() (in module backend.nw)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.nw.inp}}\pysiglinewithargsret{\sphinxcode{backend.nw.}\sphinxbfcode{inp}}{\emph{calc}, \emph{atoms}, \emph{bqs}, \emph{charge}, \emph{noscf=False}, \emph{guess=None}, \emph{save=False}}{}
+Write NWchem input file to temp file. Return filename.
+
+\end{fulllineitems}
+
+\index{invecs() (in module backend.nw)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.nw.invecs}}\pysiglinewithargsret{\sphinxcode{backend.nw.}\sphinxbfcode{invecs}}{\emph{guess}}{}
+Create initial guess string for NWchem scf input
+\begin{description}
+\item[{Args}] \leavevmode
+guess: string or list of strings for fragment guess
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{parse() (in module backend.nw)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.nw.parse}}\pysiglinewithargsret{\sphinxcode{backend.nw.}\sphinxbfcode{parse}}{\emph{data}, \emph{calc}, \emph{inp}, \emph{atoms}, \emph{bqs}, \emph{save}}{}
+Parse raw NWchem output.
+
+\end{fulllineitems}
+
+
+
+\subsection{\sphinxstyleliteralintitle{psi4}: Psi4 wrapper}
+\label{\detokenize{backend:module-backend.psi4}}\label{\detokenize{backend:psi4-psi4-wrapper}}\index{backend.psi4 (module)}
+Backend for Psi4 -- using subprocess and file input/output
+\index{calculate() (in module backend.psi4)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.psi4.calculate}}\pysiglinewithargsret{\sphinxcode{backend.psi4.}\sphinxbfcode{calculate}}{\emph{inp}, \emph{calc}, \emph{save}}{}
+run psi4 on input, return text output lines from psi4
+
+\end{fulllineitems}
+
+\index{inp() (in module backend.psi4)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.psi4.inp}}\pysiglinewithargsret{\sphinxcode{backend.psi4.}\sphinxbfcode{inp}}{\emph{calc}, \emph{atoms}, \emph{bqs}, \emph{charge}, \emph{noscf=False}, \emph{guess=None}, \emph{save=False}}{}
+Generate psi4 input file
+
+\end{fulllineitems}
+
+\index{parse() (in module backend.psi4)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{backend:backend.psi4.parse}}\pysiglinewithargsret{\sphinxcode{backend.psi4.}\sphinxbfcode{parse}}{\emph{data}, \emph{calc}, \emph{inp}, \emph{atoms}, \emph{bqs}, \emph{save}}{}
+Parse psi4 output text, return results dict
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{test} modules: unit testing with Python}
+\label{\detokenize{test:the-test-modules-unit-testing-with-python}}\label{\detokenize{test::doc}}
+
+\subsection{\sphinxstyleliteralintitle{test}: serial test cases}
+\label{\detokenize{test:test-serial-test-cases}}\label{\detokenize{test:module-test.test}}\index{test.test (module)}
+Unit Tests using Python unittest framework
+
+Run all tests from command line using:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{python} \PYG{o}{\PYGZhy{}}\PYG{n}{m} \PYG{n}{unittest} \PYG{n}{pyfrag}\PYG{o}{/}\PYG{n}{test}
+\end{sphinxVerbatim}
+
+Run one test from command line by specifying a specific test case:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{python} \PYG{o}{\PYGZhy{}}\PYG{n}{m} \PYG{n}{unittest} \PYG{n}{pyfrag}\PYG{o}{/}\PYG{n}{test}\PYG{o}{.}\PYG{n}{TestTrimerRHF}
+\end{sphinxVerbatim}
+
+Add new test cases by creating new classes that extend unittest.TestCase:
+\index{TestTrimerMP2 (class in test.test)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{test:test.test.TestTrimerMP2}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{test.test.}\sphinxbfcode{TestTrimerMP2}}{\emph{methodName='runTest'}}{}
+Test MP2 gradients on water trimer with both NW/Psi4 backends
+
+\end{fulllineitems}
+
+\index{TestTrimerRHF (class in test.test)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{test:test.test.TestTrimerRHF}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{test.test.}\sphinxbfcode{TestTrimerRHF}}{\emph{methodName='runTest'}}{}
+Test RHF energy and gradient on water trimer
+
+\end{fulllineitems}
+
+
+
+\section{The \sphinxstyleliteralintitle{Globals} Modules}
+\label{\detokenize{globals::doc}}\label{\detokenize{globals:the-globals-modules}}
+The \sphinxstylestrong{Globals} modules contains data and functionality
+shared between all types of fragment calculations.
+
+
+\subsection{geom}
+\label{\detokenize{globals:module-Globals.geom}}\label{\detokenize{globals:geom}}\index{Globals.geom (module)}
+This module contains the shared \sphinxcode{geometry} and \sphinxcode{fragments} lists.
+
+It defines the Atom class and supporting data structures to load and print
+geometry information. It also contains the logic for performing \sphinxstyleemphasis{fragmentation},
+that is, assigning which atoms belong to which fragments. The \sphinxcode{geometry}
+and \sphinxcode{fragments} lists are shared across all modules.
+\index{Atom (class in Globals.geom)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.geom.Atom}}\pysiglinewithargsret{\sphinxstrong{class }\sphinxcode{Globals.geom.}\sphinxbfcode{Atom}}{\emph{atomstr}, \emph{units='angstrom'}}{}
 Convenience class for loading and storing geometry data
 
 \end{fulllineitems}
 
-\index{load\_geometry() (in module globals.geom)}
+\index{com() (in module Globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{globals:globals.geom.load_geometry}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{load\_geometry}}{\emph{data}, \emph{units='angstrom'}}{}
-Builds geometry from input text, lists, or filename.
-
-Tries to be flexible with the form of input `data' argument. 
-Uses regex to extract atomic coordinates from text.
+\phantomsection\label{\detokenize{globals:Globals.geom.com}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{com}}{\emph{frag}}{}
+Get center of mass of a fragment.
 \begin{description}
-\item[{Args:}] \leavevmode\begin{description}
-\item[{data: string, list of strings, list of lists, or filename}] \leavevmode
-containing the xyz coordinate data
+\item[{Args}] \leavevmode
+frag: the list of atom indices
 
-\end{description}
-
-units (default Angstrom): ``bohr'' or ``angstrom''
-
-\item[{Returns:}] \leavevmode
-geometry: a list of Atom objects
+\item[{Returns}] \leavevmode
+com: numpy array pointing at COM
 
 \end{description}
 
 \end{fulllineitems}
 
-\index{makefrag\_auto() (in module globals.geom)}
+\index{load\_geometry() (in module Globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{globals:globals.geom.makefrag_auto}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{makefrag\_auto}}{\emph{geometry}}{}
+\phantomsection\label{\detokenize{globals:Globals.geom.load_geometry}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{load\_geometry}}{\emph{data}, \emph{units='angstrom'}}{}
+Loads geometry from input text, lists, or filename.
+
+Tries to be flexible with the form of input `data' argument.
+Uses regex to extract atomic coordinates from text.
+\begin{description}
+\item[{Args}] \leavevmode
+data: string, list of strings, list of lists, or filename containing the
+xyz coordinate data
+units (default Angstrom): \sphinxquotedblleft{}bohr\sphinxquotedblright{} or \sphinxquotedblleft{}angstrom\sphinxquotedblright{}
+
+\item[{Returns}] \leavevmode
+None: the geometry is saved as a module-level variable
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{nuclear\_repulsion\_energy() (in module Globals.geom)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.geom.nuclear_repulsion_energy}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{nuclear\_repulsion\_energy}}{}{}
+Return nuclear repulsion energy / a.u.
+
+\end{fulllineitems}
+
+\index{set\_frag\_auto() (in module Globals.geom)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.geom.set_frag_auto}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{set\_frag\_auto}}{}{}
 Auto-generate list of fragments based on bond-length frag\_cutoffs.
 
 Use this if you don't wish to manually assign atoms to fragments.
 \begin{description}
 \item[{Args:}] \leavevmode
-geometry: list of Atom objects
+None (module-level geometry is used)
 
 \item[{Returns:}] \leavevmode
-fragments: a list of fragment atomic indices
+None (module-level fragments list is set)
 
 \end{description}
 
 \end{fulllineitems}
 
-\index{makefrag\_full\_system() (in module globals.geom)}
+\index{set\_frag\_full\_system() (in module Globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{globals:globals.geom.makefrag_full_system}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{makefrag\_full\_system}}{\emph{geometry}}{}
+\phantomsection\label{\detokenize{globals:Globals.geom.set_frag_full_system}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{set\_frag\_full\_system}}{}{}
 No fragmentation: all atoms in system belong to one fragment.
 
 Use this to perform one big reference QM calculation
 \begin{description}
 \item[{Args:}] \leavevmode
-geometry: list of Atom objects
+None (module-level geometry is used)
 
 \item[{Returns:}] \leavevmode
-fragments: a list of fragment atomic indices
+None (module-level fragments list is set)
 
 \end{description}
 
 \end{fulllineitems}
 
-\index{nuclear\_repulsion\_energy() (in module globals.geom)}
+\index{set\_frag\_manual() (in module Globals.geom)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{globals:globals.geom.nuclear_repulsion_energy}}\pysiglinewithargsret{\sphinxcode{globals.geom.}\sphinxbfcode{nuclear\_repulsion\_energy}}{\emph{geometry}}{}
-Nuclear repulsion energy, hartrees
+\phantomsection\label{\detokenize{globals:Globals.geom.set_frag_manual}}\pysiglinewithargsret{\sphinxcode{Globals.geom.}\sphinxbfcode{set\_frag\_manual}}{}{}
+Read list of fragments from input file.
+
+Fragmentation is manually specified in the input file.
+\begin{description}
+\item[{Args:}] \leavevmode
+None (module-level geometry is used)
+
+\item[{Returns:}] \leavevmode
+None (module-level fragments list is set)
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsection{lattice}
+\label{\detokenize{globals:lattice}}\label{\detokenize{globals:module-Globals.lattice}}\index{Globals.lattice (module)}
+This module contains the globally-shared lat\_vecs which defines the Bravais
+lattice vectors of the system in a 3x3 ndarray. It comes with supporting
+functionality for 3D PBC calculations:
+\begin{itemize}
+\item {} 
+updating lattice vectors from lattice parameters (a,b,c,alpha,beta,gamma)
+
+\item {} 
+the inverse of lat\_vecs for transformation to fractional(scaled) coords
+
+\item {} 
+computing cell volume computing gradient wrt lattice parameters, using virial tensor and applied stress
+
+\item {} 
+rescaling cell by translating fragment centers of mass, while preserving fragment internal coordinates
+
+\end{itemize}
+\index{lat\_angle\_differential() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.lat_angle_differential}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{lat\_angle\_differential}}{}{}
+Compute partial derivatives of lat\_vecs wrt angle parameters.
+
+This is just a quick finite difference calculation.
+\begin{description}
+\item[{Args:}] \leavevmode
+None
+
+\item[{Returns:}] \leavevmode
+Three 3x3 numpy arrays. They contain the derivatives
+of the lattice vector components with respect to alpha,
+beta, and gamma, respectively. Units of each matrix element are
+Angstroms/degree.
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{lattice\_gradient() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.lattice_gradient}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{lattice\_gradient}}{\emph{virial}, \emph{p0\_bar}}{}
+Compute the energy gradient in lattice parameters (a.u. / bohr)
+\begin{description}
+\item[{Args:}] \leavevmode
+virial: 3x3 numpy array, from gradient calculation
+p0\_bar: external pressure in bar
+
+\item[{Returns:}] \leavevmode
+lat\_grad: 6-dimensional gradient vector in au/bohr, au/degrees
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{rescale() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.rescale}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{rescale}}{\emph{scaling}}{}
+Rescale the lattice vectors and shift fragment centers of mass to
+preserve scaled COM coordinates while maintaining internal fragment
+coordinates.
+\begin{description}
+\item[{Args:}] \leavevmode\begin{description}
+\item[{scaling: either a 3x3 lattice vector transformation matrix (ndarray)}] \leavevmode
+or a list of lattice parameters (a,b,c,alpha,beta,gamma,axis) in
+Angstrom.
+
+\end{description}
+
+\item[{Returns:}] \leavevmode
+None.
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{update\_lat\_params() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.update_lat_params}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{update\_lat\_params}}{}{}
+Update lattice parameters NamedTuple from \sphinxquotedblleft{}lat\_vecs\sphinxquotedblright{}
+
+The inverse of update\_lat\_vecs; recomputes the lattice parameters based on
+the current vectors. Lattice parameter units are angstrom/degree.
+
+\end{fulllineitems}
+
+\index{update\_lat\_vecs() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.update_lat_vecs}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{update\_lat\_vecs}}{}{}
+Update lattice vectors matrix (3x3, angstrom) from \sphinxquotedblleft{}lattice\sphinxquotedblright{}.
+
+Invoke this function whenever the lattice variable is changed to recompute
+the lattice vectors. No input arguments or return values.
+
+\end{fulllineitems}
+
+\index{volume() (in module Globals.lattice)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.lattice.volume}}\pysiglinewithargsret{\sphinxcode{Globals.lattice.}\sphinxbfcode{volume}}{}{}
+Return volume in Angstrom**3
+
+3D case: return the determinant of lat\_vecs matrix
+For 2D,1D,0D systems: return cell area, length, unity,
+respectively.
+
+\end{fulllineitems}
+
+
+
+\subsection{params}
+\label{\detokenize{globals:module-Globals.params}}\label{\detokenize{globals:params}}\index{Globals.params (module)}
+This module contains the globally-shared options dict and a method to
+generate it by parsing an input file. Other modules set module-level attributes
+like \sphinxquotedblleft{}quiet\sphinxquotedblright{} and \sphinxquotedblleft{}verbose\sphinxquotedblright{}.
+\index{convert\_params() (in module Globals.params)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.params.convert_params}}\pysiglinewithargsret{\sphinxcode{Globals.params.}\sphinxbfcode{convert\_params}}{}{}
+Sanitize parsed options.
+
+Make string--\textgreater{}(list, float, boolean) conversions, wherever possible
+
+\end{fulllineitems}
+
+\index{parse() (in module Globals.params)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.params.parse}}\pysiglinewithargsret{\sphinxcode{Globals.params.}\sphinxbfcode{parse}}{\emph{inFile}}{}
+Crude input file parser.
+
+Populates the \sphinxquotedblleft{}options\sphinxquotedblright{} dictionary from an input file.
+\begin{description}
+\item[{Args:}] \leavevmode
+inFile: input file handle for reading
+
+\item[{Returns:}] \leavevmode
+None
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{set\_defaults() (in module Globals.params)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.params.set_defaults}}\pysiglinewithargsret{\sphinxcode{Globals.params.}\sphinxbfcode{set\_defaults}}{}{}
+Set default parameters if not specified
+
+\end{fulllineitems}
+
+\index{tryFloat() (in module Globals.params)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.params.tryFloat}}\pysiglinewithargsret{\sphinxcode{Globals.params.}\sphinxbfcode{tryFloat}}{\emph{s}}{}
+Try to cast to float; no big deal
+
+\end{fulllineitems}
+
+
+
+\subsection{MPI}
+\label{\detokenize{globals:mpi}}\label{\detokenize{globals:module-Globals.MPI}}\index{Globals.MPI (module)}
+Wrap mpi4py, so that the code works as expected whether running in serial
+or parallel
+\index{allgather() (in module Globals.MPI)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.MPI.allgather}}\pysiglinewithargsret{\sphinxcode{Globals.MPI.}\sphinxbfcode{allgather}}{\emph{comm}, \emph{data}}{}
+default allgather fxn is dumb...
+data = MPI\_allgather(comm, mydata)
+
+\end{fulllineitems}
+
+\index{create\_split\_comms() (in module Globals.MPI)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.MPI.create_split_comms}}\pysiglinewithargsret{\sphinxcode{Globals.MPI.}\sphinxbfcode{create\_split\_comms}}{\emph{N}}{}
+Evenly divide nproc into N subcommunicators.
+
+Returns subcommunicator and color.
+
+\end{fulllineitems}
+
+\index{gather() (in module Globals.MPI)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.MPI.gather}}\pysiglinewithargsret{\sphinxcode{Globals.MPI.}\sphinxbfcode{gather}}{\emph{comm}, \emph{data}, \emph{master=0}}{}
+default gather fxn is dumb...
+data = MPI\_gather(comm, data, 0)
+
+\end{fulllineitems}
+
+\index{scatter() (in module Globals.MPI)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.MPI.scatter}}\pysiglinewithargsret{\sphinxcode{Globals.MPI.}\sphinxbfcode{scatter}}{\emph{comm}, \emph{data}, \emph{master=0}}{}
+default scatter fxn is dumb; can only handle one item per rank.  This
+will split a list evenly among the ranks by creating a list of lists.
+mydata = MPI\_scatter(comm, data, 0)
+
+\end{fulllineitems}
+
+
+
+\subsection{neighbor}
+\label{\detokenize{globals:module-Globals.neighbor}}\label{\detokenize{globals:neighbor}}\index{Globals.neighbor (module)}
+Generate pair lists for QM calculations and BQ embedding
+\index{BFS\_lattice\_traversal() (in module Globals.neighbor)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.neighbor.BFS_lattice_traversal}}\pysiglinewithargsret{\sphinxcode{Globals.neighbor.}\sphinxbfcode{BFS\_lattice\_traversal}}{\emph{pair\_accumulate\_fxn}, \emph{**args}}{}
+Generic floodfill algorithm to visit cells \& build neighbor lists.
+
+This function performs a Breadth-First Search (BFS) starting from the
+central unit cell (0,0,0) and moving outwards in all periodic dimensions.
+It requires an accumulation function as its first argument, which is used
+to count up all the relevant interactions between origin and a given cell
+(a,b,c). Once no more interactions are counted, the outward fill ends.
+\begin{description}
+\item[{Args}] \leavevmode\begin{description}
+\item[{pair\_accumulate\_fxn: function of the form f(cell, {\color{red}\bfseries{}**}args)}] \leavevmode
+which builds neighbor lists between the given cell and origin
+cell.  It must return the number of pairs within range.
+
+\end{description}
+
+{\color{red}\bfseries{}**}args: additional arguments to pair\_accumulate\_fxn
+
+\item[{Returns}] \leavevmode
+None
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{build\_lists() (in module Globals.neighbor)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.neighbor.build_lists}}\pysiglinewithargsret{\sphinxcode{Globals.neighbor.}\sphinxbfcode{build\_lists}}{}{}
+(re)compute neighbor lists via BFS floodfill search, based on cutoffs
+defined in params.options
+
+\end{fulllineitems}
+
+\index{pair\_dist() (in module Globals.neighbor)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.neighbor.pair_dist}}\pysiglinewithargsret{\sphinxcode{Globals.neighbor.}\sphinxbfcode{pair\_dist}}{\emph{pair\_tup}}{}
+Compute dimer separation given a pair tuple
+
+\end{fulllineitems}
+
+\index{pairlist\_accumulator() (in module Globals.neighbor)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.neighbor.pairlist_accumulator}}\pysiglinewithargsret{\sphinxcode{Globals.neighbor.}\sphinxbfcode{pairlist\_accumulator}}{\emph{cell}, \emph{com}}{}
+count up dimers within R\_QM and R\_BQ cutoffs
+
+This is called by a generic breadth-first search method which traverses all
+unit cells outward from cell 0 (3D flood-fill).
+
+\end{fulllineitems}
+
+
+
+\subsection{coulomb}
+\label{\detokenize{globals:module-Globals.coulomb}}\label{\detokenize{globals:coulomb}}\index{Globals.coulomb (module)}
+Evaluate classical point charge interactions between fragments
+\index{accumulate\_pair() (in module Globals.coulomb)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.coulomb.accumulate_pair}}\pysiglinewithargsret{\sphinxcode{Globals.coulomb.}\sphinxbfcode{accumulate\_pair}}{\emph{idx1}, \emph{idx2}, \emph{cell}, \emph{scale}, \emph{charges}}{}
+Coluomb E, grad, virial for a specific dimer.
+
+The coulomb interactions are accumulated into module-level variables
+energy\_coulomb, gradient\_coulomb, and virial\_coulomb.
+\begin{description}
+\item[{Args:}] \leavevmode
+idx1, idx2: indices of monomers
+cell: lattice vectors for molecule at idx2
+scale: scale factor for energy contribution
+charges: list of charges for the whole system
+
+\end{description}
+
+Returns None
+
+\end{fulllineitems}
+
+\index{coulomb\_accumulator() (in module Globals.coulomb)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.coulomb.coulomb_accumulator}}\pysiglinewithargsret{\sphinxcode{Globals.coulomb.}\sphinxbfcode{coulomb\_accumulator}}{\emph{cell}, \emph{charges}}{}
+Accumulate all the dimer interactions between cell 0 and a given cell.
+
+This is called by a generic breadth-first search method which traverses all
+unit cells outward from cell 0 (3D flood-fill).  The pair interactions are
+computed in parallel and must be accumulated later.
+\begin{description}
+\item[{Args:}] \leavevmode
+cell: a,b,c lattice indices of cell interacting with cell 0
+charges: list of esp charges on each fragment
+
+\item[{Returns:}] \leavevmode
+num\_pairs: the number of interactions counted with the given cell
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{evaluate\_coulomb() (in module Globals.coulomb)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.coulomb.evaluate_coulomb}}\pysiglinewithargsret{\sphinxcode{Globals.coulomb.}\sphinxbfcode{evaluate\_coulomb}}{\emph{espfield}}{}
+Evaluate all coulomb interactions via BFS over cells
+
+\end{fulllineitems}
+
+
+
+\subsection{logger}
+\label{\detokenize{globals:logger}}\label{\detokenize{globals:module-Globals.logger}}\index{Globals.logger (module)}
+Convenience functions for pretty printing/file IO
+
+
+\subsection{utility}
+\label{\detokenize{globals:utility}}\label{\detokenize{globals:module-Globals.utility}}\index{Globals.utility (module)}\index{make\_scratch\_dirs() (in module Globals.utility)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.utility.make_scratch_dirs}}\pysiglinewithargsret{\sphinxcode{Globals.utility.}\sphinxbfcode{make\_scratch\_dirs}}{\emph{top\_dir=None}}{}
+Establish current directory, scratch directories, and temporary shared
+directories
+
+\end{fulllineitems}
+
+\index{mw\_execute() (in module Globals.utility)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.utility.mw_execute}}\pysiglinewithargsret{\sphinxcode{Globals.utility.}\sphinxbfcode{mw\_execute}}{\emph{specifiers}, \emph{run\_calc}, \emph{comm=None}, \emph{*args}}{}
+Run a series of generic calculations in master-worker mode.
+\begin{description}
+\item[{Args:}] \leavevmode\begin{description}
+\item[{specifiers: a list of tuples which uniquely determine a}] \leavevmode
+fragment calculation.
+
+\item[{run\_calc: the function which accepts a specifier tuple,}] \leavevmode
+sets up a QM calculation, invokes the backend, and
+returns the relevant calculation results.
+
+\item[{comm: optional subcommunicator, default None: use Globals.MPI}] \leavevmode
+communicator
+
+\end{description}
+
+\item[{Returns:}] \leavevmode
+calcs: the dictionary of results indexed by specifiers
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{parse\_input() (in module Globals.utility)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.utility.parse_input}}\pysiglinewithargsret{\sphinxcode{Globals.utility.}\sphinxbfcode{parse\_input}}{\emph{input\_file}}{}
+Open input\_file, parse it, load geometry, and MPI-broadcast the data
+
+\end{fulllineitems}
+
+\index{pretty\_time() (in module Globals.utility)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{globals:Globals.utility.pretty_time}}\pysiglinewithargsret{\sphinxcode{Globals.utility.}\sphinxbfcode{pretty\_time}}{\emph{seconds}}{}
+Convert elapsed seconds to a nice string representation
 
 \end{fulllineitems}
 
@@ -187,8 +1861,36 @@ Nuclear repulsion energy, hartrees
 \renewcommand{\indexname}{Python Module Index}
 \begin{sphinxtheindex}
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+\bigletter{b}
+\item {\sphinxstyleindexentry{backend.backend}}\sphinxstyleindexpageref{backend:\detokenize{module-backend.backend}}
+\item {\sphinxstyleindexentry{backend.nw}}\sphinxstyleindexpageref{backend:\detokenize{module-backend.nw}}
+\item {\sphinxstyleindexentry{backend.psi4}}\sphinxstyleindexpageref{backend:\detokenize{module-backend.psi4}}
+\item {\sphinxstyleindexentry{bim.bim}}\sphinxstyleindexpageref{bim:\detokenize{module-bim.bim}}
+\item {\sphinxstyleindexentry{bim.monomerscf}}\sphinxstyleindexpageref{bim:\detokenize{module-bim.monomerscf}}
+\item {\sphinxstyleindexentry{bim.sums}}\sphinxstyleindexpageref{bim:\detokenize{module-bim.sums}}
+\indexspace
+\bigletter{d}
+\item {\sphinxstyleindexentry{drivers.bim\_md}}\sphinxstyleindexpageref{drivers:\detokenize{module-drivers.bim_md}}
+\item {\sphinxstyleindexentry{drivers.bim\_opt}}\sphinxstyleindexpageref{drivers:\detokenize{module-drivers.bim_opt}}
+\indexspace
 \bigletter{g}
-\item {\sphinxstyleindexentry{globals.geom}}\sphinxstyleindexpageref{globals:\detokenize{module-globals.geom}}
+\item {\sphinxstyleindexentry{Globals.coulomb}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.coulomb}}
+\item {\sphinxstyleindexentry{Globals.geom}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.geom}}
+\item {\sphinxstyleindexentry{Globals.lattice}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.lattice}}
+\item {\sphinxstyleindexentry{Globals.logger}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.logger}}
+\item {\sphinxstyleindexentry{Globals.MPI}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.MPI}}
+\item {\sphinxstyleindexentry{Globals.neighbor}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.neighbor}}
+\item {\sphinxstyleindexentry{Globals.params}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.params}}
+\item {\sphinxstyleindexentry{Globals.utility}}\sphinxstyleindexpageref{globals:\detokenize{module-Globals.utility}}
+\indexspace
+\bigletter{t}
+\item {\sphinxstyleindexentry{test.test}}\sphinxstyleindexpageref{test:\detokenize{module-test.test}}
+\item {\sphinxstyleindexentry{tools.phonon}}\sphinxstyleindexpageref{tools:\detokenize{module-tools.phonon}}
+\indexspace
+\bigletter{v}
+\item {\sphinxstyleindexentry{vbct.energy}}\sphinxstyleindexpageref{vbct:\detokenize{module-vbct.energy}}
+\item {\sphinxstyleindexentry{vbct.monomerscf}}\sphinxstyleindexpageref{vbct:\detokenize{module-vbct.monomerscf}}
+\item {\sphinxstyleindexentry{vbct.vbct\_calc}}\sphinxstyleindexpageref{vbct:\detokenize{module-vbct.vbct_calc}}
 \end{sphinxtheindex}
 
 \renewcommand{\indexname}{Index}

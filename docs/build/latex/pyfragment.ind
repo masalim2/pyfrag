@@ -2,23 +2,179 @@
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
   \bigletter A
-  \item Atom (class in globals.geom), \hyperpage{3}
+  \item accumulate\_pair() (in module Globals.coulomb), \hyperpage{20}
+  \item allgather() (in module Globals.MPI), \hyperpage{20}
+  \item apply\_berend\_baro() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item apply\_berend\_thermo() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item apply\_nose\_chain() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item Atom (class in Globals.geom), \hyperpage{17}
+
+  \indexspace
+  \bigletter B
+  \item backend.backend (module), \hyperpage{16}
+  \item backend.nw (module), \hyperpage{16}
+  \item backend.psi4 (module), \hyperpage{17}
+  \item BFS\_lattice\_traversal() (in module Globals.neighbor), \hyperpage{20}
+  \item bim.bim (module), \hyperpage{11}
+  \item bim.monomerscf (module), \hyperpage{11}
+  \item bim.sums (module), \hyperpage{12}
+  \item bim\_force() (in module drivers.bim\_md), \hyperpage{13}
+  \item build\_atoms() (in module backend.backend), \hyperpage{16}
+  \item build\_lists() (in module Globals.neighbor), \hyperpage{20}
+  \item build\_secular\_equations() (in module vbct.energy), \hyperpage{14}
+
+  \indexspace
+  \bigletter C
+  \item calc\_chg\_distro() (in module vbct.energy), \hyperpage{14}
+  \item calc\_diagonal() (in module vbct.energy), \hyperpage{14}
+  \item calculate() (in module backend.nw), \hyperpage{16}
+  \item calculate() (in module backend.psi4), \hyperpage{17}
+  \item clean\_up() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item com() (in module Globals.geom), \hyperpage{17}
+  \item convert\_params() (in module Globals.params), \hyperpage{19}
+  \item coulomb\_accumulator() (in module Globals.coulomb), \hyperpage{21}
+  \item coupl\_chglocal() (in module vbct.vbct\_calc), \hyperpage{15}
+  \item create\_bim\_fragment() (in module bim.bim), \hyperpage{11}
+  \item create\_split\_comms() (in module Globals.MPI), \hyperpage{20}
+  \item create\_trajectory\_file() (drivers.bim\_md.Integrator method), \hyperpage{12}
+
+  \indexspace
+  \bigletter D
+  \item detect\_and\_fix\_pbc\_crossings() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item diag\_chglocal() (in module vbct.vbct\_calc), \hyperpage{15}
+  \item drivers.bim\_md (module), \hyperpage{12}
+  \item drivers.bim\_opt (module), \hyperpage{13}
+
+  \indexspace
+  \bigletter E
+  \item energy\_sum() (in module bim.sums), \hyperpage{12}
+  \item evaluate\_coulomb() (in module Globals.coulomb), \hyperpage{21}
+
+  \indexspace
+  \bigletter F
+  \item fraglabel() (in module vbct.energy), \hyperpage{14}
+  \item from\_flat() (in module drivers.bim\_opt), \hyperpage{13}
+  \item fullsys\_best\_guess() (in module vbct.monomerscf), \hyperpage{15}
 
   \indexspace
   \bigletter G
-  \item globals.geom (module), \hyperpage{3}
+  \item gather() (in module Globals.MPI), \hyperpage{20}
+  \item get\_MD\_options() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item get\_task() (in module bim.bim), \hyperpage{11}
+  \item Globals.coulomb (module), \hyperpage{20}
+  \item Globals.geom (module), \hyperpage{17}
+  \item Globals.lattice (module), \hyperpage{18}
+  \item Globals.logger (module), \hyperpage{21}
+  \item Globals.MPI (module), \hyperpage{20}
+  \item Globals.neighbor (module), \hyperpage{20}
+  \item Globals.params (module), \hyperpage{19}
+  \item Globals.utility (module), \hyperpage{21}
+  \item gopt\_callback() (in module drivers.bim\_opt), \hyperpage{13}
+  \item gradient\_sum() (in module bim.sums), \hyperpage{12}
+
+  \indexspace
+  \bigletter H
+  \item hessian\_sum() (in module bim.sums), \hyperpage{12}
+  \item hooke\_force() (in module drivers.bim\_md), \hyperpage{13}
+
+  \indexspace
+  \bigletter I
+  \item init\_velocity() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item inp() (in module backend.nw), \hyperpage{16}
+  \item inp() (in module backend.psi4), \hyperpage{17}
+  \item integrate() (drivers.bim\_md.Integrator method), \hyperpage{12}
+  \item Integrator (class in drivers.bim\_md), \hyperpage{12}
+  \item invecs() (in module backend.nw), \hyperpage{16}
+
+  \indexspace
+  \bigletter K
+  \item kernel() (in module bim.bim), \hyperpage{11}
+  \item kernel() (in module drivers.bim\_md), \hyperpage{13}
+  \item kernel() (in module drivers.bim\_opt), \hyperpage{13}
+  \item kernel() (in module vbct.energy), \hyperpage{14}
+  \item kinetic\_com\_tensor() (drivers.bim\_md.Integrator method), \hyperpage{13}
 
   \indexspace
   \bigletter L
-  \item load\_geometry() (in module globals.geom), \hyperpage{3}
+  \item lat\_angle\_differential() (in module Globals.lattice), \hyperpage{18}
+  \item lattice\_gradient() (in module Globals.lattice), \hyperpage{18}
+  \item load\_geometry() (in module Globals.geom), \hyperpage{18}
 
   \indexspace
   \bigletter M
-  \item makefrag\_auto() (in module globals.geom), \hyperpage{3}
-  \item makefrag\_full\_system() (in module globals.geom), \hyperpage{3}
+  \item make\_brillouin\_zone3D() (in module tools.phonon), \hyperpage{13}
+  \item make\_embed\_list() (in module vbct.vbct\_calc), \hyperpage{15}
+  \item make\_scratch\_dirs() (in module Globals.utility), \hyperpage{21}
+  \item mass\_weight() (in module tools.phonon), \hyperpage{14}
+  \item monomerSCF() (in module bim.monomerscf), \hyperpage{11}
+  \item monomerSCF() (in module vbct.monomerscf), \hyperpage{15}
+  \item mw\_execute() (in module Globals.utility), \hyperpage{21}
 
   \indexspace
   \bigletter N
-  \item nuclear\_repulsion\_energy() (in module globals.geom), \hyperpage{3}
+  \item nose\_init() (drivers.bim\_md.Integrator method), \hyperpage{13}
+  \item nuclear\_repulsion\_energy() (in module Globals.geom), \hyperpage{18}
+
+  \indexspace
+  \bigletter O
+  \item objective\_gopt() (in module drivers.bim\_opt), \hyperpage{13}
+
+  \indexspace
+  \bigletter P
+  \item pair\_dist() (in module Globals.neighbor), \hyperpage{20}
+  \item pairlist\_accumulator() (in module Globals.neighbor), \hyperpage{20}
+  \item parse() (in module backend.nw), \hyperpage{16}
+  \item parse() (in module backend.psi4), \hyperpage{17}
+  \item parse() (in module Globals.params), \hyperpage{19}
+  \item parse\_input() (in module Globals.utility), \hyperpage{21}
+  \item parseargs() (in module tools.phonon), \hyperpage{14}
+  \item phonon() (in module tools.phonon), \hyperpage{14}
+  \item phonon\_freqs() (in module tools.phonon), \hyperpage{14}
+  \item pretty\_time() (in module Globals.utility), \hyperpage{21}
+  \item print\_vbct\_init() (in module vbct.energy), \hyperpage{15}
+
+  \indexspace
+  \bigletter R
+  \item read\_force\_consts\_np() (in module tools.phonon), \hyperpage{14}
+  \item read\_force\_consts\_txt() (in module tools.phonon), \hyperpage{14}
+  \item rescale() (in module Globals.lattice), \hyperpage{19}
+  \item restart\_trajectory\_file() (drivers.bim\_md.Integrator method), \hyperpage{13}
+  \item run() (in module backend.backend), \hyperpage{16}
+
+  \indexspace
+  \bigletter S
+  \item scatter() (in module Globals.MPI), \hyperpage{20}
+  \item set\_defaults() (in module Globals.params), \hyperpage{19}
+  \item set\_frag\_auto() (in module Globals.geom), \hyperpage{18}
+  \item set\_frag\_full\_system() (in module Globals.geom), \hyperpage{18}
+  \item set\_frag\_manual() (in module Globals.geom), \hyperpage{18}
+  \item smoothing\_matrix() (in module tools.phonon), \hyperpage{14}
+  \item summary\_log() (drivers.bim\_md.Integrator method), \hyperpage{13}
+
+  \indexspace
+  \bigletter T
+  \item test.test (module), \hyperpage{17}
+  \item TestTrimerMP2 (class in test.test), \hyperpage{17}
+  \item TestTrimerRHF (class in test.test), \hyperpage{17}
+  \item to\_flat() (in module drivers.bim\_opt), \hyperpage{13}
+  \item tools.phonon (module), \hyperpage{13}
+  \item tryFloat() (in module Globals.params), \hyperpage{19}
+
+  \indexspace
+  \bigletter U
+  \item update\_kinetic\_and\_temperature() (drivers.bim\_md.Integrator method), \hyperpage{13}
+  \item update\_lat\_params() (in module Globals.lattice), \hyperpage{19}
+  \item update\_lat\_vecs() (in module Globals.lattice), \hyperpage{19}
+
+  \indexspace
+  \bigletter V
+  \item vbct.energy (module), \hyperpage{14}
+  \item vbct.monomerscf (module), \hyperpage{15}
+  \item vbct.vbct\_calc (module), \hyperpage{15}
+  \item volume() (in module Globals.lattice), \hyperpage{19}
+
+  \indexspace
+  \bigletter W
+  \item write\_trajectory() (drivers.bim\_md.Integrator method), \hyperpage{13}
 
 \end{sphinxtheindex}

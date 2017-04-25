@@ -1,6 +1,114 @@
-\indexentry{globals.geom (module)|hyperpage}{3}
-\indexentry{Atom (class in globals.geom)|hyperpage}{3}
-\indexentry{load\_geometry() (in module globals.geom)|hyperpage}{3}
-\indexentry{makefrag\_auto() (in module globals.geom)|hyperpage}{3}
-\indexentry{makefrag\_full\_system() (in module globals.geom)|hyperpage}{3}
-\indexentry{nuclear\_repulsion\_energy() (in module globals.geom)|hyperpage}{3}
+\indexentry{bim.bim (module)|hyperpage}{11}
+\indexentry{create\_bim\_fragment() (in module bim.bim)|hyperpage}{11}
+\indexentry{get\_task() (in module bim.bim)|hyperpage}{11}
+\indexentry{kernel() (in module bim.bim)|hyperpage}{11}
+\indexentry{bim.monomerscf (module)|hyperpage}{11}
+\indexentry{monomerSCF() (in module bim.monomerscf)|hyperpage}{11}
+\indexentry{bim.sums (module)|hyperpage}{12}
+\indexentry{energy\_sum() (in module bim.sums)|hyperpage}{12}
+\indexentry{gradient\_sum() (in module bim.sums)|hyperpage}{12}
+\indexentry{hessian\_sum() (in module bim.sums)|hyperpage}{12}
+\indexentry{drivers.bim\_md (module)|hyperpage}{12}
+\indexentry{Integrator (class in drivers.bim\_md)|hyperpage}{12}
+\indexentry{apply\_berend\_baro() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{apply\_berend\_thermo() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{apply\_nose\_chain() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{clean\_up() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{create\_trajectory\_file() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{detect\_and\_fix\_pbc\_crossings() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{get\_MD\_options() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{init\_velocity() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{integrate() (drivers.bim\_md.Integrator method)|hyperpage}{12}
+\indexentry{kinetic\_com\_tensor() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{nose\_init() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{restart\_trajectory\_file() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{summary\_log() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{update\_kinetic\_and\_temperature() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{write\_trajectory() (drivers.bim\_md.Integrator method)|hyperpage}{13}
+\indexentry{bim\_force() (in module drivers.bim\_md)|hyperpage}{13}
+\indexentry{hooke\_force() (in module drivers.bim\_md)|hyperpage}{13}
+\indexentry{kernel() (in module drivers.bim\_md)|hyperpage}{13}
+\indexentry{drivers.bim\_opt (module)|hyperpage}{13}
+\indexentry{from\_flat() (in module drivers.bim\_opt)|hyperpage}{13}
+\indexentry{gopt\_callback() (in module drivers.bim\_opt)|hyperpage}{13}
+\indexentry{kernel() (in module drivers.bim\_opt)|hyperpage}{13}
+\indexentry{objective\_gopt() (in module drivers.bim\_opt)|hyperpage}{13}
+\indexentry{to\_flat() (in module drivers.bim\_opt)|hyperpage}{13}
+\indexentry{tools.phonon (module)|hyperpage}{13}
+\indexentry{make\_brillouin\_zone3D() (in module tools.phonon)|hyperpage}{13}
+\indexentry{mass\_weight() (in module tools.phonon)|hyperpage}{14}
+\indexentry{parseargs() (in module tools.phonon)|hyperpage}{14}
+\indexentry{phonon() (in module tools.phonon)|hyperpage}{14}
+\indexentry{phonon\_freqs() (in module tools.phonon)|hyperpage}{14}
+\indexentry{read\_force\_consts\_np() (in module tools.phonon)|hyperpage}{14}
+\indexentry{read\_force\_consts\_txt() (in module tools.phonon)|hyperpage}{14}
+\indexentry{smoothing\_matrix() (in module tools.phonon)|hyperpage}{14}
+\indexentry{vbct.energy (module)|hyperpage}{14}
+\indexentry{build\_secular\_equations() (in module vbct.energy)|hyperpage}{14}
+\indexentry{calc\_chg\_distro() (in module vbct.energy)|hyperpage}{14}
+\indexentry{calc\_diagonal() (in module vbct.energy)|hyperpage}{14}
+\indexentry{fraglabel() (in module vbct.energy)|hyperpage}{14}
+\indexentry{kernel() (in module vbct.energy)|hyperpage}{14}
+\indexentry{print\_vbct\_init() (in module vbct.energy)|hyperpage}{15}
+\indexentry{vbct.vbct\_calc (module)|hyperpage}{15}
+\indexentry{coupl\_chglocal() (in module vbct.vbct\_calc)|hyperpage}{15}
+\indexentry{diag\_chglocal() (in module vbct.vbct\_calc)|hyperpage}{15}
+\indexentry{make\_embed\_list() (in module vbct.vbct\_calc)|hyperpage}{15}
+\indexentry{vbct.monomerscf (module)|hyperpage}{15}
+\indexentry{fullsys\_best\_guess() (in module vbct.monomerscf)|hyperpage}{15}
+\indexentry{monomerSCF() (in module vbct.monomerscf)|hyperpage}{15}
+\indexentry{backend.backend (module)|hyperpage}{16}
+\indexentry{build\_atoms() (in module backend.backend)|hyperpage}{16}
+\indexentry{run() (in module backend.backend)|hyperpage}{16}
+\indexentry{backend.nw (module)|hyperpage}{16}
+\indexentry{calculate() (in module backend.nw)|hyperpage}{16}
+\indexentry{inp() (in module backend.nw)|hyperpage}{16}
+\indexentry{invecs() (in module backend.nw)|hyperpage}{16}
+\indexentry{parse() (in module backend.nw)|hyperpage}{16}
+\indexentry{backend.psi4 (module)|hyperpage}{17}
+\indexentry{calculate() (in module backend.psi4)|hyperpage}{17}
+\indexentry{inp() (in module backend.psi4)|hyperpage}{17}
+\indexentry{parse() (in module backend.psi4)|hyperpage}{17}
+\indexentry{test.test (module)|hyperpage}{17}
+\indexentry{TestTrimerMP2 (class in test.test)|hyperpage}{17}
+\indexentry{TestTrimerRHF (class in test.test)|hyperpage}{17}
+\indexentry{Globals.geom (module)|hyperpage}{17}
+\indexentry{Atom (class in Globals.geom)|hyperpage}{17}
+\indexentry{com() (in module Globals.geom)|hyperpage}{17}
+\indexentry{load\_geometry() (in module Globals.geom)|hyperpage}{18}
+\indexentry{nuclear\_repulsion\_energy() (in module Globals.geom)|hyperpage}{18}
+\indexentry{set\_frag\_auto() (in module Globals.geom)|hyperpage}{18}
+\indexentry{set\_frag\_full\_system() (in module Globals.geom)|hyperpage}{18}
+\indexentry{set\_frag\_manual() (in module Globals.geom)|hyperpage}{18}
+\indexentry{Globals.lattice (module)|hyperpage}{18}
+\indexentry{lat\_angle\_differential() (in module Globals.lattice)|hyperpage}{18}
+\indexentry{lattice\_gradient() (in module Globals.lattice)|hyperpage}{18}
+\indexentry{rescale() (in module Globals.lattice)|hyperpage}{19}
+\indexentry{update\_lat\_params() (in module Globals.lattice)|hyperpage}{19}
+\indexentry{update\_lat\_vecs() (in module Globals.lattice)|hyperpage}{19}
+\indexentry{volume() (in module Globals.lattice)|hyperpage}{19}
+\indexentry{Globals.params (module)|hyperpage}{19}
+\indexentry{convert\_params() (in module Globals.params)|hyperpage}{19}
+\indexentry{parse() (in module Globals.params)|hyperpage}{19}
+\indexentry{set\_defaults() (in module Globals.params)|hyperpage}{19}
+\indexentry{tryFloat() (in module Globals.params)|hyperpage}{19}
+\indexentry{Globals.MPI (module)|hyperpage}{20}
+\indexentry{allgather() (in module Globals.MPI)|hyperpage}{20}
+\indexentry{create\_split\_comms() (in module Globals.MPI)|hyperpage}{20}
+\indexentry{gather() (in module Globals.MPI)|hyperpage}{20}
+\indexentry{scatter() (in module Globals.MPI)|hyperpage}{20}
+\indexentry{Globals.neighbor (module)|hyperpage}{20}
+\indexentry{BFS\_lattice\_traversal() (in module Globals.neighbor)|hyperpage}{20}
+\indexentry{build\_lists() (in module Globals.neighbor)|hyperpage}{20}
+\indexentry{pair\_dist() (in module Globals.neighbor)|hyperpage}{20}
+\indexentry{pairlist\_accumulator() (in module Globals.neighbor)|hyperpage}{20}
+\indexentry{Globals.coulomb (module)|hyperpage}{20}
+\indexentry{accumulate\_pair() (in module Globals.coulomb)|hyperpage}{20}
+\indexentry{coulomb\_accumulator() (in module Globals.coulomb)|hyperpage}{21}
+\indexentry{evaluate\_coulomb() (in module Globals.coulomb)|hyperpage}{21}
+\indexentry{Globals.logger (module)|hyperpage}{21}
+\indexentry{Globals.utility (module)|hyperpage}{21}
+\indexentry{make\_scratch\_dirs() (in module Globals.utility)|hyperpage}{21}
+\indexentry{mw\_execute() (in module Globals.utility)|hyperpage}{21}
+\indexentry{parse\_input() (in module Globals.utility)|hyperpage}{21}
+\indexentry{pretty\_time() (in module Globals.utility)|hyperpage}{21}
