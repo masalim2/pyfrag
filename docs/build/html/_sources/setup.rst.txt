@@ -14,10 +14,14 @@ be readily importable, i.e.::
     import h5py
     import argparse
 
-should execute without any errors in your Python interpreter.
+should execute without any errors in your Python interpreter. To obtain the
+source, clone the git repository::
 
-The :data:`PYTHONPATH` environment variable must include the path to the top level 
-pyfrag directory. This is necessary for the subpackages to find each other. 
+    git clone https://github.com/masalim2/pyfrag.git
+
+The :data:`PYTHONPATH` environment variable must include the path to the top
+level pyfrag directory. This is necessary for the subpackages inside pyfrag to
+find each other. 
 
 PyFragment requires at least one quantum chemistry backend to perform the
 fragment calculations. Currently supported packages are `Psi4
