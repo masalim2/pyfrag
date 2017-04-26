@@ -179,15 +179,25 @@ calcParameterMaps['hf_chglocal'] = {
     'fragmentation' : 'auto',
     'correlation' : False
     }
+calcParameterMaps['hf_monoip'] = {
+    'vbct_scheme' : 'monoip',
+    'fragmentation' : 'auto',
+    'correlation' : False
+    }
 calcParameterMaps['mp2_exact'] = {
     'vbct_scheme' : 'chglocal',
     'fragmentation' : 'full_system',
-    'correlation' : False
+    'correlation' : 'MP2'
     }
 calcParameterMaps['mp2_chglocal'] = {
     'vbct_scheme' : 'chglocal',
     'fragmentation' : 'auto',
-    'correlation' : False
+    'correlation' : 'MP2'
+    }
+calcParameterMaps['mp2_monoip'] = {
+    'vbct_scheme' : 'monoip',
+    'fragmentation' : 'auto',
+    'correlation' : 'MP2'
     }
 
 

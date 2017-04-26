@@ -6,43 +6,12 @@
 from mpi4py.MPI import ANY_SOURCE
 import numpy as np
 from scipy.linalg import eigh
-from itertools import combinations
 
 from pyfrag.Globals import geom, logger, params
 from pyfrag.Globals import MPI
 from pyfrag.vbct import  vbct_calc
 from pyfrag.vbct.monomerscf import monomerSCF, fullsys_best_guess
-
-def print_vbct_init(states):
-    '''Print header for calculation'''
-    logger.print_parameters()
-    logger.print_geometry()
-    print "VBCT Basis"
-    print "----------"
-    for idx in states:
-        print_vbct_state(idx)
-    print "\nMonomer SCF & Diagonal Element Calculation"
-    print "------------------------------------------"
-
-
-def fraglabel(frag, chg):
-    '''Generate chemical formula string for a fragment'''
-    atoms = [geom.geometry[i].sym for i in geom.fragments[frag]]
-    atom_counts = { sym : atoms.count(sym) for sym in set(atoms) }
-    label = '('
-    for sym, count in sorted(atom_counts.items()):
-        label += sym.capitalize()
-        if count > 1: label += str(count)
-    label += ')'
-    if chg != 0: label += "%+d" % chg
-    return label
-
-
-def print_vbct_state(idx):
-    nfrag = len(geom.fragments)
-    frag_labels = [fraglabel(i,i==idx) for i in range(nfrag)]
-    print "State: " + ''.join(frag_labels)
-
+from  pyfrag.bim import bim
 
 def build_secular_equations(diag_results, offdiag_results):
     '''Build Hamiltonian and overlap matrix'''
@@ -57,41 +26,6 @@ def build_secular_equations(diag_results, offdiag_results):
         H[i,j] = H[j,i] = res['coupling']
     return H, S
 
-
-def print_diagonal_calc_details(diag_results):
-    dimer_idxs = list(combinations(range(len(diag_results)), 2))
-    for i, res in enumerate(diag_results):
-        print_vbct_state(i)
-        logger.print_fragment(net_charges=res['net_charges'],
-                              esp_charges=res['esp'], charges_only=True)
-        header = " E = %.6f" % (res['E1'] + res['E2'])
-        print header
-        print "-"*len(header)
-        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % res['E1']
-        print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
-        for j, mon in enumerate(res['monomers']):
-            print "    %10s %12.6f %12.6f %12.6f" % (fraglabel(j,int(j==i)),
-                    mon['E_hf'], mon.get('E_corr', 0.0),
-                    mon['E_tot'])
-        print ""
-        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % res['E2']
-        for dimidx, dim in zip(dimer_idxs, res['dimers']):
-            print "    %10s %12.6f %12.6f %12.6f" % (str(dimidx),
-                    dim['E_hf'], dim.get('E_corr', 0.0),
-                    dim['E_tot'])
-        print "\n"
-    print "Coupling and Overlap Matrix Elements"
-    print "------------------------------------"
-
-
-def print_offdiag_calc_details(pairs, offdiag_results):
-    for pair, res in zip(pairs, offdiag_results):
-        print "Coupling", pair
-        print "---------------"
-        for k,v in res.items():
-            print "    %s <--> %s" % (str(k), str(v))
-
-
 def verify_options():
     requisite = '''basis
                     hftype
@@ -104,7 +38,7 @@ def verify_options():
     assert len(geom.geometry) > 0
 
 
-def calc_diagonal(idx, comm=None):
+def calc_diagonal(idx, neutral_results, comm=None):
     '''Dispatch diagonal element calculation
 
     Args
@@ -125,7 +59,7 @@ def calc_diagonal(idx, comm=None):
         res = fullsys_best_guess(comm=comm)
     else:
         espfield, movecs = monomerSCF(monomers, charges, comm=comm)
-        res = diag_calc_fxn(charges, espfield, movecs, comm=comm)
+        res = diag_calc_fxn(charges, espfield, movecs, neutral_results, comm=comm)
     return res
 
 
@@ -147,6 +81,20 @@ def calc_chg_distro(prob0, diag_results):
     return charge_distro
 
 
+def setup_and_get_bim_energy():
+    nfrag = len(geom.fragments)
+    assert all([geom.charge(i) == 0 for i in range(nfrag)])
+    params.verbose = False
+    params.quiet = True
+    params.options['task'] = 'bim_e' # hack to get bim energy
+    params.options['r_qm'] = 1e15
+    params.options['r_bq'] = 1e15
+    params.options['r_lr'] = 1e15
+    res = bim.kernel()
+    res = MPI.bcast(res, master=0)
+    params.options['task'] = 'vbct_e'
+    return res
+
 def kernel():
     '''SP energy: form and diagonalize VBCT matrix'''
 
@@ -158,14 +106,20 @@ def kernel():
     states = range(nstates)
 
     if params.verbose and MPI.rank == 0:
-        print_vbct_init(states)
+        logger.print_vbct_init(states)
 
     # Diagonal element calculation
+
+    if params.options['vbct_scheme'] == 'monoip' and nfrag > 1:
+        neutral_res = setup_and_get_bim_energy()
+    else:
+        neutral_res = []
+
     diag_results = []
 
     if MPI.nproc > nstates:
         work_comm, idx = MPI.create_split_comms(nstates)
-        diag_result = calc_diagonal(idx, work_comm)
+        diag_result = calc_diagonal(idx, neutral_res, comm=work_comm)
 
         if work_comm.Get_rank() == 0:
             MPI.comm.send(diag_result, dest=0, tag=idx)
@@ -178,11 +132,11 @@ def kernel():
         work_comm.Free()
     else:
         for idx in states:
-            res = calc_diagonal(idx)
+            res = calc_diagonal(idx, neutral_res)
             diag_results.append(res)
 
     if MPI.rank == 0 and params.verbose:
-        print_diagonal_calc_details(diag_results)
+        logger.print_diagonal_calc_details(diag_results)
 
     # Couplings/overlaps calculation
     coupl_name = "coupl_%s" % params.options['vbct_scheme']
@@ -203,7 +157,7 @@ def kernel():
         return {}
 
     if MPI.rank == 0 and params.verbose:
-        print_offdiag_calc_details(pairs, offdiag_results)
+        logger.print_offdiag_calc_details(pairs, offdiag_results)
 
     # Construct eigensystem; solve for ground state
     H, S = build_secular_equations(diag_results, offdiag_results)

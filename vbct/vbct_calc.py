@@ -16,7 +16,7 @@ def make_embed_list(qm_fragment, all_monomers):
     field = [m for m in all_monomers if m not in qm_fragment]
     return [(m,0,0,0) for m in field]
 
-def diag_chglocal(charges, espfield, movecs, comm=None):
+def diag_chglocal(charges, espfield, movecs, neutral_res, comm=None):
     '''Charge-local dimer method for diagonal element calculation.
 
     Only works with NW backend and singly ionized molecular cluster cations.
@@ -24,6 +24,7 @@ def diag_chglocal(charges, espfield, movecs, comm=None):
     Args
         charges: list of net charges on each fragment
         espfield: list of esp-fit atomic charges for entire system
+        neutral_res: results of neutral calculation
         movecs: list of MO coeff files for each fragment
         comm: MPI communicator or subcommunicator
     '''
@@ -144,4 +145,112 @@ def coupl_chglocal(A, B):
     coupling = -1.0*((E_relax-E_Aloc)*(E_relax-E_Bloc))**0.5
 
     results = dict(idx=(A,B),coupling=coupling, AB=E_relax, A=E_Aloc, B=E_Bloc)
+    return results
+
+def diag_monoip(charges, espfield, movecs, neutral_res, comm=None):
+    '''Monomer IP method for diagonal element calculation.
+
+    Only works with NW backend and singly ionized molecular cluster cations.
+
+    Args
+        charges: list of net charges on each fragment
+        espfield: list of esp-fit atomic charges for entire system
+        movecs: list of MO coeff files for each fragment
+        neutral_res: results of neutral system BIM calculation
+        comm: MPI communicator or subcommunicator
+    '''
+    if comm is None:
+        comm = MPI.comm
+
+    embed_flag = params.options['embedding']
+    nfrag = len(geom.fragments)
+    monomers = range(nfrag)
+    m = charges.index(1)
+    assert [charges[i] == 0 for i in range(nfrag) if i != m]
+
+    if embed_flag:
+        bqlist = make_embed_list(m, monomers)
+    else:
+        bqlist = []
+
+    # Just calculate charged monomer energy
+    frag = [(m,0,0,0)]
+    res = backend.run('energy', frag, 1, bqlist, espfield,
+                        guess=movecs[m])
+
+    # Pull corresponding neutral monomer from BIM
+    E_mon0 = neutral_res['calcs'][(m,)]['E_tot']
+    E_mon  = res['E_tot']
+
+    E1 = neutral_res['E1']
+    E1 += E_mon - E_mon0
+    E2 = neutral_res['E2']
+    results = dict(E1=E1,E2=E2)
+
+    results['monomers'] = [v for (k,v) in neutral_res['calcs'].items() if len(k)==1]
+    results['dimers'] = [v for (k,v) in neutral_res['calcs'].items() if len(k)==5]
+    results['monomer_cation'] = res
+    results['net_charges'] = charges
+    results['esp'] = espfield
+
+    return results
+
+
+def coupl_monoip(A, B):
+    '''Monomer IP method for coupling
+
+    Only works with NW backend and singly ionized molecular cluster cations.
+
+    Args
+        A, B: indices for off-diagonal H element calculation
+    '''
+
+    embed_flag = params.options['embedding']
+    esps_Aloc, vecs_Aloc = monomerSCF([A,B], [1,0], comm='serial')
+    esps_Bloc, vecs_Bloc = monomerSCF([A,B], [0,1], comm='serial')
+    esps_neu, vecs_neu   = monomerSCF([A,B], [0,0], comm='serial')
+
+    bqs = []
+    # A+ monomer
+    frag = [(A,0,0,0)]
+    if embed_flag: bqs = [(B,0,0,0)]
+    Achg = backend.run('energy', frag, 1, bqs, esps_Aloc)
+
+    # B+ monomer
+    frag = [(B,0,0,0)]
+    if embed_flag: bqs = [(A,0,0,0)]
+    Bchg = backend.run('energy', frag, 1, bqs, esps_Bloc)
+
+    # A monomer
+    frag = [(A,0,0,0)]
+    if embed_flag: bqs = [(B,0,0,0)]
+    Aneu = backend.run('energy', frag, 0, bqs, esps_neu)
+
+    # B monomer
+    frag = [(B,0,0,0)]
+    if embed_flag: bqs = [(A,0,0,0)]
+    Bneu = backend.run('energy', frag, 0, bqs, esps_neu)
+
+    # AB charged
+    frag = [(A,0,0,0), (B,0,0,0)]
+    bqs = []
+    esp = []
+    Aloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Aloc)
+    Bloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Bloc)
+    relax = min(Aloc_relax, Bloc_relax, key=lambda x:x['E_tot'])
+
+    # AB neutral
+    neutral = backend.run('energy', frag, 0, bqs, esp)
+
+    Echg = relax['E_tot']
+    Eneu = neutral['E_tot']
+    EA0  = Aneu['E_tot']
+    EB0  = Bneu['E_tot']
+    EA   = Achg['E_tot']
+    EB   = Bchg['E_tot']
+    relaxA = Echg - (Eneu + EA - EA0)
+    relaxB = Echg - (Eneu + EB - EB0)
+    coupling = -1.0*(relaxA * relaxB)**0.5
+    results = dict(idx=(A,B), coupling=coupling, AB=Echg, A=Eneu+EA-EA0,
+                   B=Eneu+EB-EB0)
     return results

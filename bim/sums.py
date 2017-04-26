@@ -29,7 +29,8 @@ def energy_sum(specifiers, calcs):
 
     E_coulomb = coulomb.energy_coulomb
 
-    return {'E':E1+E2+E_coulomb, 'E1': E1, 'E2' : E2, 'Ec' : E_coulomb}
+    return {'E':E1+E2+E_coulomb, 'E1': E1, 'E2' : E2, 'Ec' : E_coulomb,
+            'calcs': calcs}
 
 def gradient_sum(specifiers, calcs):
     '''compute gradient of total energy'''

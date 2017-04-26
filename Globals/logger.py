@@ -84,7 +84,7 @@ def print_fragment(fragments=None, net_charges=None, esp_charges=None, charges_o
                 print "%2s  %6.2f" % (at.sym.capitalize(), chg)
         else:
             prettyprint_atoms(atoms, chgs)
-        print "----------------------------------------"
+        print "----------"
     print ""
 
 def print_neighbors():
@@ -181,3 +181,105 @@ def print_bim_md_results(results):
 
 def print_bim_opt_results(results):
     pass
+
+
+def print_vbct_state(idx):
+    nfrag = len(geom.fragments)
+    frag_labels = [fraglabel(i,i==idx) for i in range(nfrag)]
+    print "State: " + ''.join(frag_labels)
+
+def print_vbct_init(states):
+    '''Print header for calculation'''
+    print_parameters()
+    print_geometry()
+    print "VBCT Basis"
+    print "----------"
+    for idx in states:
+        print_vbct_state(idx)
+    print "\nMonomer SCF & Diagonal Element Calculation"
+    print "------------------------------------------"
+
+def fraglabel(frag, chg):
+    '''Generate chemical formula string for a fragment'''
+    atoms = [geom.geometry[i].sym for i in geom.fragments[frag]]
+    atom_counts = { sym : atoms.count(sym) for sym in set(atoms) }
+    label = '('
+    for sym, count in sorted(atom_counts.items()):
+        label += sym.capitalize()
+        if count > 1: label += str(count)
+    label += ')'
+    if chg != 0: label += "%+d" % chg
+    return label
+
+def print_diagonal_calc_details(diag_results):
+    if params.options['vbct_scheme'] == 'chglocal':
+        print_chglocal_diag(diag_results)
+    elif params.options['vbct_scheme'] == 'monoip':
+        print_monoip_diag(diag_results)
+
+def print_chglocal_diag(diag_results):
+    from itertools import combinations
+    dimer_idxs = list(combinations(range(len(diag_results)), 2))
+    for i, res in enumerate(diag_results):
+        print_vbct_state(i)
+        print_fragment(net_charges=res['net_charges'],
+                              esp_charges=res['esp'], charges_only=True)
+        header = " E = %.6f" % (res['E1'] + res['E2'])
+        print header
+        print "-"*len(header)
+        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % res['E1']
+        print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
+        for j, mon in enumerate(res['monomers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (fraglabel(j,int(j==i)),
+                    mon['E_hf'], mon.get('E_corr', 0.0),
+                    mon['E_tot'])
+        print ""
+        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % res['E2']
+        for dimidx, dim in zip(dimer_idxs, res['dimers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (str(dimidx),
+                    dim['E_hf'], dim.get('E_corr', 0.0),
+                    dim['E_tot'])
+        print "\n"
+    print "Coupling and Overlap Matrix Elements"
+    print "------------------------------------"
+
+def print_monoip_diag(diag_results):
+    from itertools import combinations
+    dimer_idxs = list(combinations(range(len(diag_results)), 2))
+    for i, res in enumerate(diag_results):
+        print_vbct_state(i)
+        print_fragment(net_charges=res['net_charges'],
+                              esp_charges=res['esp'], charges_only=True)
+        header = " E = %.6f" % (res['E1'] + res['E2'])
+        print header
+        print "-"*len(header)
+        print " "*(len(header)/3) + "  1-BODY SUM (%.6f)" % res['E1']
+        print "    %10s %12s %12s %12s" % ("Fragment", "E_HF", "E_corr", "E_total")
+
+        for j, mon in enumerate(res['monomers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (fraglabel(j,0),
+                    mon['E_hf'], mon.get('E_corr', 0.0),
+                    mon['E_tot'])
+
+        mon = res['monomer_cation']
+        print "    %10s %12.6f %12.6f %12.6f" % (fraglabel(i,1),
+                mon['E_hf'], mon.get('E_corr', 0.0),
+                mon['E_tot'])
+        print ""
+
+        print " " * (len(header)/3) + "2-BODY SUM (%.6f)" % res['E2']
+        for dimidx, dim in zip(dimer_idxs, res['dimers']):
+            print "    %10s %12.6f %12.6f %12.6f" % (str(dimidx),
+                    dim['E_hf'], dim.get('E_corr', 0.0),
+                    dim['E_tot'])
+        print "\n"
+
+    print "Coupling and Overlap Matrix Elements"
+    print "------------------------------------"
+
+def print_offdiag_calc_details(pairs, offdiag_results):
+    for pair, res in zip(pairs, offdiag_results):
+        print "Coupling", pair
+        print "---------------"
+        for k,v in res.items():
+            print "    %s <--> %s" % (str(k), str(v))
