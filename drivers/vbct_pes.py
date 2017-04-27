@@ -250,7 +250,7 @@ ethyl4spac6_range = np.linspace(0,1,11)
 # SPECIFY dict of calculations
 # ----------------------------
 globalParams = {
-    'mem_mb' : 3000,
+    'mem_mb' : 8000,
     'embedding' : True,
     'backend' : 'nw',
     'basis' : 'aug-cc-pvdz',
@@ -268,11 +268,11 @@ calcParameterMaps['hf_chglocal'] = {
     'fragmentation' : 'auto',
     'correlation' : False
     }
-calcParameterMaps['hf_monoip'] = {
-    'vbct_scheme' : 'monoip',
-    'fragmentation' : 'auto',
-    'correlation' : False
-    }
+#calcParameterMaps['hf_monoip'] = {
+#    'vbct_scheme' : 'monoip',
+#    'fragmentation' : 'auto',
+#    'correlation' : False
+#    }
 calcParameterMaps['mp2_exact'] = {
     'vbct_scheme' : 'chglocal',
     'fragmentation' : 'full_system',
@@ -283,11 +283,11 @@ calcParameterMaps['mp2_chglocal'] = {
     'fragmentation' : 'auto',
     'correlation' : 'mp2'
     }
-calcParameterMaps['mp2_monoip'] = {
-    'vbct_scheme' : 'monoip',
-    'fragmentation' : 'auto',
-    'correlation' : 'mp2'
-    }
+#calcParameterMaps['mp2_monoip'] = {
+#    'vbct_scheme' : 'monoip',
+#    'fragmentation' : 'auto',
+#    'correlation' : 'mp2'
+#    }
 
 
 def valid_systems():
@@ -311,6 +311,7 @@ def get_args():
     parser.add_argument("system_name", help="molecular cluster identity")
     parser.add_argument("method", nargs='+', help="calculation method")
     parser.add_argument("--scrdir", type=str, help="top level scratch")
+    parser.add_argument("--basis", type=str, help="basis (default aug-cc-pvdz)")
     args = parser.parse_args()
 
     system_name = args.system_name
@@ -327,6 +328,9 @@ def get_args():
 
     methods = args.method
     scr = args.scrdir
+    basis = args.basis
+    if basis:
+        globalParams['basis'] = basis
     if 'all' in methods:
         methods = calcParameterMaps.keys()
     for method in methods:
@@ -381,6 +385,7 @@ def main(args):
     if MPI.rank == 0:
         print "# System: %s" % sysname
         print "# Calc methods:", ', '.join(methods)
+        print "# Basis set:", globalParams['basis']
         print "# Storing result in", data_file
         fp = h5py.File(data_file, 'a')
 

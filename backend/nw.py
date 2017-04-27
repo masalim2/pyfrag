@@ -161,9 +161,17 @@ def parse(data, calc, inp, atoms, bqs, save):
 
         if 'Mulliken analysis of the total density' in line:
             mulliken_charges = []
-            for idx in range(n+5, n+5+len(atoms)):
-                mulliken_charges.append(float(data[idx].split()[3]))
-            results['mulliken_charges'] = mulliken_charges
+            idx = n+5
+            while len(mulliken_charges) < len(atoms) and idx < len(data):
+                record = data[idx].split()
+                if len(record) >= 4:
+                    try:
+                        chg = float(record[3])
+                        mulliken_charges.append(chg)
+                    except ValueError:
+                        pass
+                    idx += 1
+            results['mulliken_chg'] = mulliken_charges
             continue
 
         if 'ENERGY GRADIENTS' in line:
