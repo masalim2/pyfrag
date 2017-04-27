@@ -151,7 +151,7 @@ He3_dimerize_range = np.linspace(0.0, 1.0, 11)
 He3_excursion_range = np.linspace(-0.6, 0.6, 11)
 He4_symm_range = np.arange(0.9, 2.6, 0.1)
 He4_asymm_range = np.linspace(-0.2, 1., 13)
-He8_range = np.linspace(-1.1, 2.0, 7)
+He8_range = np.linspace(-1.1, 2.0, 11)
 Ar4_range = np.linspace(-0.8, 0.8, 11)
 Ar4_symm_range = np.linspace(2.4, 3.4, 11)
 NaWat3_linear_range = np.linspace(-0.2, 1.0, 11)
@@ -187,17 +187,17 @@ calcParameterMaps['hf_monoip'] = {
 calcParameterMaps['mp2_exact'] = {
     'vbct_scheme' : 'chglocal',
     'fragmentation' : 'full_system',
-    'correlation' : 'MP2'
+    'correlation' : 'mp2'
     }
 calcParameterMaps['mp2_chglocal'] = {
     'vbct_scheme' : 'chglocal',
     'fragmentation' : 'auto',
-    'correlation' : 'MP2'
+    'correlation' : 'mp2'
     }
 calcParameterMaps['mp2_monoip'] = {
     'vbct_scheme' : 'monoip',
     'fragmentation' : 'auto',
-    'correlation' : 'MP2'
+    'correlation' : 'mp2'
     }
 
 
@@ -261,7 +261,10 @@ def log(fp, sysname, method, i, x, coord_range, results):
     natm = len(geom_pos)
 
     if name('energy') not in fp:
-        fp.create_dataset(name('energy'), (Nstep,), dtype=np.double)
+        ds = fp.create_dataset(name('energy'), (Nstep,), dtype=np.double)
+        ds.attrs['basis'] = globalParams['basis']
+        ds.attrs['hftype'] = globalParams['hftype']
+        ds.attrs['embedding'] = globalParams['embedding']
     if name('geom_xyz') not in fp:
         ds = fp.create_dataset(name('geom_xyz'), (Nstep,natm,3), dtype=np.double)
         ds.attrs['atom_labels'] = ' '.join([at.sym for at in geom.geometry])
@@ -309,7 +312,7 @@ def main():
         fp.close()
 
 if __name__ == "__main__":
-    util.make_scratch_dirs()
+    util.make_scratch_dirs('/scratch/misha')
     try:
         main()
     finally:

@@ -32,7 +32,7 @@ def calculate(inp, calc, save):
         print "OUTPUT FILE OF FAILED CALC"
         print "--------------------------"
         print e.output
-        sys.exit(1)
+        raise RuntimeError("failed calculation")
     if save and options['scrdir'] != options['share_dir']:
         outvec = os.path.basename(inp)+".movecs"
         source = os.path.join(options['scrdir'], outvec)
@@ -85,6 +85,8 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('sym off; adapt off\n')
     f.write('%s\n' % options['hftype'])
     f.write('nopen %d\n' % (nelec%2))
+    if nelec%2 == 1:
+        f.write('maxiter 100\n')
     if noscf: f.write('noscf\n')
 
     invec = invecs(guess)
@@ -97,9 +99,13 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
         if theory == 'mp2':
-            f.write('mp2\n freeze atomic\nend\ntask mp2 energy\n\n')
+            if nelec%2 == 0:
+                f.write('mp2\n freeze atomic\nend\n\n')
+            else:
+                f.write('tce\n scf\n mp2\n freeze atomic\nend\n')
+                theory = 'tce'
         elif theory == 'ccsd':
-            f.write('ccsd\n freeze atomic\nend\ntask ccsd energy\n\n')
+            f.write('ccsd\n freeze atomic\nend\n\n')
         else:
             raise RuntimeError("please write NW wrapper for %s" % theory)
     else:
@@ -138,7 +144,11 @@ def parse(data, calc, inp, atoms, bqs, save):
             results['E_corr'] = results['E_tot'] - results['E_hf']
             continue
 
-        if 'ESP' in line:
+        if "MBPT(2) total energy" in line:
+            results['E_tot'] = float(line.split()[-1])
+            results['E_corr'] = results['E_tot'] - results['E_hf']
+
+        if 'ESP' in line.split() and calc == 'esp':
             esp_charges = []
             for idx in range(n+3, n+3+len(atoms)):
                 esp_charges.append(float(data[idx].split()[-1]))

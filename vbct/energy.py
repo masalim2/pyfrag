@@ -84,7 +84,11 @@ def calc_chg_distro(prob0, diag_results):
 def setup_and_get_bim_energy():
     nfrag = len(geom.fragments)
     assert all([geom.charge(i) == 0 for i in range(nfrag)])
-    params.verbose = False
+    if params.verbose:
+        params.verbose = False
+        switch = True
+    else:
+        switch = False
     params.quiet = True
     params.options['task'] = 'bim_e' # hack to get bim energy
     params.options['r_qm'] = 1e15
@@ -93,6 +97,7 @@ def setup_and_get_bim_energy():
     res = bim.kernel()
     res = MPI.bcast(res, master=0)
     params.options['task'] = 'vbct_e'
+    params.verbose = switch
     return res
 
 def kernel():
