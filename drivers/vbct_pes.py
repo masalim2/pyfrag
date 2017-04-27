@@ -141,6 +141,92 @@ def NaWat3_triangle_geom(x):
         g[-1].extend(list(atom[1]))
     # scan np.linspace(-1.5, 1.5, 13)
     geom.load_geometry(g)
+def Wat4_geom(x):
+    origin = '''O    0.216486    -1.989005    0.035297
+        H    -0.603911    -1.505274    -0.033552
+        H    0.138672    -2.535875    0.799566
+        O    1.989004    0.216483    -0.035296
+        H    1.505276    -0.60392    0.033505
+        H    2.535922    0.13869    -0.799534
+        O    -1.989001    -0.216487    -0.035297
+        H    -2.535947    -0.138688    -0.799513
+        H    -1.505273    0.60392    0.033493
+        O    -0.216485    1.989007    0.035294
+        H    -0.138694    2.535879    0.799565
+        H    0.603919    1.505277    -0.033513'''.split('\n')
+    assert len(origin) == 12
+    for i in range(12):
+        at = origin[i].split()
+        name = at[0]
+        pos = np.array(map(float, at[1:4]))
+        origin[i] = [name, pos]
+    vec1 = origin[3][1] - origin[0][1]
+    vec2 = origin[6][1] - origin[0][1]
+    g = []
+
+    g.append([origin[0][0]])
+    g[0].extend(list(origin[0][1]))
+    g.append([origin[1][0]])
+    g[1].extend(list(origin[1][1]))
+    g.append([origin[2][0]])
+    g[2].extend(list(origin[2][1]))
+
+    g.append([origin[3][0]])
+    g[3].extend(list(x*vec1 + origin[0][1]))
+    g.append([origin[4][0]])
+    g[4].extend(list(x*vec1 + origin[0][1] + origin[4][1]-origin[3][1]))
+    g.append([origin[5][0]])
+    g[5].extend(list(x*vec1 + origin[0][1] + origin[5][1]-origin[3][1]))
+
+    g.append([origin[6][0]])
+    g[6].extend(list(x*vec2 + origin[0][1]))
+    g.append([origin[7][0]])
+    g[7].extend(list(x*vec2 + origin[0][1] + origin[7][1]-origin[6][1]))
+    g.append([origin[8][0]])
+    g[8].extend(list(x*vec2 + origin[0][1] + origin[8][1]-origin[6][1]))
+
+    g.append([origin[9][0]])
+    g[9].extend(list(x*vec2 + x*vec1 + origin[0][1]))
+    g.append([origin[10][0]])
+    g[10].extend(list(x*vec2 + x*vec1 + origin[0][1] + origin[10][1]-origin[9][1]))
+    g.append([origin[11][0]])
+    g[11].extend(list(x*vec2 + x*vec1 + origin[0][1] + origin[11][1]-origin[9][1]))
+    geom.load_geometry(g)
+
+def ethyl4_geom(x, spacing=4.0):
+    neutral = '''C   -0.6741216    -0.00000     0.00000000
+        C            0.67412167     0.00000     0.0000000
+        H           -1.24192904    -0.93292     0.0000000
+        H           -1.24192904     0.93292     0.0000000
+        H            1.24192904     0.93292     0.0000000
+        H            1.24192904    -0.93292     0.0000000'''.split('\n')
+
+    charged =''' C  -0.64659904    -0.00000     0.0000000
+        C            0.64659904     0.00000     0.0000000
+        H           -1.37269259    -0.87710     0.0000000
+        H           -1.37269259     0.87710     0.0000000
+        H            1.37269259     0.87710     0.0000000
+        H            1.37269259    -0.87710     0.0000000'''.split('\n')
+
+    atoms = [at.split()[0] for at in neutral]
+    neutralpos = np.array([map(float, at.split()[1:]) for at in neutral])
+    chargedpos = np.array([map(float, at.split()[1:]) for at in charged])
+    pos1 = x*neutralpos + (1-x)*chargedpos
+    pos2 = (1-x)*neutralpos + x*chargedpos
+    spacer = np.array([0.,0.,spacing])
+    g = np.array(neutralpos)
+    g = np.vstack((g, pos1+spacer))
+    g = np.vstack((g, pos2+2*spacer))
+    g = np.vstack((g, neutralpos+3*spacer))
+    assert len(g) == 24
+    assert len(atoms*4) == 24
+    gm = []
+    for at, pos in zip(atoms*4, g):
+        gm.append([at, pos[0], pos[1], pos[2]])
+    geom.load_geometry(gm)
+
+def ethyl4spac6_geom(x):
+    ethyl4_geom(x, spacing=6.0)
 
 
 # DEFINE PES parameter ranges here (consistent naming)
@@ -156,6 +242,9 @@ Ar4_range = np.linspace(-0.8, 0.8, 11)
 Ar4_symm_range = np.linspace(2.4, 3.4, 11)
 NaWat3_linear_range = np.linspace(-0.2, 1.0, 11)
 NaWat3_triangle_range = np.linspace(-1.5, 1.5, 13)
+Wat4_range = np.linspace(0.8,1.2, 11)
+ethyl4_range = np.linspace(0,1,11)
+ethyl4spac6_range = np.linspace(0,1,11)
 
 
 # SPECIFY dict of calculations
@@ -221,6 +310,7 @@ def get_args():
     parser.add_argument("data_file", help="data storage path")
     parser.add_argument("system_name", help="molecular cluster identity")
     parser.add_argument("method", nargs='+', help="calculation method")
+    parser.add_argument("--scrdir", type=str, help="top level scratch")
     args = parser.parse_args()
 
     system_name = args.system_name
@@ -236,6 +326,7 @@ def get_args():
         sys.exit(0)
 
     methods = args.method
+    scr = args.scrdir
     if 'all' in methods:
         methods = calcParameterMaps.keys()
     for method in methods:
@@ -247,7 +338,7 @@ def get_args():
             print "\n".join(["  * %s" % m for m in calcParameterMaps.keys()])
             sys.exit(0)
 
-    return geom_generator, coord_range, methods, args.data_file, system_name
+    return geom_generator, coord_range, methods, args.data_file, system_name, scr
 
 def log(fp, sysname, method, i, x, coord_range, results):
     '''Log to HDF5 file'''
@@ -284,9 +375,9 @@ def log(fp, sysname, method, i, x, coord_range, results):
     fp[name('esp_chg')][i] = results['chgdist(GS)']
     fp.flush()
 
-def main():
-
-    geom_generator, coord_range, methods, data_file, sysname = get_args()
+def main(args):
+    geom_generator, coord_range, methods, data_file, sysname, scr = args
+    util.make_scratch_dirs(scr)
     if MPI.rank == 0:
         print "# System: %s" % sysname
         print "# Calc methods:", ', '.join(methods)
@@ -312,8 +403,8 @@ def main():
         fp.close()
 
 if __name__ == "__main__":
-    util.make_scratch_dirs('/scratch/misha')
+    args = get_args()
     try:
-        main()
+        main(args)
     finally:
         util.clean_scratch_dirs()
