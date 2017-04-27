@@ -142,6 +142,7 @@ def NaWat3_triangle_geom(x):
     # scan np.linspace(-1.5, 1.5, 13)
     geom.load_geometry(g)
 def Wat4_geom(x):
+    #Shrinking/expanding the size of the 4-oxygen square
     origin = '''O    0.216486    -1.989005    0.035297
         H    -0.603911    -1.505274    -0.033552
         H    0.138672    -2.535875    0.799566
@@ -194,6 +195,11 @@ def Wat4_geom(x):
     geom.load_geometry(g)
 
 def ethyl4_geom(x, spacing=4.0):
+    # neutral == MP2/avdz optimized neutral ethylene
+    # charged == MP2/avdz optimized cation ethylene
+    # z-stacking of 4 ethylenes, spaced normal to molecular plane
+    # middle two ethylene geometries are linear a interpolation (0<x<1)
+    # between the neutral and charged geometries (quasi CT coordinate)
     neutral = '''C   -0.6741216    -0.00000     0.00000000
         C            0.67412167     0.00000     0.0000000
         H           -1.24192904    -0.93292     0.0000000
@@ -229,6 +235,32 @@ def ethyl4spac6_geom(x):
     ethyl4_geom(x, spacing=6.0)
 
 
+def ethyl3_geom(theta_degrees, spacing=4.0):
+    # Rotation of central ethylene (about y-axis) in a z-stack of 3 ethylenes
+    def transform(g, rotation_degrees=0.0, z_translation=0.0):
+        sin = np.sin(np.deg2rad(rotation_degrees))
+        cos = np.cos(np.deg2rad(rotation_degrees))
+        rot = np.array([ [cos, 0, -sin], [0, 1, 0], [sin, 0, cos] ])
+        g_rotated = np.dot(rot, g.T).T
+        return g_rotated + np.array([0., 0., z_translation])
+
+    flat = '''C   -0.6741216    -0.00000     0.00000000
+        C            0.67412167     0.00000     0.0000000
+        H           -1.24192904    -0.93292     0.0000000
+        H           -1.24192904     0.93292     0.0000000
+        H            1.24192904     0.93292     0.0000000
+        H            1.24192904    -0.93292     0.0000000'''.split('\n')
+    atoms = [at.split()[0] for at in flat]
+    pos1 = np.array([map(float, at.split()[1:]) for at in flat])
+    pos2 = transform(pos1, theta_degrees, spacing)
+    pos3 = transform(pos1, 0.0, 2.0*spacing)
+    gm = np.vstack((pos1, pos2, pos3))
+    g = []
+    for at,pos in zip(atoms*3, gm):
+        g.append([at, pos[0], pos[1], pos[2]])
+    geom.load_geometry(g)
+
+
 # DEFINE PES parameter ranges here (consistent naming)
 #-----------------------------------------------------
 He2_range = np.arange(0.9, 2.6, 0.1)
@@ -245,6 +277,7 @@ NaWat3_triangle_range = np.linspace(-1.5, 1.5, 13)
 Wat4_range = np.linspace(0.8,1.2, 11)
 ethyl4_range = np.linspace(0,1,11)
 ethyl4spac6_range = np.linspace(0,1,11)
+ethyl3_range = np.linspace(0.0, 90.0, 10)
 
 
 # SPECIFY dict of calculations

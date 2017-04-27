@@ -23,7 +23,8 @@ mass_map = {
    'o'  : 16.0,
    'c'  : 12.0,
    'ar' : 40.0,
-   'f'  : 19.0
+   'f'  : 19.0,
+   'na' : 23.0
 }
 z_map = {
    'h'  : 1,
@@ -32,7 +33,8 @@ z_map = {
    'o'  : 8,
    'c'  : 6,
    'ar' : 18,
-   'f'  : 9
+   'f'  : 9,
+   'na' : 11
 }
 
 # Cutoff bond distances for auto-fragmentation
