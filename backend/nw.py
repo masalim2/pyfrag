@@ -81,10 +81,17 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('\n'.join(((4*'%18.8f') % (bq[0], bq[1], bq[2], bq[3])) for bq in bqs))
     f.write('\nend\n\n')
 
-    f.write('scf\n')
-    f.write('sym off; adapt off\n')
-    f.write('%s\n' % options['hftype'])
-    f.write('nopen %d\n' % (nelec%2))
+    f.write('dft\n')
+    f.write('xc hfexch\nodft\n')
+    #f.write('sym off; adapt off\n')
+    if nelec%2 == 0:
+        f.write('mult 1\n')
+    elif nelec%2 == 1 and charge==1:
+        f.write('mult 2\n')
+    elif nelec%2 == 1 and charge==0:
+        f.write('mult -2\n')
+    else:
+        raise RuntimeError('mult not accounted for')
     if nelec%2 == 1:
         f.write('maxiter 100\n')
     if noscf: f.write('noscf\n')
@@ -98,25 +105,17 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
 
     if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
-        if theory == 'mp2':
-            if nelec%2 == 0:
-                f.write('mp2\n freeze atomic\nend\n\n')
-            else:
-                f.write('tce\n scf\n mp2\n freeze atomic\nend\n')
-                theory = 'tce'
-        elif theory == 'ccsd':
-            f.write('ccsd\n freeze atomic\nend\n\n')
-        else:
-            raise RuntimeError("please write NW wrapper for %s" % theory)
+        f.write('tce\n dft\n %s\n freeze atomic\nend\n'% theory)
+        theory = 'tce'
     else:
-        theory = 'scf'
+        theory = 'dft'
 
     if calc == 'energy_hf':
-        f.write('task scf energy\n\n')
+        f.write('task dft energy\n\n')
     elif calc == 'energy':
         f.write('task %s energy\n\n' % theory)
     elif calc == 'esp':
-        f.write('task scf energy\n\n')
+        f.write('task dft energy\n\n')
         f.write('esp\n recalculate\nend\n')
         f.write('task esp\n\n')
     elif calc == 'gradient':
@@ -134,7 +133,7 @@ def parse(data, calc, inp, atoms, bqs, save):
     options = params.options
     for n, line in enumerate(data):
 
-        if "Total SCF energy" in line:
+        if "Total SCF energy" in line or "Total DFT energy" in line:
             results['E_hf'] = float(line.split()[-1])
             results['E_tot'] = results['E_hf']
             continue
