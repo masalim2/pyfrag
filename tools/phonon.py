@@ -241,11 +241,11 @@ if __name__ == "__main__":
     else:
         smooth_mat = None
 
-    #freqs, vecs = phonons(hess_mw, bz, smooth_mat)
-    dispersion = phonon_freqs(hess_mw, bz, smooth_mat)
+    #dispersion = phonon_freqs(hess_mw, bz, smooth_mat)
+    #for kvec, freqs in zip(bz, dispersion):
+    #    print " ".join([pretty(k) for k in kvec]),
+    #    print " ".join([pretty(f) for f in freqs])
+    freqs, vecs = phonon(hess_mw, bz, smooth_mat)
 
-    for kvec, freqs in zip(bz, dispersion):
-        print " ".join([pretty(k) for k in kvec]),
-        print " ".join([pretty(f) for f in freqs])
     if args.binary_file:
-        np.savez(args.binary_file, kmesh=bz, freqs=np.array(dispersion))
+        np.savez(args.binary_file, kmesh=bz, freqs=freqs, vecs=vecs)
