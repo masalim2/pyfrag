@@ -274,9 +274,9 @@ Ar4_range = np.linspace(-0.8, 0.8, 11)
 Ar4_symm_range = np.linspace(2.4, 3.4, 11)
 NaWat3_linear_range = np.linspace(-0.2, 1.0, 11)
 NaWat3_triangle_range = np.linspace(-1.5, 1.5, 13)
-Wat4_range = np.linspace(0.8,1.2, 11)
-ethyl4_range = np.linspace(0,1,11)
-ethyl4spac6_range = np.linspace(0,1,11)
+Wat4_range = np.linspace(0.9,1.3, 11)
+ethyl4_range = np.linspace(0.2,0.5,4)
+ethyl4spac6_range = np.linspace(0,0.5,6)
 ethyl3_range = np.linspace(0.0, 90.0, 10)
 
 

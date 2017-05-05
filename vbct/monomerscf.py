@@ -25,16 +25,22 @@ def fullsys_best_guess(comm=None):
         guess_vecs.append(vecs)
 
     geom.set_frag_full_system()
+    guess_vecs.append(None)
 
     my_calcs = []
     my_guessvecs = MPI.scatter(comm, guess_vecs, master=0)
 
     for guess in my_guessvecs:
-        res = backend.run('esp', [(0,0,0,0)], 1, [], [], guess=guess)
+        try:
+            res = backend.run('esp', [(0,0,0,0)], 1, [], [], guess=guess)
+        except RuntimeError:
+            res = {'E_hf' : 0.0, 'E_tot' : 0.0, 'esp_charges' : []}
         my_calcs.append(res)
 
     calcs = MPI.allgather(comm, my_calcs)
     ibest, best = min(enumerate(calcs), key=lambda x:x[1]['E_hf'])
+    if best['E_hf'] == 0.0:
+        raise RuntimeError("could not find a scf solution for the full system")
     espfield = calcs[ibest]['esp_charges']
 
     if params.options['correlation']:

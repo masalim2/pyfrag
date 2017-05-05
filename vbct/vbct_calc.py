@@ -122,9 +122,24 @@ def coupl_chglocal(A, B):
                        guess=vecs_Bloc)
 
     # Relaxed dimer
-    Aloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Aloc)
-    Bloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Bloc)
-    relax = min(Aloc_relax, Bloc_relax, key=lambda x:x['E_tot'])
+    try:
+        Aloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Aloc)
+    except RuntimeError:
+        Aloc_relax = {'E_tot' : 0.0}
+
+    try:
+        Bloc_relax = backend.run('energy', frag, 1, bqs, esp, guess=vecs_Bloc)
+    except RuntimeError:
+        Bloc_relax = {'E_tot' : 0.0}
+
+    try:
+        atomic_relax = backend.run('energy', frag, 1, bqs, esp, guess=None)
+    except RuntimeError:
+        atomic_relax = {'E_tot' : 0.0}
+
+    relax = min(Aloc_relax, Bloc_relax, atomic_relax, key=lambda x:x['E_tot'])
+    if relax['E_tot'] == 0.0:
+        raise RuntimeError("Could not relax the dimer in chglocal coupling")
 
     E_relax = relax['E_tot']
     E_Aloc  = Aloc['E_tot']

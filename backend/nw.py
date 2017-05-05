@@ -24,15 +24,15 @@ def calculate(inp, calc, save):
     try:
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print "-------------------------"
-        print "INPUT FILE OF FAILED CALC"
-        print "-------------------------"
-        print open(inp).read()
-        print "--------------------------"
-        print "OUTPUT FILE OF FAILED CALC"
-        print "--------------------------"
-        print e.output
-        raise RuntimeError("failed calculation")
+        info =  '-------------------------\n'
+        info += 'INPUT FILE OF FAILED CALC\n'
+        info += "-------------------------\n"
+        info += open(inp).read()+'\n'
+        info += "--------------------------\n"
+        info += "OUTPUT FILE OF FAILED CALC\n"
+        info += "--------------------------\n"
+        info += e.output + '\n'
+        raise RuntimeError(info)
     if save and options['scrdir'] != options['share_dir']:
         outvec = os.path.basename(inp)+".movecs"
         source = os.path.join(options['scrdir'], outvec)
@@ -86,7 +86,8 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     f.write('%s\n' % options['hftype'])
     f.write('nopen %d\n' % (nelec%2))
     if nelec%2 == 1:
-        f.write('maxiter 100\n')
+        f.write('maxiter 120\n')
+        f.write('thresh 1.0e-4\n')
     if noscf: f.write('noscf\n')
 
     invec = invecs(guess)
@@ -99,11 +100,12 @@ def inp(calc, atoms, bqs, charge, noscf=False, guess=None, save=False):
     if options['correlation'] and calc not in ['esp', 'energy_hf']:
         theory = options['correlation']
         if theory == 'mp2':
-            if nelec%2 == 0:
-                f.write('mp2\n freeze atomic\nend\n\n')
-            else:
-                f.write('tce\n scf\n mp2\n freeze atomic\nend\n')
-                theory = 'tce'
+            f.write('mp2\n freeze atomic\nend\n\n')
+            #if nelec%2 == 0:
+            #    f.write('mp2\n freeze atomic\nend\n\n')
+            #else:
+            #    f.write('tce\n scf\n mp2\n freeze atomic\nend\n')
+            #    theory = 'tce'
         elif theory == 'ccsd':
             f.write('ccsd\n freeze atomic\nend\n\n')
         else:
