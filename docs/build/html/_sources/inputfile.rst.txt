@@ -11,19 +11,18 @@ code snippet shows an example of the syntax: ::
 
     from pyfrag.Globals import params, geom
     from pyfrag.bim import bim
-    # ... other code here ...
     params.options['basis'] = 'cc-pvtz'
-    params.options['fragmentation'] = 'auto'
-    params.options['r_qm'] = 10.3
     params.options['task'] = 'bim_grad'
+    params.set_defaults()
     geomtxt = '''He 0 0 0
                  He 1 0 0
                  He 2 0 0'''
     geom.load_geometry(geomtxt) # build the geometry object
     geom.perform_fragmentation() # auto-fragment
-    result = bim.kernel()
+    params.quiet = True # don't print anything
+    result = bim.kernel() # get dictionary of results
     grad = result['gradient']
-    # ... more code here ...
+    print grad
 
 All imports from PyFragment should be in the form of ::
 

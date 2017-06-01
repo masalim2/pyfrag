@@ -64,19 +64,18 @@ programatically by interfacing with the <strong>Globals</strong> modules. The fo
 code snippet shows an example of the syntax:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyfrag.Globals</span> <span class="k">import</span> <span class="n">params</span><span class="p">,</span> <span class="n">geom</span>
 <span class="kn">from</span> <span class="nn">pyfrag.bim</span> <span class="k">import</span> <span class="n">bim</span>
-<span class="c1"># ... other code here ...</span>
 <span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;basis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cc-pvtz&#39;</span>
-<span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;fragmentation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
-<span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;r_qm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.3</span>
 <span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bim_grad&#39;</span>
+<span class="n">params</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">()</span>
 <span class="n">geomtxt</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;He 0 0 0</span>
 <span class="s1">             He 1 0 0</span>
 <span class="s1">             He 2 0 0&#39;&#39;&#39;</span>
 <span class="n">geom</span><span class="o">.</span><span class="n">load_geometry</span><span class="p">(</span><span class="n">geomtxt</span><span class="p">)</span> <span class="c1"># build the geometry object</span>
 <span class="n">geom</span><span class="o">.</span><span class="n">perform_fragmentation</span><span class="p">()</span> <span class="c1"># auto-fragment</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">bim</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+<span class="n">params</span><span class="o">.</span><span class="n">quiet</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># don&#39;t print anything</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">bim</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span> <span class="c1"># get dictionary of results</span>
 <span class="n">grad</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;gradient&#39;</span><span class="p">]</span>
-<span class="c1"># ... more code here ...</span>
+<span class="nb">print</span> <span class="n">grad</span>
 </pre></div>
 </div>
 <p>All imports from PyFragment should be in the form of</p>

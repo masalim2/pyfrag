@@ -110,9 +110,12 @@ the <strong>source</strong> line is invoked.</p>
 <div class="section" id="blue-waters-setup-tips">
 <h2>Blue Waters setup tips<a class="headerlink" href="#blue-waters-setup-tips" title="Permalink to this headline">¶</a></h2>
 <p>Blue Waters comes equipped with high-performance builds of the necessary
-python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/python">modules</a>.  Your job submission scripts can set up the environment with the two lines</p>
+python <a class="reference external" href="https://bluewaters.ncsa.illinois.edu/python">modules</a>.  Your job submission scripts should set up the environment with
+the following four lines</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
 <span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span><span class="o">-</span><span class="n">mpi</span>
+<span class="n">export</span> <span class="n">PMI_NO_FORK</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">export</span> <span class="n">PMI_NO_PREINITIALIZE</span><span class="o">=</span><span class="mi">1</span>
 </pre></div>
 </div>
 <div class="section" id="installing-psi4-on-blue-waters">
@@ -144,6 +147,9 @@ cmake). This binary will work fine for the build process.</p>
 </div>
 <p>The compilation is rather lengthy; using nohup will allow you to launch the
 build and then log off without interrupting the process.</p>
+<p>After installation, the psi4/bin directory (which contains the executable psi4)
+should be added to your <code class="xref py py-data docutils literal"><span class="pre">PATH</span></code>, while the psi4/lib directory (which
+contains the importable module) should be added to your <code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
 </div>
 </div>
 <div class="section" id="running-pyfragment">

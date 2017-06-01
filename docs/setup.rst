@@ -59,10 +59,13 @@ the **source** line is invoked.
 Blue Waters setup tips
 ------------------------
 Blue Waters comes equipped with high-performance builds of the necessary
-python `modules <https://bluewaters.ncsa.illinois.edu/python>`_.  Your job submission scripts can set up the environment with the two lines ::
+python `modules <https://bluewaters.ncsa.illinois.edu/python>`_.  Your job submission scripts should set up the environment with 
+the following four lines ::
 
     module load bwpy
     module load bwpy-mpi
+    export PMI_NO_FORK=1
+    export PMI_NO_PREINITIALIZE=1
 
 Installing Psi4 on Blue Waters
 ******************************
@@ -93,7 +96,11 @@ cmake). This binary will work fine for the build process.  ::
 
 The compilation is rather lengthy; using nohup will allow you to launch the
 build and then log off without interrupting the process.
-    
+
+After installation, the psi4/bin directory (which contains the executable psi4) 
+should be added to your :data:`PATH`, while the psi4/lib directory (which
+contains the importable module) should be added to your :data:`PYTHONPATH`.
+
 
 Running PyFragment
 ---------------------

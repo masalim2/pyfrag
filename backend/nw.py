@@ -165,7 +165,7 @@ def parse(data, calc, inp, atoms, bqs, save):
             if bqs and 'grad' in options['task']:
                 bqforce_name, ext = os.path.splitext(inp)
                 bqforce_name += '.bqforce.dat'
-                results['bq_gradient'] = np.loadtxt(bqforce_name)
+                results['bq_gradient'] = np.loadtxt(bqforce_name).reshape((len(bqs),3))
             continue
         if "movec_shared_path" in line:
             results['movecs'] = line.split()[-1]

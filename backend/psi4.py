@@ -104,7 +104,7 @@ def parse(data, calc, inp, atoms, bqs, save):
             results['gradient'] = np.array(gradients)
             if bqs and 'grad' in calc:
                 bq_field = np.loadtxt('grid_field.dat')
-                assert bq_field.shape == (len(bqs), 3)
+                bq_field = bq_field.reshape((len(bqs), 3))
                 bqgrad = []
                 for chg, field_vec in zip(bqs, bq_field):
                     bqgrad.append(-1.0 * chg[3] * field_vec)

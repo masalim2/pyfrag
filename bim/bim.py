@@ -93,8 +93,18 @@ def kernel(comm=None):
         rank = comm.Get_rank()
     else:
         comm, rank = MPI.comm, MPI.rank
-    VERB = params.verbose
-    QUIET = params.quiet
+    try:
+        VERB = params.verbose
+        QUIET = params.quiet
+    except AttributeError:
+        params.verbose = False
+        params.quiet = False
+        VERB = params.verbose
+        QUIET = params.quiet
+
+    if 'scrdir' not in params.options:
+        scr_top = None
+        util.make_scratch_dirs(scr_top)
 
     if not QUIET and MPI.rank == 0:
         logger.print_parameters()
