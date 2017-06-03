@@ -67,28 +67,55 @@ the following four lines ::
     export PMI_NO_FORK=1
     export PMI_NO_PREINITIALIZE=1
 
+Note that Psi4 is unable to run correctly on the compute nodes unless the latter two
+environment variables are set.
+
 Installing Psi4 on Blue Waters
 ******************************
-Checkout the Psi4 repository and prepare the environment for setup::
+You need to be using the GNU Programming environment.  If :data:`module list`
+shows :data:`PrgEnv-cray` instead, be sure to first invoke :data:`module swap
+PrgEnv-cray PrgEnv-gnu`.
+Next, checkout the Psi4 repository and prepare the environment for setup. ::
 
     git clone https://github.com/psi4/psi4.git
     module load bwpy
     export CRAYPE_LINK_TYPE=dynamic
     export CRAY_ADD_RPATH=yes
-    mkdir ~/libsci
 
 Now, query the currently (default) loaded Cray LibSci module to find the
-directory containg the LibSci libaries.  Make symlinks in ~/libsci 
-to all the necessary versions, naming the links corresponding to libsci.* 
-as liblapack.*. This is necessary for CMake to recognize the math libraries.
-Finally, export the MATH_ROOT environment variable::
+directory containg the LibSci libaries::
 
-    export MATH_ROOT=~/libsci
+    module display cray-libsci
 
-You will need a newer version of cmake than is provided on Blue Waters. A
-convenient way to quickly get the binary is with Miniconda (conda install
-cmake). This binary will work fine for the build process.  ::
+Search for the line containing :data:`prepend-path  CRAY_LD_LIBRARY_PATH`: it should
+point to a directory like :data:`/opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib`. 
+In this directory, identify all the library files that do not contain the string
+"mp" or "mpi"; there should be four files similar to :data:`libsci_gnu_49.a`,
+:data:`libsci_gnu_49.so`, :data:`libsci_gnu_49.so.5`, and
+:data:`libsci_gnu_49.so.5.0`. 
 
+Create a folder named :data:`libsci` in your home directory. In this folder, create two symlinks
+for each of the identified library files. The two links corresponding to :data:`libsci.*`
+should be named :data:`liblapack.*` and :data:`libblas.*`. For instance, ::
+    
+    cd ~/libsci
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.a      liblapack.a
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so     liblapack.so
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5   liblapack.so.5
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5.0 liblapack.so.5.0
+
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.a      libblas.a
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so     libblas.so
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5   libblas.so.5
+    ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5.0 libblas.so.5.0
+
+    export MATH_ROOT=$(pwd)
+
+Finally, exporting the MATH_ROOT environment variable will allow CMake to recognize 
+and use these preferred math libraries. CMake should be version 3.3 or higher;
+if this is not the case, see the section below on getting a newer CMake binary
+through conda. If :data:`cmake --version` returns 3.3 or higher, you are fine.
+With the above steps done, building should be straightforward: ::
     cd psi4
     cmake -H. -Bobjdir
     cd objdir
@@ -97,10 +124,32 @@ cmake). This binary will work fine for the build process.  ::
 The compilation is rather lengthy; using nohup will allow you to launch the
 build and then log off without interrupting the process.
 
-After installation, the psi4/bin directory (which contains the executable psi4) 
-should be added to your :data:`PATH`, while the psi4/lib directory (which
-contains the importable module) should be added to your :data:`PYTHONPATH`.
+After installation, the :data:`psi4/objdir/stage/.../bin` directory (which
+contains the executable psi4) should be added to your :data:`PATH`, while the
+:data:`psi4/objdir/stage/.../lib` directory (which contains the importable
+module) should be added to your :data:`PYTHONPATH`.  Alternatively, you can use
+make install to copy the relevant code into a user-specified location.
 
+Getting Miniconda and CMake on Blue Waters
+*********************************************
+You *might* need a newer version of cmake than is provided on Blue Waters. 
+If cmake --version returns 3.3 or higher (after loading module bwpy), then you
+can safely ignore this section.  
+
+Otherwise, a
+convenient way to quickly get the binary is with `Miniconda
+<https://conda.io/miniconda.html`_. Install Miniconda after downloading the
+installer directly to Blue Waters without allowing it to override your :data:`PATH` or 
+:data:`PYTHONPATH` environment. (Letting conda alter these environment variables can clobber
+the environment which is supposed to be managed entirely by the Blue Waters
+module system. This may cause other things to break.) ::
+    
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+    bash Miniconda2-latest-Linux-x86_64.sh
+    # installation process...don't let it mess with your .bashrc
+    # Once you have conda, get cmake 
+    cd ~/path/to/miniconda2/bin
+    ./conda install cmake 
 
 Running PyFragment
 ---------------------

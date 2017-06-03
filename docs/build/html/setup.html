@@ -118,27 +118,53 @@ the following four lines</p>
 <span class="n">export</span> <span class="n">PMI_NO_PREINITIALIZE</span><span class="o">=</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p>Note that Psi4 is unable to run correctly on the compute nodes unless the latter two
+environment variables are set.</p>
 <div class="section" id="installing-psi4-on-blue-waters">
 <h3>Installing Psi4 on Blue Waters<a class="headerlink" href="#installing-psi4-on-blue-waters" title="Permalink to this headline">¶</a></h3>
-<p>Checkout the Psi4 repository and prepare the environment for setup:</p>
+<p>You need to be using the GNU Programming environment.  If <code class="xref py py-data docutils literal"><span class="pre">module</span> <span class="pre">list</span></code>
+shows <code class="xref py py-data docutils literal"><span class="pre">PrgEnv-cray</span></code> instead, be sure to first invoke <code class="xref py py-data docutils literal"><span class="pre">module</span> <span class="pre">swap</span>
+<span class="pre">PrgEnv-cray</span> <span class="pre">PrgEnv-gnu</span></code>.
+Next, checkout the Psi4 repository and prepare the environment for setup.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">psi4</span><span class="o">/</span><span class="n">psi4</span><span class="o">.</span><span class="n">git</span>
 <span class="n">module</span> <span class="n">load</span> <span class="n">bwpy</span>
 <span class="n">export</span> <span class="n">CRAYPE_LINK_TYPE</span><span class="o">=</span><span class="n">dynamic</span>
 <span class="n">export</span> <span class="n">CRAY_ADD_RPATH</span><span class="o">=</span><span class="n">yes</span>
-<span class="n">mkdir</span> <span class="o">~/</span><span class="n">libsci</span>
 </pre></div>
 </div>
 <p>Now, query the currently (default) loaded Cray LibSci module to find the
-directory containg the LibSci libaries.  Make symlinks in ~/libsci
-to all the necessary versions, naming the links corresponding to libsci.*
-as liblapack.*. This is necessary for CMake to recognize the math libraries.
-Finally, export the MATH_ROOT environment variable:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">MATH_ROOT</span><span class="o">=~/</span><span class="n">libsci</span>
+directory containg the LibSci libaries:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">display</span> <span class="n">cray</span><span class="o">-</span><span class="n">libsci</span>
 </pre></div>
 </div>
-<p>You will need a newer version of cmake than is provided on Blue Waters. A
-convenient way to quickly get the binary is with Miniconda (conda install
-cmake). This binary will work fine for the build process.</p>
+<p>Search for the line containing <code class="xref py py-data docutils literal"><span class="pre">prepend-path</span>&#160; <span class="pre">CRAY_LD_LIBRARY_PATH</span></code>: it should
+point to a directory like <code class="xref py py-data docutils literal"><span class="pre">/opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib</span></code>.
+In this directory, identify all the library files that do not contain the string
+&#8220;mp&#8221; or &#8220;mpi&#8221;; there should be four files similar to <code class="xref py py-data docutils literal"><span class="pre">libsci_gnu_49.a</span></code>,
+<code class="xref py py-data docutils literal"><span class="pre">libsci_gnu_49.so</span></code>, <code class="xref py py-data docutils literal"><span class="pre">libsci_gnu_49.so.5</span></code>, and
+<code class="xref py py-data docutils literal"><span class="pre">libsci_gnu_49.so.5.0</span></code>.</p>
+<p>Create a folder named <code class="xref py py-data docutils literal"><span class="pre">libsci</span></code> in your home directory. In this folder, create two symlinks
+for each of the identified library files. The two links corresponding to <code class="xref py py-data docutils literal"><span class="pre">libsci.*</span></code>
+should be named <code class="xref py py-data docutils literal"><span class="pre">liblapack.*</span></code> and <code class="xref py py-data docutils literal"><span class="pre">libblas.*</span></code>. For instance,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>cd ~/libsci
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.a      liblapack.a
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so     liblapack.so
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5   liblapack.so.5
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5.0 liblapack.so.5.0
+
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.a      libblas.a
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so     libblas.so
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5   libblas.so.5
+ln -s /opt/cray/libsci/16.11.1/GNU/4.9/x86_64/lib/libsci_gnu_49.so.5.0 libblas.so.5.0
+
+export MATH_ROOT=$(pwd)
+</pre></div>
+</div>
+<p>Finally, exporting the MATH_ROOT environment variable will allow CMake to recognize
+and use these preferred math libraries. CMake should be version 3.3 or higher;
+if this is not the case, see the section below on getting a newer CMake binary
+through conda. If <code class="xref py py-data docutils literal"><span class="pre">cmake</span> <span class="pre">--version</span></code> returns 3.3 or higher, you are fine.
+With the above steps done, building should be straightforward:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">psi4</span>
 <span class="n">cmake</span> <span class="o">-</span><span class="n">H</span><span class="o">.</span> <span class="o">-</span><span class="n">Bobjdir</span>
 <span class="n">cd</span> <span class="n">objdir</span>
@@ -147,9 +173,32 @@ cmake). This binary will work fine for the build process.</p>
 </div>
 <p>The compilation is rather lengthy; using nohup will allow you to launch the
 build and then log off without interrupting the process.</p>
-<p>After installation, the psi4/bin directory (which contains the executable psi4)
-should be added to your <code class="xref py py-data docutils literal"><span class="pre">PATH</span></code>, while the psi4/lib directory (which
-contains the importable module) should be added to your <code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
+<p>After installation, the <code class="xref py py-data docutils literal"><span class="pre">psi4/objdir/stage/.../bin</span></code> directory (which
+contains the executable psi4) should be added to your <code class="xref py py-data docutils literal"><span class="pre">PATH</span></code>, while the
+<code class="xref py py-data docutils literal"><span class="pre">psi4/objdir/stage/.../lib</span></code> directory (which contains the importable
+module) should be added to your <code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code>.  Alternatively, you can use
+make install to copy the relevant code into a user-specified location.</p>
+</div>
+<div class="section" id="getting-miniconda-and-cmake-on-blue-waters">
+<h3>Getting Miniconda and CMake on Blue Waters<a class="headerlink" href="#getting-miniconda-and-cmake-on-blue-waters" title="Permalink to this headline">¶</a></h3>
+<p>You <em>might</em> need a newer version of cmake than is provided on Blue Waters.
+If cmake &#8211;version returns 3.3 or higher (after loading module bwpy), then you
+can safely ignore this section.</p>
+<p>Otherwise, a
+convenient way to quickly get the binary is with <a href="#id1"><span class="problematic" id="id2">`Miniconda
+&lt;https://conda.io/miniconda.html`_</span></a>. Install Miniconda after downloading the
+installer directly to Blue Waters without allowing it to override your <code class="xref py py-data docutils literal"><span class="pre">PATH</span></code> or
+<code class="xref py py-data docutils literal"><span class="pre">PYTHONPATH</span></code> environment. (Letting conda alter these environment variables can clobber
+the environment which is supposed to be managed entirely by the Blue Waters
+module system. This may cause other things to break.)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">continuum</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">miniconda</span><span class="o">/</span><span class="n">Miniconda2</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">bash</span> <span class="n">Miniconda2</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<span class="c1"># installation process...don&#39;t let it mess with your .bashrc</span>
+<span class="c1"># Once you have conda, get cmake</span>
+<span class="n">cd</span> <span class="o">~/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">miniconda2</span><span class="o">/</span><span class="nb">bin</span>
+<span class="o">./</span><span class="n">conda</span> <span class="n">install</span> <span class="n">cmake</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="running-pyfragment">
@@ -182,6 +231,7 @@ using</p>
 <li><a class="reference internal" href="#gellmann-setup-tips">Gellmann setup tips</a></li>
 <li><a class="reference internal" href="#blue-waters-setup-tips">Blue Waters setup tips</a><ul>
 <li><a class="reference internal" href="#installing-psi4-on-blue-waters">Installing Psi4 on Blue Waters</a></li>
+<li><a class="reference internal" href="#getting-miniconda-and-cmake-on-blue-waters">Getting Miniconda and CMake on Blue Waters</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#running-pyfragment">Running PyFragment</a></li>
